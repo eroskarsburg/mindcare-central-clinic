@@ -1,4 +1,4 @@
-# Health Learn Clinic
+# MindCare - Consulting Central Clinic
 A web advisory control panel for a psychological health clinic.
 
 ## Used technology
