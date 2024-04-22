@@ -364,4 +364,5 @@ FodyWeavers.xsd
 
 
 # ADDED MANUALY
-MindCare-Central-Clinic/obj
+/MindCare-Central-Clinic/obj
+/MindCare-Central-Clinic/obj/Debug/net8.0/
