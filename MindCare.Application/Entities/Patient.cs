@@ -1,6 +1,6 @@
 ﻿namespace MindCare.Application.Entities
 {
-    public class Patient
+    public record Patient
     {
         public string? Name { get; set; }
         public int Age { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace MindCare.Application.Entities
 {
-    public class Address
+    public record Address
     {
         public string? Street { get; set; }
         public int Number { get; set; }
