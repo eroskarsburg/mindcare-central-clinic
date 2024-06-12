@@ -2,8 +2,7 @@
 {
     public enum EnumAccessLevel
     {
-        Administrator,
-        Consulting,
-        Visitor
+        Administrator = 1,
+        Professional = 2
     }
 }

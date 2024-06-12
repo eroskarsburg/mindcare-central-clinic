@@ -1,6 +1,6 @@
 ﻿namespace MindCare.Application.Enums
 {
-    public enum EnumConsultationType
+    public enum EnumAppointmentType
     {
         Remotely,
         InPerson

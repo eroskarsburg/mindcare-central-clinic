@@ -1,0 +1,19 @@
+﻿@model ClientViewModel
+
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ClientList)
+        {
+            <tr>
+                <th scope="row">@item.Id</th>
+                <td>@item.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
