@@ -13,11 +13,24 @@ namespace MindCare.Application.Services
             _clientRepository = clientRepository;
         }
 
-        public ClientService() { }
-
         public async Task<List<Client>> GetClients()
         {
             return await _clientRepository.Get();
+        }
+
+        public async Task InsertClient(Client client)
+        {
+            await _clientRepository.Insert(client);
+        }
+
+        public Task UpdateClient(Client client)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteClient(int clientId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

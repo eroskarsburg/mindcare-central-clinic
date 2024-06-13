@@ -3,8 +3,17 @@
     ViewData["Title"] = "Client";
 }
 
-<h1>Clients</h1>
+<div class="secondary-header">
+    <h2>Clients</h2>
+    <button class="button-6" data-bs-toggle="modal" data-bs-target="#exampleModal">Novo</button>
+</div>
 
-<section>
-    @Html.Partial("~/Views/Client/Partials/_Clients.cshtml");
+<section class="align-content-center">
+    @await Html.PartialAsync("~/Views/Client/Partials/_ClientsTable.cshtml")
+
+    <!-- Modal -->
+    @await Html.PartialAsync("~/Views/Client/Partials/_ClientsModal.cshtml")
 </section>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/client.js"></script>

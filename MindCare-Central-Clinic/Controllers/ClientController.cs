@@ -27,6 +27,18 @@ namespace MindCare_Central_Clinic.Controllers
             return View(_model);
         }
 
+        public JsonResult Insert(Client client)
+        {
+            string message = "Cliente inserido!";
+            try
+            {
+                _service.InsertClient(client);
+            }
+            catch (Exception e) { message = e.Message; }
+
+            return Json(new { message = message });
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

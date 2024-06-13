@@ -24,6 +24,11 @@ namespace MindCare.Application.DataAccess.DbContext
             Command = new MySqlCommand(Query, Connection);
         }
 
+        public void ExecuteNonQuery()
+        {
+            Command.ExecuteNonQuery();
+        }
+
         public void ExecuteReader()
         {
             Reader = Command.ExecuteReader();

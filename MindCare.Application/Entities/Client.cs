@@ -4,21 +4,20 @@
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-        public DateOnly? Birth { get; set; }
         public string? Gender { get; set; }
+        public string? Cpf { get; set; }
         public int? Age { get; set; }
-        public Address? Address { get; set; }
+        //public Address? Address { get; set; } -> Not using for now.
 
         public Client() { }
 
-        public Client(int id, string? name, DateOnly? birth, string? gender, int? age, Address? address)
+        public Client(int id, string? name, string? gender, string? cpf, int? age)
         {
             Id = id;
             Name = name;
-            Birth = birth;
             Gender = gender;
+            Cpf = cpf;
             Age = age;
-            Address = address;
         }
     }
 }
