@@ -1,0 +1,60 @@
+﻿@page
+@using MindCare_Central_Clinic.Shared.Enum
+@model MindCare_Central_Clinic.Views.Shared.PopUp.PopUpModel
+@{
+    Layout = "_LayoutModal";
+
+    string classBtnNega = string.Empty;
+    string classBtnConfirma = string.Empty;
+    string tituloBtnNega = "Não";
+    string tituloBtnConfirma = "Ok";
+    bool temBotaoClose = true;
+
+    switch (Model.PopUp?.PopUpType)
+    {
+        case EnumPopUpType.Warning:
+            classBtnNega = "btn-primary";
+            classBtnConfirma = "btn-outline-danger";
+            break;
+        case EnumPopUpType.Confirmation:
+            tituloBtnNega = "Não";
+            tituloBtnConfirma = "Sim";
+            classBtnNega = "btn-secondary";
+            classBtnConfirma = "btn-primary";
+            break;
+        case EnumPopUpType.Success:
+            classBtnConfirma = "btn-primary";
+            temBotaoClose = false;
+            break;
+        case EnumPopUpType.Error:
+            classBtnConfirma = "btn-danger";
+            break;
+        default:
+            classBtnConfirma = "btn-primary";
+            break;
+    }
+}
+
+<div class="modal fade" id="modal_popUp" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Atenção</h1>
+                @if (temBotaoClose)
+                {
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                }
+            </div>
+            <div class="modal-body">
+                @Model.PopUp.Message
+            </div>
+            <div class="modal-footer">
+                @if (!string.IsNullOrEmpty(classBtnNega))
+                {
+                    <button type="button" id="popUp_btnNega" class="btn @classBtnNega" data-bs-dismiss="modal">@tituloBtnNega</button>
+                }
+                <button type="button" id="popUp_btnConfirma" data-bs-dismiss="modal" class="btn @classBtnConfirma" @Html.Raw(string.IsNullOrEmpty(classBtnNega) ? "data-bs-dismiss=\"modal\"" : "")>@tituloBtnConfirma</button>
+            </div>
+        </div>
+    </div>
+</div>

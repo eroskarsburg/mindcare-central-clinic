@@ -1,0 +1,48 @@
+﻿@page
+@using MindCare_Central_Clinic.Shared.Enum
+@model MindCare_Central_Clinic.Views.Shared.Modal.ModalModel;
+@{
+    Layout = "_LayoutModal";
+
+    string classeTamanhoModal = string.Empty;
+
+    switch (Model.ModalSize)
+    {
+        case EnumModalSize.Small:
+            classeTamanhoModal = "modal-sm";
+            break;
+        case EnumModalSize.Large:
+            classeTamanhoModal = "modal-lg";
+            break;
+        case EnumModalSize.ExtraLarge:
+            classeTamanhoModal = "modal-xl";
+            break;
+        case EnumModalSize.Auto:
+            classeTamanhoModal = "modal-auto";
+            break;
+        default:
+            break;
+    }
+}
+
+<div class="backdrop-modal-personalizado">
+    <div class="modal show fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" style="display: block">
+        <div class="modal-dialog modal-dialog-centered @classeTamanhoModal">
+            <div class="modal-content" id="modal-content-@Model.Id">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">@Model.Title</h1>
+                    <button type="button" id="btn_modalClose-@Model.Id" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div id="modal_partialBody-@Model.Id" class="modal-body" style="overflow-wrap: anywhere;">
+                </div>
+                @if (Model.ShowButtons)
+                {
+                    <div class="modal-footer">
+                        <button type="button" id="btn_modalCancela-@Model.Id" class="btn btn-secondary">Cancelar</button>
+                        <button type="button" id="btn_modalConfirma-@Model.Id" class="btn btn-primary">@(!string.IsNullOrEmpty(Model.ConfirmButtonName) ? Model.ConfirmButtonName : "Salvar")</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

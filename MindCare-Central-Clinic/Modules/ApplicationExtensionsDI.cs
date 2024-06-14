@@ -1,6 +1,8 @@
 ﻿using MindCare.Application.DataAccess.Repository;
 using MindCare.Application.Services;
 using MindCare_Central_Clinic.Models;
+using MindCare_Central_Clinic.Services;
+using MindCare_Central_Clinic.Services.Abstractions;
 
 namespace MindCare_Central_Clinic.Modules
 {
@@ -11,6 +13,7 @@ namespace MindCare_Central_Clinic.Modules
             services.AddServiceExtensionsDI();
             services.AddRepositoryExtensionsDI();
             services.AddModelExtensionsDI();
+            services.AddScoped<IWebClientService, WebClientService>();
             //services.AddScoped<IEmailSender, EmailSender>();
             return services;
         }

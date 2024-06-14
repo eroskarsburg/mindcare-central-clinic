@@ -99,3 +99,34 @@ main {
 .button-6-secondary {
     margin: 5px;
 }
+
+.button-6-min {
+    min-height: 2.5rem;
+    padding: 0rem 0.5rem;
+}
+
+/*Modal*/
+
+#modal_popUp {
+    z-index: var(--bs-popup-zindex);
+}
+
+#backdrop-popup {
+    z-index: var(--bs-backdrop-popup-zindex);
+}
+
+.backdrop-modal-personalizado {
+    --bs-backdrop-zindex: 1050;
+    --bs-backdrop-bg: #000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000080;
+}
+
+.modal-auto {
+    width: auto !important;
+    max-width: fit-content !important;
+}

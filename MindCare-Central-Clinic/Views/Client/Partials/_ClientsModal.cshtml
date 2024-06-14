@@ -1,39 +1,22 @@
-﻿
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Adicionar Cliente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <label for="client-name" class="col-form-label">Nome:</label>
-                        <input type="text" class="form-control" id="client-name">
-                    </div>
-                    <div class="form-group">
-                        <label for="client-cpf" class="col-form-label">CPF:</label>
-                        <input type="text" class="form-control" id="client-cpf">
-                    </div>
-                    <div class="form-control-color">
-                        <label for="message-text" class="col-form-label">Gênero:</label>
-                        <select id="client-gender">
-                            <option>Masculino</option>
-                            <option>Feminino</option>
-                            <option>Outro</option>
-                        </select>
-                    </div>
-                    <div class="form-label">
-                        <label for="client-age" class="col-form-label">Idade:</label>
-                        <input type="text" class="form-control" id="client-age">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="button-6 button-6-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="button-6 button-6-primary" onclick="saveClient()">Salvar</button>
-            </div>
-        </div>
+﻿<form>
+    <div class="form-group">
+        <label for="client-name" class="col-form-label">Nome:</label>
+        <input type="text" class="form-control" id="client-name">
     </div>
-</div>
+    <div class="form-group">
+        <label for="client-cpf" class="col-form-label">CPF:</label>
+        <input type="text" class="form-control" id="client-cpf">
+    </div>
+    <div class="form-control-color">
+        <label for="message-text" class="col-form-label">Gênero:</label>
+        <select id="client-gender">
+            <option>Masculino</option>
+            <option>Feminino</option>
+            <option>Outro</option>
+        </select>
+    </div>
+    <div class="form-label">
+        <label for="client-age" class="col-form-label">Idade:</label>
+        <input type="text" class="form-control" id="client-age">
+    </div>
+</form>
