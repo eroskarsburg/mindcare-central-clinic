@@ -8,6 +8,7 @@ namespace MindCare.Application.DataAccess.Repository
         public static IServiceCollection AddRepositoryExtensions(this IServiceCollection services)
         {
             services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             return services;
         }
     }

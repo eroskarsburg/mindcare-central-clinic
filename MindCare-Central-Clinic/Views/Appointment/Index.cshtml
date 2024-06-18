@@ -1,18 +1,17 @@
-﻿
-@{
-    ViewData["Title"] = "Cliente";
+﻿@{
+    ViewData["Title"] = "Agendamento";
 }
 
 <div class="secondary-header">
-    <h2>Clientes</h2>
+    <h2>Agendamentos</h2>
     <button class="button-6" data-bs-toggle="modal" data-bs-target="#exampleModal">Novo</button>
 </div>
 
 <section class="align-content-center">
-    @await Html.PartialAsync("~/Views/Client/Partials/_ClientsTable.cshtml")
+    @await Html.PartialAsync("~/Views/Appointment/Partials/_AppointmentsTable.cshtml")
 
     <!-- Modal -->
-    @await Html.PartialAsync("~/Views/Client/Partials/_ClientsModal.cshtml")
+    @* @await Html.PartialAsync("~/Views/Client/Partials/_ClientsModal.cshtml") *@
 
     <div id="modal-update-client"></div>
     <div id="modal-delete-client"></div>

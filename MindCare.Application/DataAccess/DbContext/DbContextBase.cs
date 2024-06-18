@@ -6,7 +6,7 @@ namespace MindCare.Application.DataAccess.DbContext
 {
     public class DbContextBase : IDbContextBase
     {
-        public string Query;
+        public string Query = string.Empty;
         public MySqlConnection Connection;
         public MySqlCommand Command;
         public MySqlDataReader Reader { get; set; }

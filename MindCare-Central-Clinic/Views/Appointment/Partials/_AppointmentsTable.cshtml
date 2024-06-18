@@ -1,0 +1,36 @@
+﻿@model AppointmentViewModel
+
+@if (Model.AppointmentList is null || Model.AppointmentList.Count == 0)
+{
+    <p>Content not found.</p>
+}
+else
+{
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Modalidade</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Icon here</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.AppointmentList)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.Client.Name</td>
+                    <td>@item.Modality</td>
+                    <td>@item.ScheduledDate</td>
+                    <td>Valor aqui</td>
+                    <td>
+                        <button class="button-6" onclick="">Visualizar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

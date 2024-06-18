@@ -8,6 +8,7 @@ namespace MindCare.Application.Services
         public static IServiceCollection AddServiceExtensions(this IServiceCollection services)
         {
             services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IAppointmentService, AppointmentService>();
             return services;
         }
     }

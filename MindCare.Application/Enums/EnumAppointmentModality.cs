@@ -2,7 +2,7 @@
 {
     public enum EnumAppointmentModality
     {
-        Remotely,
-        InPerson
+        Presencial,
+        Telemedicina
     }
 }
