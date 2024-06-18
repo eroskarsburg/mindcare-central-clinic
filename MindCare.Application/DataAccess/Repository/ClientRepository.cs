@@ -58,14 +58,34 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public Task Update(Client client)
+        public async Task Update(Client client)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.Query = $"UPDATE clients SET name='{client.Name}', gender='{client.Gender}', cpf='{client.Cpf}', age={client.Age} WHERE id_client={client.Id}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
         
-        public Task Delete(Client client)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.Query = $"DELETE FROM clients WHERE id_client={id}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
     }
 }

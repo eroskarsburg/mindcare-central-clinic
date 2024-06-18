@@ -7,6 +7,6 @@ namespace MindCare.Application.DataAccess.Repository.IRepository
         Task<List<Client>> Get();
         Task Insert(Client client);
         Task Update(Client client);
-        Task Delete(Client client);
+        Task Delete(int id);
     }
 }

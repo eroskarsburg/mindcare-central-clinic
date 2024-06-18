@@ -14,6 +14,8 @@ else
                 <th scope="col">Cpf</th>
                 <th scope="col">Gender</th>
                 <th scope="col">Age</th>
+                <th scope="col">Icon here</th>
+                <th scope="col">Icon here</th>
             </tr>
         </thead>
         <tbody>
@@ -25,6 +27,12 @@ else
                     <td>@item.Cpf</td>
                     <td>@item.Gender</td>
                     <td>@item.Age</td>
+                    <td>
+                        <button class="button-6" onclick="ModalClient.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', @item.Age)">Alterar</button>
+                    </td>
+                    <td>
+                        <button class="button-6" onclick="ModalClient.Delete(@item.Id, '@item.Name')">Excluir</button>
+                    </td>
                 </tr>
             }
         </tbody>

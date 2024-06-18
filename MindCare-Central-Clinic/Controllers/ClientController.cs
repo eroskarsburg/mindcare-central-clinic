@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MindCare.Application.DataAccess.Repository.IRepository;
 using MindCare.Application.Entities;
 using MindCare.Application.Services.IServices;
 using MindCare_Central_Clinic.Models;
@@ -27,12 +26,39 @@ namespace MindCare_Central_Clinic.Controllers
             return View(_model);
         }
 
+        [HttpPost]
         public JsonResult Insert(Client client)
         {
             string message = "Cliente inserido!";
             try
             {
                 _service.InsertClient(client);
+            }
+            catch (Exception e) { message = e.Message; }
+
+            return Json(new { message = message });
+        }
+
+        [HttpPut]
+        public JsonResult Update(Client client)
+        {
+            string message = "Cliente atualizado!";
+            try
+            {
+                _service.UpdateClient(client);
+            }
+            catch (Exception e) { message = e.Message; }
+
+            return Json(new { message = message });
+        }
+
+        [HttpDelete]
+        public JsonResult Delete(int id)
+        {
+            string message = "Cliente deletado!";
+            try
+            {
+                _service.DeleteClient(id);
             }
             catch (Exception e) { message = e.Message; }
 
