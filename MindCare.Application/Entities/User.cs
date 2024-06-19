@@ -10,6 +10,10 @@ namespace MindCare.Application.Entities
         public EnumAccessLevel AccessLevel { get; set; }
         public DateTime LastActivity { get; set; }
 
+        public User()
+        {
+            
+        }
 
         public User(int id, string? username, string? password, EnumAccessLevel accessLevel, DateTime lastActivity)
         {

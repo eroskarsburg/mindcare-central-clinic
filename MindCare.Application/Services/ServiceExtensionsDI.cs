@@ -11,6 +11,7 @@ namespace MindCare.Application.Services
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IProfessionalService, ProfessionalService>();
+            services.AddScoped<IUserService, UserService>();
             return services;
         }
     }

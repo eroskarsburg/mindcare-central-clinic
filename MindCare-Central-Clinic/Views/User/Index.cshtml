@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Usuário";
+}
+
+<div class="secondary-header">
+    <h2>Usuários</h2>
+    <button class="button-6" data-bs-toggle="modal" data-bs-target="#userModal">Novo</button>
+</div>
+
+<section class="align-content-center">
+    @await Html.PartialAsync("~/Views/User/Partials/_UsersTable.cshtml")
+
+    <!-- Modal -->
+    @* @await Html.PartialAsync("~/Views/User/Partials/_UsersModal.cshtml") *@
+
+    <div id="modal-update-user"></div>
+    <div id="modal-delete-user"></div>
+</section>
+
+<script src="~/js/user.js"></script>

@@ -11,6 +11,7 @@ namespace MindCare.Application.DataAccess.Repository
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IProfessionalRepository, ProfessionalRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }

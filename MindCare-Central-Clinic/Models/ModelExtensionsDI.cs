@@ -9,6 +9,7 @@
             services.AddScoped<PaymentViewModel>();
             services.AddScoped<ProfessionalViewModel>();
             services.AddScoped<HomeViewModel>();
+            services.AddScoped<UserViewModel>();
             return services;
         }
     }
