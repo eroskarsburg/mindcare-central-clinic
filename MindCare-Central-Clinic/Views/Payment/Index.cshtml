@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Pagamento";
+}
+
+<div class="secondary-header">
+    <h2>Pagamentos</h2>
+</div>
+
+<section class="align-content-center">
+    @await Html.PartialAsync("~/Views/Payment/Partials/_PaymentsTable.cshtml")
+</section>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/payment.js"></script>

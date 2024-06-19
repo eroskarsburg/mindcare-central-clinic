@@ -9,6 +9,7 @@ namespace MindCare.Application.Services
         {
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IAppointmentService, AppointmentService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             return services;
         }
     }

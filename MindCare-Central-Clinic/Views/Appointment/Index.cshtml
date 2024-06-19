@@ -4,18 +4,19 @@
 
 <div class="secondary-header">
     <h2>Agendamentos</h2>
-    <button class="button-6" data-bs-toggle="modal" data-bs-target="#exampleModal">Novo</button>
+    <button class="button-6" data-bs-toggle="modal" data-bs-target="#appointmentModal">Novo</button>
 </div>
 
 <section class="align-content-center">
     @await Html.PartialAsync("~/Views/Appointment/Partials/_AppointmentsTable.cshtml")
 
     <!-- Modal -->
-    @* @await Html.PartialAsync("~/Views/Client/Partials/_ClientsModal.cshtml") *@
+    @await Html.PartialAsync("~/Views/Appointment/Partials/_AppointmentsModal.cshtml")
 
-    <div id="modal-update-client"></div>
-    <div id="modal-delete-client"></div>
+    <div id="modal-visualize-appointment"></div>
+    <div id="modal-update-appointment"></div>
+    <div id="modal-delete-appointment"></div>
 </section>
 
 <script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/js/client.js"></script>
+<script src="~/js/appointment.js"></script>

@@ -6,6 +6,7 @@
         {
             services.AddScoped<ClientViewModel>();
             services.AddScoped<AppointmentViewModel>();
+            services.AddScoped<PaymentViewModel>();
             return services;
         }
     }

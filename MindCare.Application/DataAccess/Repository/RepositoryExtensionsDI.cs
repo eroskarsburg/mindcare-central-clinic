@@ -9,6 +9,7 @@ namespace MindCare.Application.DataAccess.Repository
         {
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             return services;
         }
     }

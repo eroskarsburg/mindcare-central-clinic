@@ -1,0 +1,34 @@
+﻿@model PaymentViewModel
+
+@if (Model.PaymentList is null || Model.PaymentList.Count == 0)
+{
+    <p>Content not found.</p>
+}
+else
+{
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Agendamento</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Valor Pago</th>
+                <th scope="col">Data Pago</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.PaymentList)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.IdAppointment</td>
+                    <td>@item.Price</td>
+                    <td>@item.PaidPrice</td>
+                    <td>@item.PaidDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
