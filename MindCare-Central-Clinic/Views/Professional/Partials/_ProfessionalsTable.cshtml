@@ -1,6 +1,6 @@
-﻿@model ClientViewModel
+﻿@model ProfessionalViewModel
 
-@if (Model.ClientList is null || Model.ClientList.Count == 0)
+@if (Model.ProfessionalList is null || Model.ProfessionalList.Count == 0)
 {
     <p>Content not found.</p>
 }
@@ -19,7 +19,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ClientList)
+            @foreach (var item in Model.ProfessionalList)
             {
                 <tr>
                     <th scope="row">@item.Id</th>
@@ -28,10 +28,10 @@ else
                     <td>@item.Gender</td>
                     <td>@item.Age</td>
                     <td>
-                        <button class="button-6" onclick="ModalClient.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', @item.Age)">Alterar</button>
+                        <button class="button-6" onclick="ModalProfessional.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', @item.Age)">Alterar</button>
                     </td>
                     <td>
-                        <button class="button-6" onclick="ModalClient.Delete(@item.Id, '@item.Name')">Excluir</button>
+                        <button class="button-6" onclick="ModalProfessional.Delete(@item.Id, '@item.Name')">Excluir</button>
                     </td>
                 </tr>
             }

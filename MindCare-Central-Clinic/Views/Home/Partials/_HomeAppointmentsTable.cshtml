@@ -1,0 +1,30 @@
+﻿@model HomeViewModel
+
+@if (Model.ListPayments is null || Model.ListPayments.Count == 0)
+{
+    <p>Não há pagamentos pendentes.</p>
+}
+else
+{
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Consulta</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Valor a pagar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListPayments)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.IdAppointment</td>
+                    <td>@item.Client!.Name</td>
+                    <td>@item.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -10,5 +10,7 @@ namespace MindCare.Application.Entities
         public decimal PaidPrice { get; set; }
         public DateOnly PaidDate { get; set; }
         public EnumPaymentStatus Status { get; set; }
+        
+        public Client? Client { get; set; }
     }
 }

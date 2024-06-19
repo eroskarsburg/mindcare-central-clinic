@@ -34,6 +34,7 @@ namespace MindCare.Application.DataAccess.Repository
 
                     Payment payment = new Payment();
                     payment.Id = int.TryParse(_dbContext.Reader["id_payments"].ToString(), out int id_payment) ? id_payment : 0;
+                    payment.IdAppointment = int.TryParse(_dbContext.Reader["id_appointment"].ToString(), out int id_appointment) ? id_appointment : 0;
                     payment.Price = decimal.TryParse(_dbContext.Reader["price"].ToString(), out decimal price) ? price : 0;
                     payment.PaidPrice = decimal.TryParse(_dbContext.Reader["paid_price"].ToString(), out decimal paidprice) ? paidprice : 0;
                     payment.PaidDate = DateOnly.FromDateTime(dateTime);

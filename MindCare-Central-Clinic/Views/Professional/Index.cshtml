@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Profissional";
+}
+
+<div class="secondary-header">
+    <h2>Profissionais</h2>
+    <button class="button-6" data-bs-toggle="modal" data-bs-target="#professionalModal">Novo</button>
+</div>
+
+<section class="align-content-center">
+    @await Html.PartialAsync("~/Views/Professional/Partials/_ProfessionalsTable.cshtml")
+
+    <!-- Modal -->
+    @await Html.PartialAsync("~/Views/Professional/Partials/_ProfessionalsModal.cshtml")
+
+    <div id="modal-update-professional"></div>
+    <div id="modal-delete-professional"></div>
+</section>
+
+<script src="~/js/professional.js"></script>

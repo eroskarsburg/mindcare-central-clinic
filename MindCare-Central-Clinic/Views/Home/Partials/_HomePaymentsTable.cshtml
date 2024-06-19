@@ -1,0 +1,30 @@
+﻿@model HomeViewModel
+
+@if (Model.ListAppointments is null || Model.ListAppointments.Count == 0)
+{
+    <p>Não há consultas marcadas.</p>
+}
+else
+{
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Data</th>
+                <th scope="col">Horário</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListAppointments)
+            {
+                <tr>
+                    <th scope="row">@item.Id</th>
+                    <td>@item.Client.Name</td>
+                    <td>@item.ScheduledDate</td>
+                    <td>Horario</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
