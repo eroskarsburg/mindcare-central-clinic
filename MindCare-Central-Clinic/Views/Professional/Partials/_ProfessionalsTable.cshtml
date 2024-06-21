@@ -13,7 +13,7 @@ else
                 <th scope="col">Nome</th>
                 <th scope="col">Cpf</th>
                 <th scope="col">Gênero</th>
-                <th scope="col">Idade</th>
+                <th scope="col">Especialidade</th>
                 <th scope="col">Icon here</th>
                 <th scope="col">Icon here</th>
             </tr>
@@ -26,9 +26,9 @@ else
                     <td>@item.Name</td>
                     <td>@item.Cpf</td>
                     <td>@item.Gender</td>
-                    <td>@item.Age</td>
+                    <td>@item.Speciality</td>
                     <td>
-                        <button class="button-6" onclick="ModalProfessional.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', @item.Age)">Alterar</button>
+                        <button class="button-6" onclick="ModalProfessional.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', '@item.Speciality')">Alterar</button>
                     </td>
                     <td>
                         <button class="button-6" onclick="ModalProfessional.Delete(@item.Id, '@item.Name')">Excluir</button>

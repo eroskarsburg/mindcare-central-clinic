@@ -9,7 +9,7 @@ namespace MindCare.Application.Entities
         public string? Name { get; set; }
         public string? Cpf { get; set; }
         public string? Gender { get; set; }
-        public int Age { get; set; }
+        public string? Speciality { get; set; }
         public EnumAccessLevel AccessLevel { get; set; }
 
         public Professional()
