@@ -56,8 +56,7 @@
 
 var modal;
 var ModalProfessional = {
-    Update: function (id, name, cpf, gender, speciality) {
-        $('#professional-update-gender').val(gender);
+    Update: function (profObj) {
         modal = `<div id="md-update-professional" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -71,26 +70,26 @@ var ModalProfessional = {
                         <form>
                             <div class="form-group">
                                 <label for="professional-update-name" class="col-form-label">Nome:</label>
-                                <input type="text" class="form-control" id="professional-update-name" value="${name}">
+                                <input type="text" class="form-control" id="professional-update-name" value="${profObj.Name}">
                             </div>
                             <div class="form-group">
                                 <label for="professional-update-cpf" class="col-form-label">CPF:</label>
-                                <input type="text" class="form-control" id="professional-update-cpf" value="${cpf}">
+                                <input type="text" class="form-control" id="professional-update-cpf" value="${profObj.Cpf}">
                             </div>
                             <div class="form-control-color">
                                 <label for="professional-update-gender" class="col-form-label">Gênero:</label>
                                 <select id="professional-update-gender">
-                                    ${ModalProfessional.ValidateGenderDropdown(gender)}
+                                    ${ModalProfessional.ValidateGenderDropdown(profObj.Gender)}
                                 </select>
                             </div>
                             <div class="form-label">
-                                <label for="professional-update-age" class="col-form-label">Especialidade:</label>
-                                <input type="text" class="form-control" id="professional-update-age" value="${speciality}">
+                                <label for="professional-update-speciality" class="col-form-label">Especialidade:</label>
+                                <input type="text" class="form-control" id="professional-update-speciality" value="${profObj.Speciality}">
                             </div>
                         </form>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="button-6 button-6-primary" onclick="ActProfessional.Update(${id})">Sim</button>
+                        <button type="button" class="button-6 button-6-primary" onclick="ActProfessional.Update(${profObj.Id})">Sim</button>
                         <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalProfessional.CloseModalUpdate()">Não</button>
                       </div>
                     </div>
@@ -110,7 +109,7 @@ var ModalProfessional = {
                         </button>
                       </div>
                       <div class="modal-body">
-                        Tem certeza que deseja deletar o professionale ${name}?
+                        Tem certeza que deseja deletar o professional ${name}?
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="button-6 button-6-primary" onclick="ActProfessional.Delete(${id})">Sim</button>

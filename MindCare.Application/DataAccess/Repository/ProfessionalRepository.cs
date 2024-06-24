@@ -1,7 +1,6 @@
 ﻿using MindCare.Application.DataAccess.DbContext;
 using MindCare.Application.DataAccess.Repository.IRepository;
 using MindCare.Application.Entities;
-using MindCare.Application.Enums;
 
 namespace MindCare.Application.DataAccess.Repository
 {
@@ -31,7 +30,6 @@ namespace MindCare.Application.DataAccess.Repository
                     Professional professional = new()
                     {
                         Id = int.TryParse(_dbContext.Reader["id_professional"].ToString(), out int idprof) ? idprof : 0,
-                        IdUser = int.TryParse(_dbContext.Reader["id_user_prof"].ToString(), out int iduser) ? iduser : 0,
                         Name = _dbContext.Reader["name"].ToString() ?? string.Empty,
                         Gender = _dbContext.Reader["gender"].ToString() ?? string.Empty,
                         Cpf = _dbContext.Reader["cpf"].ToString() ?? string.Empty,
@@ -51,7 +49,7 @@ namespace MindCare.Application.DataAccess.Repository
             Professional professional = new();
             try
             {
-                _dbContext.Query = $"SELECT * FROM professionals WHERE id={id}";
+                _dbContext.Query = $"SELECT * FROM professionals WHERE id_professional={id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteReader();
@@ -61,7 +59,6 @@ namespace MindCare.Application.DataAccess.Repository
                     professional = new()
                     {
                         Id = int.TryParse(_dbContext.Reader["id_professional"].ToString(), out int idprof) ? idprof : 0,
-                        IdUser = int.TryParse(_dbContext.Reader["id_user_prof"].ToString(), out int iduser) ? iduser : 0,
                         Name = _dbContext.Reader["name"].ToString() ?? string.Empty,
                         Gender = _dbContext.Reader["gender"].ToString() ?? string.Empty,
                         Cpf = _dbContext.Reader["cpf"].ToString() ?? string.Empty,
@@ -79,18 +76,8 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
-                User user = new();
-                user.Username = professional.Cpf;
-                user.Password = professional.Name!.ToLower().Split(' ')[0] + professional.Cpf;
-                user.AccessLevel = EnumAccessLevel.Professional;
-                user.LastActivity = DateTime.Now;
-
-                await _userRepository.Insert(user);
-
-                user = await _userRepository.Get(user);
-
                 _dbContext.Query = "INSERT INTO professionals (id_user_prof, name, gender, cpf, speciality) " +
-                $"VALUES({user.Id},'{professional.Name}','{professional.Gender}','{professional.Cpf}', '{professional.Speciality}')";
+                $"VALUES({professional.User.Id},'{professional.Name}','{professional.Gender}','{professional.Cpf}', '{professional.Speciality}')";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();
@@ -105,8 +92,8 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
-                _dbContext.Query = "INSERT INTO professionals (name, gender, cpf, speciality) " +
-                $"VALUES('{professional.Name}','{professional.Gender}','{professional.Cpf}', '{professional.Speciality}')";
+                _dbContext.Query = $"UPDATE professionals SET name='{professional.Name}', cpf='{professional.Cpf}'" +
+                    $", gender='{professional.Gender}', speciality='{professional.Speciality}' WHERE id_professional={professional.Id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();
@@ -121,7 +108,7 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
-                _dbContext.Query = $"DELETE FROM professionals WHERE id={id}";
+                _dbContext.Query = $"DELETE FROM professionals WHERE id_professional={id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();

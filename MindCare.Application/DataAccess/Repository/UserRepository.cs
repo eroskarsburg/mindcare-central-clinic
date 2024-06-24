@@ -72,9 +72,32 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public Task<User> Get(int id)
+        public async Task<User> Get(int id = 0, string username = "")
         {
-            throw new NotImplementedException();
+            User newUser = new();
+            try
+            {
+                string condition = id == 0 ? $"username='{username}'" : $"id_user={id}";
+                _dbContext.Query = $"SELECT * FROM users WHERE {condition}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteReader();
+
+                while (_dbContext.Reader.ReadAsync().Result)
+                {
+                    string data = string.IsNullOrEmpty(_dbContext.Reader["last_activity"].ToString()) ? "1/1/0001 12:00:00 AM" : _dbContext.Reader["last_activity"].ToString();
+
+                    newUser.Id = int.TryParse(_dbContext.Reader["id_user"].ToString(), out int idprof) ? idprof : 0;
+                    newUser.Username = _dbContext.Reader["username"].ToString() ?? string.Empty;
+                    newUser.Password = _dbContext.Reader["password"].ToString() ?? string.Empty;
+                    newUser.AccessLevel = (EnumAccessLevel)Enum.Parse(typeof(EnumAccessLevel), _dbContext.Reader["id_access_level"].ToString() ?? string.Empty);
+                    newUser.LastActivity = DateTime.ParseExact(data, "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture);
+                }
+
+                return await Task.FromResult(newUser);
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
 
         public async Task Insert(User user)
@@ -109,9 +132,19 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
         
-        public Task Delete(int id)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.Query = $"DELETE FROM users WHERE id_user={id}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
     }
 }

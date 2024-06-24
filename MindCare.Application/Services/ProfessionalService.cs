@@ -1,5 +1,6 @@
 ﻿using MindCare.Application.DataAccess.Repository.IRepository;
 using MindCare.Application.Entities;
+using MindCare.Application.Enums;
 using MindCare.Application.Services.IServices;
 
 namespace MindCare.Application.Services
@@ -7,19 +8,38 @@ namespace MindCare.Application.Services
     public class ProfessionalService : IProfessionalService
     {
         private readonly IProfessionalRepository _repository;
+        private readonly IUserRepository _userRepository;
 
-        public ProfessionalService(IProfessionalRepository repository)
+        public ProfessionalService(IProfessionalRepository repository, IUserRepository userRepository)
         {
             _repository = repository;
+            _userRepository = userRepository;
         }
 
         public async Task<List<Professional>> GetProfessionals()
         {
-            return await _repository.Get();
+            var list = await _repository.Get();
+            foreach (var professional in list)
+            {
+                professional.User = _userRepository.Get(username: professional.Cpf).Result;
+            }
+            return list;
         }
 
         public async Task InsertProfessional(Professional professional)
         {
+            User user = new()
+            {
+                Username = professional.Cpf,
+                Password = professional.Name!.ToLower().Split(' ')[0] + professional.Cpf,
+                AccessLevel = EnumAccessLevel.Professional,
+                LastActivity = DateTime.Now
+            };
+
+            await _userRepository.Insert(user);
+
+            professional.User = await _userRepository.Get(username: professional.Cpf!);
+
             await _repository.Insert(professional);
         }
 

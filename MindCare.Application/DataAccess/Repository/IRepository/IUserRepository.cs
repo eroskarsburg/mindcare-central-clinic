@@ -6,7 +6,7 @@ namespace MindCare.Application.DataAccess.Repository.IRepository
     {
         Task<List<User>> Get();
         Task<User> Get(User user);
-        Task<User> Get(int id);
+        Task<User> Get(int id = 0, string username = "");
         Task Insert(User user);
         Task Update(User user);
         Task Delete(int id);

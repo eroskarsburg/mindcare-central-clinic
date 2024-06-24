@@ -1,4 +1,5 @@
 ﻿@model ProfessionalViewModel
+@using System.Text.Json;
 
 @if (Model.ProfessionalList is null || Model.ProfessionalList.Count == 0)
 {
@@ -28,7 +29,7 @@ else
                     <td>@item.Gender</td>
                     <td>@item.Speciality</td>
                     <td>
-                        <button class="button-6" onclick="ModalProfessional.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', '@item.Speciality')">Alterar</button>
+                        <button class="button-6" onclick="ModalProfessional.Update(@JsonSerializer.Serialize(item))">Alterar</button>
                     </td>
                     <td>
                         <button class="button-6" onclick="ModalProfessional.Delete(@item.Id, '@item.Name')">Excluir</button>
