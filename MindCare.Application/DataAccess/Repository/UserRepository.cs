@@ -121,7 +121,7 @@ namespace MindCare.Application.DataAccess.Repository
             try
             {
                 _dbContext.Query = $"UPDATE users SET username='{user.Username}', password='{user.Password}'," +
-                $"";
+                $"id_access_level={(int)user.AccessLevel} WHERE id_user={user.Id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();

@@ -1,14 +1,19 @@
-﻿var ActClient = {
+﻿var ActUser = {
     Save: function () {
         var obj = {
-            name: $('#client-name').val(),
-            cpf: $('#client-cpf').val(),
-            gender: $('#client-gender').val(),
-            age: $('#client-age').val(),
+            username: $('#user-username').val(),
+            password: $('#user-password').val(),
+            accesslevel: $('#user-aclevel').val(),
         };
 
+        if (obj.accesslevel == "Profissional") {
+            obj.accesslevel = 2;
+        } else {
+            obj.accesslevel = 1;
+        }
+
         $.ajax({
-            url: '/Appointment/Insert',
+            url: '/User/Insert',
             type: 'POST',
             data: obj,
             success: function (data) {
@@ -22,13 +27,19 @@
     Update: function (id) {
         var obj = {
             id: id,
-            name: $('#client-update-name').val(),
-            cpf: $('#client-update-cpf').val(),
-            gender: $('#client-update-gender').val(),
-            age: $('#client-update-age').val(),
+            username: $('#user-update-username').val(),
+            password: $('#user-update-password').val(),
+            accesslevel: $('#user-update-aclevel').val(),
         };
+
+        if (obj.accesslevel == "Profissional") {
+            obj.accesslevel = 2;
+        } else {
+            obj.accesslevel = 1;
+        }
+
         $.ajax({
-            url: '/Appointment/Update',
+            url: '/User/Update',
             type: 'PUT',
             data: obj,
             success: function (data) {
@@ -41,7 +52,7 @@
     },
     Delete: function (id) {
         $.ajax({
-            url: `/Appointment/Delete/${id}`,
+            url: `/User/Delete/${id}`,
             type: 'DELETE',
             data: id,
             success: function (data) {
@@ -55,10 +66,10 @@
 }
 
 var modal;
-var ModalClient = {
-    Update: function (id, name, cpf, gender, age) {
-        $('#client-update-gender').val(gender);
-        modal = `<div id="md-update-client" class="modal" style="background-color: #0000004d;" aria-hidden="true">
+var ModalUser = {
+    Update: function (id, username, password, access_level) {
+        $('#user-update-aclevel').val(access_level);
+        modal = `<div id="md-update-user" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
@@ -70,37 +81,33 @@ var ModalClient = {
                       <div class="modal-body">
                         <form>
                             <div class="form-group">
-                                <label for="client-update-name" class="col-form-label">Nome:</label>
-                                <input type="text" class="form-control" id="client-update-name" value="${name}">
+                                <label for="user-update-username" class="col-form-label">Usuário:</label>
+                                <input type="text" class="form-control" id="user-update-username" value="${username}">
                             </div>
                             <div class="form-group">
-                                <label for="client-update-cpf" class="col-form-label">CPF:</label>
-                                <input type="text" class="form-control" id="client-update-cpf" value="${cpf}">
+                                <label for="user-update-password" class="col-form-label">Senha:</label>
+                                <input type="text" class="form-control" id="user-update-password" value="${password}">
                             </div>
                             <div class="form-control-color">
-                                <label for="client-update-gender" class="col-form-label">Gênero:</label>
-                                <select id="client-update-gender">
-                                    ${ModalClient.ValidateGenderDropdown(gender)}
+                                <label for="user-update-aclevel" class="col-form-label">Nível de Acesso:</label>
+                                <select id="user-update-aclevel">
+                                    ${ModalUser.ValidateAccessLevelDropdown(access_level)}
                                 </select>
-                            </div>
-                            <div class="form-label">
-                                <label for="client-update-age" class="col-form-label">Idade:</label>
-                                <input type="text" class="form-control" id="client-update-age" value="${age}">
                             </div>
                         </form>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="button-6 button-6-primary" onclick="ActClient.Update(${id})">Sim</button>
-                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalClient.CloseModalUpdate()">Não</button>
+                        <button type="button" class="button-6 button-6-primary" onclick="ActUser.Update(${id})">Sim</button>
+                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalUser.CloseModalUpdate()">Não</button>
                       </div>
                     </div>
                   </div>
                 </div>`;
-        document.getElementById('modal-update-client').innerHTML = modal;
-        document.getElementById('md-update-client').style.display = 'block';
+        document.getElementById('modal-update-user').innerHTML = modal;
+        document.getElementById('md-update-user').style.display = 'block';
     },
     Delete: function (id, name) {
-        modal = `<div id="md-delete-client" class="modal" style="background-color: #0000004d;" aria-hidden="true">
+        modal = `<div id="md-delete-user" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
@@ -110,40 +117,32 @@ var ModalClient = {
                         </button>
                       </div>
                       <div class="modal-body">
-                        Tem certeza que deseja deletar o cliente ${name}?
+                        Tem certeza que deseja deletar o usuário ${name}?
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="button-6 button-6-primary" onclick="ActClient.Delete(${id})">Sim</button>
-                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalClient.CloseModalDelete()">Não</button>
+                        <button type="button" class="button-6 button-6-primary" onclick="ActUser.Delete(${id})">Sim</button>
+                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalUser.CloseModalDelete()">Não</button>
                       </div>
                     </div>
                   </div>
                 </div>`;
-        document.getElementById('modal-delete-client').innerHTML = modal;
-        document.getElementById('md-delete-client').style.display = 'block';
+        document.getElementById('modal-delete-user').innerHTML = modal;
+        document.getElementById('md-delete-user').style.display = 'block';
     },
 
     CloseModalDelete: function () {
-        document.getElementById('md-delete-client').style.display = 'none';
+        document.getElementById('md-delete-user').style.display = 'none';
     },
     CloseModalUpdate: function () {
-        document.getElementById('md-update-client').style.display = 'none';
+        document.getElementById('md-update-user').style.display = 'none';
     },
 
-    ValidateGenderDropdown(gender) {
-        switch (gender) {
-            case gender = "Feminino":
-                return `<option>Feminino</option>
-                        <option>Masculino</option>
-                        <option>Outro</option>`;
-            case gender = "Outro":
-                return `<option>Outro</option>
-                        <option>Masculino</option>
-                        <option>Feminino</option>`;
-            default:
-                return `<option>Masculino</option>
-                        <option>Feminino</option>
-                        <option>Outro</option>`;
+    ValidateAccessLevelDropdown(level) {
+        if (level == 'Administrador') {
+            return `<option>Administrador</option>
+                        <option>Profissional</option>`;
         }
+        return `<option>Profissional</option>
+                        <option>Administrador</option>`;
     }
 }

@@ -36,7 +36,7 @@ namespace MindCare_Central_Clinic.Controllers
             }
             catch (Exception e) { message = e.Message; }
 
-            return Json(new { message = message });
+            return Json(new { message });
         }
 
         [HttpPut]

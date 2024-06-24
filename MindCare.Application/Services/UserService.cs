@@ -18,19 +18,19 @@ namespace MindCare.Application.Services
             return await _repository.Get();
         }
 
-        public Task InsertUser(User user)
+        public async Task InsertUser(User user)
         {
-            throw new NotImplementedException();
+            await _repository.Insert(user);
         }
 
-        public Task UpdateUser(User user)
+        public async Task UpdateUser(User user)
         {
-            throw new NotImplementedException();
+            await _repository.Update(user);
         }
 
-        public Task DeleteUser(int userId)
+        public async Task DeleteUser(int userId)
         {
-            throw new NotImplementedException();
+            await _repository.Delete(userId);
         }
     }
 }

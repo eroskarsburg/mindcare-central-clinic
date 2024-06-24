@@ -2,7 +2,7 @@
 {
     public enum EnumAccessLevel
     {
-        Administrator = 1,
-        Professional = 2
+        Administrador = 1,
+        Profissional = 2
     }
 }

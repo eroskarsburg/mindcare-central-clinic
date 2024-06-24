@@ -32,7 +32,7 @@ namespace MindCare.Application.Services
             {
                 Username = professional.Cpf,
                 Password = professional.Name!.ToLower().Split(' ')[0] + professional.Cpf,
-                AccessLevel = EnumAccessLevel.Professional,
+                AccessLevel = EnumAccessLevel.Profissional,
                 LastActivity = DateTime.Now
             };
 

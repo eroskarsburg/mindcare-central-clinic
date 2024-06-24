@@ -28,13 +28,14 @@ else
                     <td>@item.AccessLevel</td>
                     <td>@item.LastActivity</td>
                     <td>
-                        @* <button class="button-6" onclick="ModalProfessional.Update(@item.Id, '@item.Name', '@item.Cpf', '@item.Gender', @item.Age)">Alterar</button> *@
+                        <button class="button-6" onclick="ModalUser.Update(@item.Id, '@item.Username', '@item.Password', '@item.AccessLevel')">Alterar</button>
                     </td>
                     <td>
-                        @* <button class="button-6" onclick="ModalProfessional.Delete(@item.Id, '@item.Name')">Excluir</button> *@
+                        <button class="button-6" onclick="ModalUser.Delete(@item.Id, '@item.Username')">Excluir</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 }
+<script src="~/js/user.js"></script>
