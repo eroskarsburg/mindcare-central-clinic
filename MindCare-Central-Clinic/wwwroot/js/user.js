@@ -83,11 +83,12 @@ var ModalUser = {
                             </div>
                             <div class="form-group">
                                 <label for="user-update-password" class="col-form-label">Senha:</label>
-                                <input type="text" class="form-control" id="user-update-password" value="${password}">
+                                <input type="password" class="form-control" id="user-update-password" value="${password}">
+                                <input type="checkbox" onclick="ModalUser.ShowPasswordUpdate()">Mostrar Senha
                             </div>
-                            <div class="form-control-color">
+                            <div class="form-group">
                                 <label for="user-update-aclevel" class="col-form-label">Nível de Acesso:</label>
-                                <select id="user-update-aclevel">
+                                <select class="form-select" id="user-update-aclevel">
                                     ${ModalUser.ValidateAccessLevelDropdown(access_level)}
                                 </select>
                             </div>
@@ -131,12 +132,29 @@ var ModalUser = {
         document.getElementById('md-update-user').style.display = 'none';
     },
 
-    ValidateAccessLevelDropdown(level) {
+    ValidateAccessLevelDropdown: function (level) {
         if (level == 'Administrador') {
             return `<option>Administrador</option>
                         <option>Profissional</option>`;
         }
         return `<option>Profissional</option>
                         <option>Administrador</option>`;
+    },
+
+    ShowPassword: function () {
+        var x = document.getElementById("user-password");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    },
+    ShowPasswordUpdate: function () {
+        var x = document.getElementById("user-update-password");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace MindCare_Central_Clinic.Controllers
         }
 
         [HttpGet]
-        public JsonResult Get(Client client)
+        public JsonResult Get()
         {
             List<Client> listClient = new List<Client>();
             string message = "Clientes encontrados!";
@@ -39,8 +39,8 @@ namespace MindCare_Central_Clinic.Controllers
 
             return Json(new 
             { 
-                message = message,
-                listClient = listClient,
+                message,
+                listClient,
             });
         }
 

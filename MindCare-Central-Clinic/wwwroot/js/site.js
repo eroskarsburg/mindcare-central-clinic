@@ -11,3 +11,13 @@
     }
     $("#setaConteudo_" + seta).slideToggle("slow");
 }
+
+
+var spinnerWrapper = document.getElementById("spinnerWrapper");
+var spinnerModal = document.getElementById("spinMod");
+window.addEventListener('load', function () {
+    if (spinnerModal.style.display = "flex") {
+        spinnerModal.style.display = "none";
+        spinnerWrapper.style.display = "none";
+    }
+});

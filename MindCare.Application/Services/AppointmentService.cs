@@ -47,6 +47,8 @@ namespace MindCare.Application.Services
         {
             await _repository.Update(appoint);
 
+            var payment = await _paymentRepository.Get(appointmentId: appoint.Id);
+            appoint.Payment.Id = payment.Id;
             await _paymentRepository.Update(appoint.Payment);
         }
 

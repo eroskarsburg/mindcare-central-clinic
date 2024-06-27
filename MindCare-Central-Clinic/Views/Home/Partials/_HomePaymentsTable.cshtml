@@ -1,4 +1,5 @@
-﻿@model HomeViewModel
+﻿@using MindCare.Application.Enums
+@model HomeViewModel
 
 @if (Model.ListPayments is null || Model.ListPayments.Count == 0)
 {
@@ -16,7 +17,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ListPayments.OrderBy(x => x.IdAppointment))
+            @foreach (var item in Model.ListPayments.Where(x => x.Status == EnumPaymentStatus.Pendente || x.Status == EnumPaymentStatus.Parcial))
             {
                 <tr>
                     <th scope="row">@item.Id</th>

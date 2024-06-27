@@ -78,10 +78,17 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
-                DateTime date;
                 if (!string.IsNullOrEmpty(payment.PaidDate))
                 {
-                    date = DateTime.ParseExact(payment.PaidDate!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    payment.PaidDate = DateTime.ParseExact(payment.PaidDate!, "yyyy-MM-dd", CultureInfo.InvariantCulture).ToString();
+                }
+                if (payment.Price == payment.PaidPrice)
+                {
+                    payment.Status = EnumPaymentStatus.Confirmado;
+                }
+                if (payment.Price > payment.PaidPrice && payment.PaidPrice > 0)
+                {
+                    payment.Status = EnumPaymentStatus.Parcial;
                 }
 
                 _dbContext.Query = "INSERT INTO payments (id_appointment, price, paid_price, paid_date, status) " +
@@ -100,8 +107,29 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
-                _dbContext.Query = $"UPDATE payments SET id_appointment={payment.IdAppointment}, price, paid_price, paid_date, status) " +
-                $"VALUES({payment.IdAppointment},'{payment.Price}','{payment.PaidPrice}', '{payment.PaidDate}','{payment.Status}') WHERE id_payments={payment.Id}";
+                if (!string.IsNullOrEmpty(payment.PaidDate))
+                {
+                    try
+                    {
+                        DateTime dateTime = DateTime.ParseExact(payment.PaidDate!, "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture);
+                        DateOnly dateOnly = DateOnly.FromDateTime(dateTime);
+                        payment.PaidDate = dateOnly.ToString("yyyy-MM-dd");
+                    }
+                    catch { }
+                }
+                if (payment.Price == payment.PaidPrice)
+                {
+                    payment.Status = EnumPaymentStatus.Confirmado;
+                    payment.PaidDate = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+                if (payment.Price > payment.PaidPrice && payment.PaidPrice > 0)
+                {
+                    payment.Status = EnumPaymentStatus.Parcial;
+                    payment.PaidDate = DateTime.Now.ToString("yyyy-MM-dd");
+                }
+
+                _dbContext.Query = $"UPDATE payments SET price='{payment.Price}', paid_price='{payment.PaidPrice}', paid_date=NULLIF('{payment.PaidDate}','')" +
+                    $", status='{payment.Status}' WHERE id_payments={payment.Id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();

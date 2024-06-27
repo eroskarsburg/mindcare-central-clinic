@@ -93,18 +93,25 @@ var modal;
 var ModalAppointment = {
     Update: function (obj) {
         let dateObject = new Date(obj.ScheduledDate);
+        let paymentDateObject = new Date(obj.Payment.PaidDate);
 
         let year = dateObject.getFullYear();
-        let month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        let month = String(dateObject.getMonth() + 1).padStart(2, '0');
         let day = String(dateObject.getDate()).padStart(2, '0');
 
         let hours = String(dateObject.getHours()).padStart(2, '0');
         let minutes = String(dateObject.getMinutes()).padStart(2, '0');
-        //let seconds = String(dateObject.getSeconds()).padStart(2, '0');
+
+        let paymentYear = paymentDateObject.getFullYear();
+        let paymentMonth = String(paymentDateObject.getMonth() + 1).padStart(2, '0');
+        let paymentDay = String(paymentDateObject.getDate()).padStart(2, '0');
 
         let formattedTime = `${hours}:${minutes}`;
         let formattedDate = `${year}-${month}-${day}`;
-
+        let formattedPaymentDate = `${paymentYear}-${paymentMonth}-${paymentDay}`;
+        if (obj.Payment.PaidDate == '') {
+            formattedPaymentDate = '';
+        }
         modal = `<div id="md-update-appoint" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -176,7 +183,7 @@ var ModalAppointment = {
                                 </div>
                                 <div class="form-group">
                                     <label for="appoint-update-paiddate" class="col-form-label">Data:</label>
-                                    <input type="text" placeholder="Data do pagamento não registrada" class="form-control" id="appoint-update-paiddate" value="${obj.Payment.PaidDate}" disabled>
+                                    <input type="text" placeholder="Data do pagamento não registrada" class="form-control" id="appoint-update-paiddate" value="${formattedPaymentDate}" disabled>
                                 </div>
                                 <div class="form-label">
                                     <label for="appoint-update-status" class="col-form-label">Status:</label>
