@@ -62,7 +62,6 @@ var ActAppointment = {
                 status: $('#appoint-update-status').val(),
             },
         };
-        debugger;
         $.ajax({
             url: '/Appointment/Update',
             type: 'PUT',
