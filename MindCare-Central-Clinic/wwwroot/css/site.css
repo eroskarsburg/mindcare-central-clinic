@@ -99,3 +99,35 @@ main {
 .button-6-secondary {
     margin: 5px;
 }
+
+.rotate {
+    transition: all 600ms ease-in-out;
+    transform: rotateZ(180deg);
+    cursor: pointer;
+}
+
+.div-SubTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    height: 2rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid #d6d6d6;
+    border-left: none;
+    border-right: none;
+}
+
+.container-resumoCard {
+    opacity: 1;
+    transition: opacity .5s linear;
+    margin-bottom: 1rem;
+    border: 1px solid #d6d6d6;
+    padding: 0 1rem 1rem 1rem;
+    border-radius: 0 0 5px 5px;
+    border-top:none;
+}
+
+.alert-table{
+
+}

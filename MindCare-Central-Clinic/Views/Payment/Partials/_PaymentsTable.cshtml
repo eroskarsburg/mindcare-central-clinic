@@ -2,7 +2,7 @@
 
 @if (Model.PaymentList is null || Model.PaymentList.Count == 0)
 {
-    <p>Content not found.</p>
+    <p>Não há pagamentos cadastrados.</p>
 }
 else
 {
@@ -25,7 +25,7 @@ else
                     <td>@item.IdAppointment</td>
                     <td>@item.Price</td>
                     <td>@item.PaidPrice</td>
-                    <td>@item.PaidDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.PaidDate</td>
                     <td>@item.Status</td>
                 </tr>
             }

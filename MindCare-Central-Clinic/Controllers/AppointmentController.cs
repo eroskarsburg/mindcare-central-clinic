@@ -58,7 +58,7 @@ namespace MindCare_Central_Clinic.Controllers
             string message = "Agendamento deletado!";
             try
             {
-                _service.DeleteAppointment(id);
+                _service.DeleteAppointment(id, 0);
             }
             catch (Exception e) { message = e.Message; }
 

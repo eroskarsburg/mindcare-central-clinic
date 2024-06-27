@@ -1,8 +1,9 @@
-﻿@model AppointmentViewModel
+﻿@using System.Text.Json
+@model AppointmentViewModel
 
 @if (Model.AppointmentList is null || Model.AppointmentList.Count == 0)
 {
-    <p>Content not found.</p>
+    <p>Não há agendamentos cadastrados. <br> Crie um clicando no botão "Novo" ao lado.</p>
 }
 else
 {
@@ -13,7 +14,9 @@ else
                 <th scope="col">Cliente</th>
                 <th scope="col">Modalidade</th>
                 <th scope="col">Data</th>
+                <th scope="col">Hora</th>
                 <th scope="col">Valor</th>
+                <th scope="col">Icon here</th>
                 <th scope="col">Icon here</th>
             </tr>
         </thead>
@@ -24,10 +27,14 @@ else
                     <th scope="row">@item.Id</th>
                     <td>@item.Client.Name</td>
                     <td>@item.Modality</td>
-                    <td>@item.ScheduledDate.ToString("dd/MM/yyyy")</td>
-                    <td>Valor aqui</td>
+                    <td>@DateTime.Parse(item.ScheduledDate).ToString("dd/MM/yyyy")</td>
+                    <td>@DateTime.Parse(item.ScheduledDate).ToString("HH:mm")</td>
+                    <td>@item.Payment.Price</td>
                     <td>
-                        <button class="button-6" onclick="">Visualizar</button>
+                        <button class="button-6" onclick="ModalAppointment.Update(@JsonSerializer.Serialize(item))">Atualizar</button>
+                    </td>
+                    <td>
+                        <button class="button-6" onclick="ModalAppointment.Delete(@item.Id, @item.Payment.Id)">Deletar</button>
                     </td>
                 </tr>
             }

@@ -16,13 +16,13 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ListAppointments)
+            @foreach (var item in Model.ListAppointments.Where(x => DateTime.Parse(x.ScheduledDate) > DateTime.Now).OrderBy(y => y.ScheduledDate))
             {
                 <tr>
                     <th scope="row">@item.Id</th>
                     <td>@item.Client.Name</td>
-                    <td>@item.ScheduledDate</td>
-                    <td>Horario</td>
+                    <td>@DateTime.Parse(item.ScheduledDate).ToString("dd/MM/yyyy")</td>
+                    <td>@DateTime.Parse(item.ScheduledDate).ToString("HH:mm")</td>
                 </tr>
             }
         </tbody>

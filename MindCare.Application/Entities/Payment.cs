@@ -8,7 +8,7 @@ namespace MindCare.Application.Entities
         public int IdAppointment { get; set; }
         public decimal Price { get; set; }
         public decimal PaidPrice { get; set; }
-        public DateOnly PaidDate { get; set; }
+        public string? PaidDate { get; set; }
         public EnumPaymentStatus Status { get; set; }
         
         public Client? Client { get; set; }

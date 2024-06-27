@@ -1,38 +1,105 @@
-﻿
+﻿@model AppointmentViewModel
+
 <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="appointmentModalLabel">Adicionar Cliente</h5>
+                <h5 class="modal-title" id="appointmentModalLabel">Novo Agendamento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="form-group">
-                        <label for="client-name" class="col-form-label">Nome:</label>
-                        <input type="text" class="form-control" id="client-name">
+                    <div class="div-SubTotal" onclick="OpenPaymentInfo(1)">
+                        <span style="font-size: 18px;font-weight: 600;">
+                            Dados Agendamento
+                        </span>
+                        <div id="1" class="containerSetInfos rotate active">
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 17.851 11.965"
+                                 style="width: 18px;transform: rotateZ(180deg);" xml:space="preserve">
+                            <g>
+                            <path class="icone-setaRotatoria" d="M8.049,1.969l1.935,0.005l7.457,8.022l-1.737-0.005L8.999,2.668L2.29,9.959L0.552,9.955L8.049,1.969z"></path>
+                            </g>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="client-cpf" class="col-form-label">CPF:</label>
-                        <input type="text" class="form-control" id="client-cpf">
+                    <div id="setaConteudo_1" class="container-resumoCard">
+                        <div class="form-group">
+                            <label for="appoint-client" class="col-form-label">Cliente:</label>
+                            <select class="form-select" id="appoint-client">
+                                @if (Model.AppointmentList is null || Model.AppointmentList!.Count == 0)
+                                {
+                                    <option disabled>Não há pacientes cadastrados</option>
+                                }
+                                else
+                                {
+                                    <option disabled>Selecione o paciente</option>
+                                    @foreach (var item in Model.AppointmentList!.First().AllClients)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appoint-modality" class="col-form-label">Modalidade:</label>
+                            <select class="form-select" id="appoint-modality">
+                                <option>Presencial</option>
+                                <option>Teleconsulta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appoint-date" class="col-form-label">Data:</label>
+                            <input type="date" class="form-control" id="appoint-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="appoint-hour" class="col-form-label">Horario:</label>
+                            <input type="time" class="form-control" id="appoint-hour">
+                        </div>
+                        <div class="form-label">
+                            <label for="appoint-observation" class="col-form-label">Observação:</label>
+                            <textarea type="text" class="form-control" id="appoint-observation"></textarea>
+                        </div>
                     </div>
-                    <div class="form-control-color">
-                        <label for="message-text" class="col-form-label">Gênero:</label>
-                        <select id="client-gender">
-                            <option>Masculino</option>
-                            <option>Feminino</option>
-                            <option>Outro</option>
-                        </select>
+                    <div class="div-SubTotal" onclick="OpenPaymentInfo(2)">
+                        <span style="font-size: 18px;font-weight: 600;">
+                            Dados Pagamento
+                        </span>
+                        <div id="2" class="containerSetInfos rotate active">
+                            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 17.851 11.965"
+                                 style="width: 18px;" xml:space="preserve">
+                            <g>
+                            <path class="icone-setaRotatoria" d="M8.049,1.969l1.935,0.005l7.457,8.022l-1.737-0.005L8.999,2.668L2.29,9.959L0.552,9.955L8.049,1.969z"></path>
+                            </g>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="form-label">
-                        <label for="client-age" class="col-form-label">Idade:</label>
-                        <input type="text" class="form-control" id="client-age">
+                    <div id="setaConteudo_2" class="container-resumoCard" style="display: none;">
+                        <div class="form-group">
+                            <label for="appoint-price" class="col-form-label">Valor:</label>
+                            <input type="text" class="form-control" id="appoint-price">
+                        </div>
+                        <div class="form-group">
+                            <label for="appoint-paidprice" class="col-form-label">Valor Pago:</label>
+                            <input type="text" placeholder="Valor pago não registrado" class="form-control" id="appoint-paidprice">
+                        </div>
+                        <div class="form-group">
+                            <label for="appoint-paiddate" class="col-form-label">Data:</label>
+                            <input type="date" placeholder="Data do pagamento não registrada" class="form-control" id="appoint-paiddate">
+                        </div>
+                        <div class="form-label">
+                            <label for="appoint-status" class="col-form-label">Status:</label>
+                            <select class="form-select" id="appoint-status">
+                                <option>Pendente</option>
+                                <option>Confirmado</option>
+                                <option>Parcial</option>
+                            </select>
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="button-6 button-6-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="button-6 button-6-primary" onclick="ActClient.Save()">Salvar</button>
+                <button type="button" class="button-6 button-6-primary" onclick="ActAppointment.Save()">Salvar</button>
             </div>
         </div>
     </div>

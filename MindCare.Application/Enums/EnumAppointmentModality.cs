@@ -3,6 +3,6 @@
     public enum EnumAppointmentModality
     {
         Presencial,
-        Telemedicina
+        Teleconsulta
     }
 }

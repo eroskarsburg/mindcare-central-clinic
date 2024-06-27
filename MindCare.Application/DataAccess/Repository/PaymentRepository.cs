@@ -27,17 +27,14 @@ namespace MindCare.Application.DataAccess.Repository
 
                 while (_dbContext.Reader.ReadAsync().Result)
                 {
-                    string data = _dbContext.Reader["paid_date"].ToString() ?? "1/1/0001 12:00:00 AM";
                     string status = _dbContext.Reader["status"].ToString() ?? string.Empty;
-                    DateTime dateTime = string.IsNullOrEmpty(data) ? DateTime.Parse("1/1/0001 12:00:00 AM")
-                        : DateTime.ParseExact(data, "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture);
-
+                    
                     Payment payment = new Payment();
                     payment.Id = int.TryParse(_dbContext.Reader["id_payments"].ToString(), out int id_payment) ? id_payment : 0;
                     payment.IdAppointment = int.TryParse(_dbContext.Reader["id_appointment"].ToString(), out int id_appointment) ? id_appointment : 0;
                     payment.Price = decimal.TryParse(_dbContext.Reader["price"].ToString(), out decimal price) ? price : 0;
                     payment.PaidPrice = decimal.TryParse(_dbContext.Reader["paid_price"].ToString(), out decimal paidprice) ? paidprice : 0;
-                    payment.PaidDate = DateOnly.FromDateTime(dateTime);
+                    payment.PaidDate = _dbContext.Reader["paid_date"].ToString() ?? "1/1/0001 12:00:00 AM";
                     payment.Status = (EnumPaymentStatus)Enum.Parse(typeof(EnumPaymentStatus), status);
                     list.Add(payment);
                 }
@@ -48,27 +45,26 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public async Task<Payment> Get(int id)
+        public async Task<Payment> Get(int paymentId = 0, int appointmentId = 0)
         {
             Payment payment = new();
             try
             {
-                _dbContext.Query = $"SELECT * FROM payments WHERE id_payments={id}";
+                string condition = paymentId == 0 ? $"id_appointment={appointmentId}" : $"id_payments={paymentId}";
+                _dbContext.Query = $"SELECT * FROM payments WHERE {condition}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteReader();
 
                 while (_dbContext.Reader.ReadAsync().Result)
                 {
-                    string data = _dbContext.Reader["paid_date"].ToString() ?? "1/1/0001 12:00:00 AM";
                     string status = _dbContext.Reader["status"].ToString() ?? string.Empty;
-                    DateTime dateTime = DateTime.ParseExact(data, "M/d/yyyy h:mm:ss tt", CultureInfo.InvariantCulture);
-
+                    
                     payment = new Payment();
                     payment.Id = int.TryParse(_dbContext.Reader["id_payments"].ToString(), out int id_payment) ? id_payment : 0;
                     payment.Price = decimal.TryParse(_dbContext.Reader["price"].ToString(), out decimal price) ? price : 0;
                     payment.PaidPrice = decimal.TryParse(_dbContext.Reader["paid_price"].ToString(), out decimal paidprice) ? paidprice : 0;
-                    payment.PaidDate = DateOnly.FromDateTime(dateTime);
+                    payment.PaidDate = _dbContext.Reader["paid_date"].ToString() ?? "1/1/0001 12:00:00 AM";
                     payment.Status = (EnumPaymentStatus)Enum.Parse(typeof(EnumPaymentStatus), status);
                 }
 
@@ -78,19 +74,57 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public Task Insert(Payment payment)
+        public async Task Insert(Payment payment)
         {
-            throw new NotImplementedException();
+            try
+            {
+                DateTime date;
+                if (!string.IsNullOrEmpty(payment.PaidDate))
+                {
+                    date = DateTime.ParseExact(payment.PaidDate!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+
+                _dbContext.Query = "INSERT INTO payments (id_appointment, price, paid_price, paid_date, status) " +
+                $"VALUES({payment.IdAppointment},'{payment.Price}',{payment.PaidPrice}, NULLIF('{payment.PaidDate}',''),'{payment.Status}')";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public Task Update(Payment payment)
+        public async Task Update(Payment payment)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.Query = $"UPDATE payments SET id_appointment={payment.IdAppointment}, price, paid_price, paid_date, status) " +
+                $"VALUES({payment.IdAppointment},'{payment.Price}','{payment.PaidPrice}', '{payment.PaidDate}','{payment.Status}') WHERE id_payments={payment.Id}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public Task Delete(int id)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _dbContext.Query = $"DELETE FROM payments WHERE id_payments={id}";
+                await _dbContext.Connection.OpenAsync();
+                _dbContext.ExecuteQuery();
+                _dbContext.ExecuteNonQuery();
+
+                await Task.CompletedTask;
+            }
+            catch (Exception e) { throw new Exception(e.Message); }
+            finally { await _dbContext.Connection.CloseAsync(); }
         }
     }
 }

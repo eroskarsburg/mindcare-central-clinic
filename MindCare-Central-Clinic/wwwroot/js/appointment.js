@@ -1,12 +1,20 @@
-﻿var ActClient = {
+﻿var ActAppointment = {
     Save: function () {
         var obj = {
-            name: $('#client-name').val(),
-            cpf: $('#client-cpf').val(),
-            gender: $('#client-gender').val(),
-            age: $('#client-age').val(),
+            client: {
+                id: $('#appoint-client').val(),
+            },
+            scheduledDate: $('#appoint-date').val(),
+            ScheduledHour: $('#appoint-hour').val(),
+            modality: $('#appoint-modality').val(),
+            observation: $('#appoint-observation').val(),
+            payment: {
+                price: $('#appoint-price').val(),
+                paidprice: $('#appoint-paidprice').val(),
+                paiddate: $('#appoint-paiddate').val(),
+                status: $('#appoint-status').val(),
+            },
         };
-
         $.ajax({
             url: '/Appointment/Insert',
             type: 'POST',
@@ -22,11 +30,21 @@
     Update: function (id) {
         var obj = {
             id: id,
-            name: $('#client-update-name').val(),
-            cpf: $('#client-update-cpf').val(),
-            gender: $('#client-update-gender').val(),
-            age: $('#client-update-age').val(),
+            client: {
+                id: $('#appoint-update-client').val(),
+            },
+            scheduledDate: $('#appoint-update-date').val(),
+            ScheduledHour: $('#appoint-update-hour').val(),
+            modality: $('#appoint-update-modality').val(),
+            observation: $('#appoint-update-observation').val(),
+            payment: {
+                price: $('#appoint-update-price').val(),
+                paidprice: $('#appoint-update-paidprice').val(),
+                paiddate: $('#appoint-update-paiddate').val(),
+                status: $('#appoint-update-status').val(),
+            },
         };
+        debugger;
         $.ajax({
             url: '/Appointment/Update',
             type: 'PUT',
@@ -55,10 +73,22 @@
 }
 
 var modal;
-var ModalClient = {
-    Update: function (id, name, cpf, gender, age) {
-        $('#client-update-gender').val(gender);
-        modal = `<div id="md-update-client" class="modal" style="background-color: #0000004d;" aria-hidden="true">
+var ModalAppointment = {
+    Update: function (obj) {
+        let dateObject = new Date(obj.ScheduledDate);
+
+        let year = dateObject.getFullYear();
+        let month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        let day = String(dateObject.getDate()).padStart(2, '0');
+
+        let hours = String(dateObject.getHours()).padStart(2, '0');
+        let minutes = String(dateObject.getMinutes()).padStart(2, '0');
+        //let seconds = String(dateObject.getSeconds()).padStart(2, '0');
+
+        let formattedTime = `${hours}:${minutes}`;
+        let formattedDate = `${year}-${month}-${day}`;
+
+        modal = `<div id="md-update-appoint" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
@@ -69,38 +99,92 @@ var ModalClient = {
                       </div>
                       <div class="modal-body">
                         <form>
-                            <div class="form-group">
-                                <label for="client-update-name" class="col-form-label">Nome:</label>
-                                <input type="text" class="form-control" id="client-update-name" value="${name}">
+                            <div class="div-SubTotal" onclick="OpenPaymentInfo(3)">
+                                <span style="font-size: 18px;font-weight: 600;">
+                                    Dados Agendamento
+                                </span>
+                                <div id="3" class="containerSetInfos rotate active">
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 17.851 11.965"
+                                         style="width: 18px;transform: rotateZ(180deg);" xml:space="preserve">
+                                    <g>
+                                    <path class="icone-setaRotatoria" d="M8.049,1.969l1.935,0.005l7.457,8.022l-1.737-0.005L8.999,2.668L2.29,9.959L0.552,9.955L8.049,1.969z"></path>
+                                    </g>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="client-update-cpf" class="col-form-label">CPF:</label>
-                                <input type="text" class="form-control" id="client-update-cpf" value="${cpf}">
+                            <div id="setaConteudo_3" class="container-resumoCard">
+                                <div class="form-group">
+                                    <label for="appoint-update-client" class="col-form-label">Cliente:</label>
+                                    <select class="form-select" id="appoint-update-client">
+                                        <option>Fazer dropdown cliente</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="appoint-update-modality" class="col-form-label">Modalidade:</label>
+                                    <select class="form-select" id="appoint-update-modality">
+                                        ${this.ValidateModalityDropdown(obj.Modality)}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="appoint-update-date" class="col-form-label">Data:</label>
+                                    <input type="date" class="form-control" id="appoint-update-date" value="${formattedDate}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="appoint-update-hour" class="col-form-label">Horario:</label>
+                                    <input type="time" class="form-control" id="appoint-update-hour" value="${formattedTime}">
+                                </div>
+                                <div class="form-label">
+                                    <label for="appoint-update-observation" class="col-form-label">Observação:</label>
+                                    <input type="textarea" class="form-control" id="appoint-update-observation" value="${obj.Observation}">
+                                </div>
                             </div>
-                            <div class="form-control-color">
-                                <label for="client-update-gender" class="col-form-label">Gênero:</label>
-                                <select id="client-update-gender">
-                                    ${ModalClient.ValidateGenderDropdown(gender)}
-                                </select>
+                            <div class="div-SubTotal" onclick="OpenPaymentInfo(4)">
+                                <span style="font-size: 18px;font-weight: 600;">
+                                    Dados Pagamento
+                                </span>
+                                <div id="4" class="containerSetInfos rotate active">
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 17.851 11.965"
+                                         style="width: 18px;" xml:space="preserve">
+                                    <g>
+                                        <path class="icone-setaRotatoria" d="M8.049,1.969l1.935,0.005l7.457,8.022l-1.737-0.005L8.999,2.668L2.29,9.959L0.552,9.955L8.049,1.969z"></path>
+                                    </g>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="form-label">
-                                <label for="client-update-age" class="col-form-label">Idade:</label>
-                                <input type="text" class="form-control" id="client-update-age" value="${age}">
+                            <div id="setaConteudo_4" class="container-resumoCard" style="display: none;">
+                                <div class="form-group">
+                                    <label for="appoint-update-price" class="col-form-label">Valor:</label>
+                                    <input type="text" class="form-control" id="appoint-update-price" value="${obj.Payment.Price}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="appoint-update-paidprice" class="col-form-label">Valor Pago:</label>
+                                    <input type="text" placeholder="Valor pago não registrado" class="form-control" id="appoint-update-paidprice" value="${obj.Payment.PaidPrice == 0 ? '' : obj.Payment.PaidPrice}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="appoint-update-paiddate" class="col-form-label">Data:</label>
+                                    <input type="text" placeholder="Data do pagamento não registrada" class="form-control" id="appoint-update-paiddate" value="${obj.Payment.PaidDate}" disabled>
+                                </div>
+                                <div class="form-label">
+                                    <label for="appoint-update-status" class="col-form-label">Status:</label>
+                                    <select class="form-select" id="appoint-update-status">
+                                        ${this.ValidateStatusDropdown(obj.Payment.Status)}
+                                    </select>
+                                </div>
                             </div>
                         </form>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="button-6 button-6-primary" onclick="ActClient.Update(${id})">Sim</button>
-                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalClient.CloseModalUpdate()">Não</button>
+                        <button type="button" class="button-6 button-6-primary" onclick="ActAppointment.Update(${obj.Id})">Sim</button>
+                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalAppointment.CloseModalUpdate()">Não</button>
                       </div>
                     </div>
                   </div>
                 </div>`;
-        document.getElementById('modal-update-client').innerHTML = modal;
-        document.getElementById('md-update-client').style.display = 'block';
+        document.getElementById('modal-update-appoint').innerHTML = modal;
+        document.getElementById('md-update-appoint').style.display = 'block';
     },
-    Delete: function (id, name) {
-        modal = `<div id="md-delete-client" class="modal" style="background-color: #0000004d;" aria-hidden="true">
+    Delete: function (appointId, paymentId) {
+        modal = `<div id="md-delete-appoint" class="modal" style="background-color: #0000004d;" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
@@ -110,40 +194,47 @@ var ModalClient = {
                         </button>
                       </div>
                       <div class="modal-body">
-                        Tem certeza que deseja deletar o cliente ${name}?
+                        Tem certeza que deseja deletar o agendamento ${appointId}?
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="button-6 button-6-primary" onclick="ActClient.Delete(${id})">Sim</button>
-                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalClient.CloseModalDelete()">Não</button>
+                        <button type="button" class="button-6 button-6-primary" onclick="ActAppointment.Delete(${appointId})">Sim</button>
+                        <button type="button" class="button-6 button-6-secondary" data-dismiss="modal" onclick="ModalAppointment.CloseModalDelete()">Não</button>
                       </div>
                     </div>
                   </div>
                 </div>`;
-        document.getElementById('modal-delete-client').innerHTML = modal;
-        document.getElementById('md-delete-client').style.display = 'block';
+        document.getElementById('modal-delete-appoint').innerHTML = modal;
+        document.getElementById('md-delete-appoint').style.display = 'block';
     },
 
     CloseModalDelete: function () {
-        document.getElementById('md-delete-client').style.display = 'none';
+        document.getElementById('md-delete-appoint').style.display = 'none';
     },
     CloseModalUpdate: function () {
-        document.getElementById('md-update-client').style.display = 'none';
+        document.getElementById('md-update-appoint').style.display = 'none';
     },
 
-    ValidateGenderDropdown(gender) {
-        switch (gender) {
-            case gender = "Feminino":
-                return `<option>Feminino</option>
-                        <option>Masculino</option>
-                        <option>Outro</option>`;
-            case gender = "Outro":
-                return `<option>Outro</option>
-                        <option>Masculino</option>
-                        <option>Feminino</option>`;
-            default:
-                return `<option>Masculino</option>
-                        <option>Feminino</option>
-                        <option>Outro</option>`;
+    ValidateStatusDropdown: function (status) {
+        if (status == 0) {
+            return `<option>Pendente</option>
+                    <option>Confirmado</option>
+                    <option>Parcial</option>`;
         }
+        if (status == 2) {
+            return `<option>Parcial</option>
+                    <option>Confirmado</option>
+                    <option>Pendente</option>`;
+        }
+        return `<option>Confirmado</option>
+                <option>Pendente</option>
+                <option>Parcial</option>`;
+    },
+    ValidateModalityDropdown: function (modality) {
+        if (modality == 1) {
+            return `<option>Teleconsulta</option>
+                    <option>Presencial</option>`;
+        }
+        return `<option>Presencial</option>
+                <option>Teleconsulta</option>`;
     }
 }
