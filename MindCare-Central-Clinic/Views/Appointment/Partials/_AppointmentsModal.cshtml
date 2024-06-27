@@ -26,14 +26,14 @@
                         <div class="form-group">
                             <label for="appoint-client" class="col-form-label">Cliente:</label>
                             <select class="form-select" id="appoint-client">
-                                @if (Model.AppointmentList is null || Model.AppointmentList!.Count == 0)
+                                @if (Model.ClientList is null || Model.ClientList!.Count == 0)
                                 {
-                                    <option disabled>Não há pacientes cadastrados</option>
+                                    <option disabled>Não há clientes cadastrados</option>
                                 }
                                 else
                                 {
                                     <option disabled>Selecione o paciente</option>
-                                    @foreach (var item in Model.AppointmentList!.First().AllClients)
+                                    @foreach (var item in Model.ClientList!)
                                     {
                                         <option value="@item.Id">@item.Name</option>
                                     }

@@ -26,6 +26,24 @@ namespace MindCare_Central_Clinic.Controllers
             return View(_model);
         }
 
+        [HttpGet]
+        public JsonResult Get(Client client)
+        {
+            List<Client> listClient = new List<Client>();
+            string message = "Clientes encontrados!";
+            try
+            {
+                listClient = _service.GetClients().Result;
+            }
+            catch (Exception e) { message = e.Message; }
+
+            return Json(new 
+            { 
+                message = message,
+                listClient = listClient,
+            });
+        }
+
         [HttpPost]
         public JsonResult Insert(Client client)
         {

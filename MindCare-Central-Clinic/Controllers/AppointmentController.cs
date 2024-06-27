@@ -11,17 +11,20 @@ namespace MindCare_Central_Clinic.Controllers
         private readonly ILogger<AppointmentController> _logger;
         public AppointmentViewModel _model;
         private readonly IAppointmentService _service;
+        private readonly IClientService _clientService;
 
-        public AppointmentController(ILogger<AppointmentController> logger, AppointmentViewModel model, IAppointmentService service)
+        public AppointmentController(ILogger<AppointmentController> logger, AppointmentViewModel model, IAppointmentService service, IClientService clientService)
         {
             _logger = logger;
             _model = model;
             _service = service;
+            _clientService = clientService;
         }
 
         public IActionResult Index()
         {
             _model.AppointmentList = _service.GetAppointments().Result;
+            _model.ClientList = _clientService.GetClients().Result;
 
             return View(_model);
         }

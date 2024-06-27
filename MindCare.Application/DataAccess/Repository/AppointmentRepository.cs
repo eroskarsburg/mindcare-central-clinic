@@ -134,8 +134,13 @@ namespace MindCare.Application.DataAccess.Repository
         {
             try
             {
+                DateTime time = DateTime.ParseExact(appoint.ScheduledHour!, "HH:mm", CultureInfo.InvariantCulture);
+                DateTime date = DateTime.ParseExact(appoint.ScheduledDate!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                DateTime dateFormatted = new DateTime(date.Year, date.Month, date.Day, time.Hour, time.Minute, 0);
+                appoint.ScheduledDate = dateFormatted.ToString("yyyy-MM-dd HH:mm:ss");
+
                 _dbContext.Query = $"UPDATE appointments SET id_client={appoint.Client.Id}, modality='{appoint.Modality}'" +
-                    $", scheduled_date='{appoint.ScheduledDate}', observation='{appoint.Observation}' WHERE id_appointment={appoint.Id})";
+                    $", scheduled_date='{appoint.ScheduledDate}', observation='{appoint.Observation}' WHERE id_appointment={appoint.Id}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteNonQuery();

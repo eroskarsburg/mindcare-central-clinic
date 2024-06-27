@@ -25,10 +25,10 @@ namespace MindCare.Application.Services
                 appointment.Payment = await _paymentRepository.Get(appointmentId: appointment.Id);
                 appointment.Client = await _clientRepository.Get(appointment.Client.Id);
             }
-            if (list.Count > 0)
-            {
-                list.First().AllClients = list.First().AllClients = await _clientRepository.Get();
-            }
+            //if (list.Count > 0)
+            //{
+            //    list.First().AllClients = list.First().AllClients = await _clientRepository.Get();
+            //}
 
             return list;
         }

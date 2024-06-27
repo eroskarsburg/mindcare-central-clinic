@@ -63,9 +63,6 @@ var ModalClient = {
                     <div class="modal-content">
                       <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Atualizar</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
                       </div>
                       <div class="modal-body">
                         <form>
@@ -105,9 +102,6 @@ var ModalClient = {
                     <div class="modal-content">
                       <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Deletar</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
                       </div>
                       <div class="modal-body">
                         Tem certeza que deseja deletar o cliente ${name}?
@@ -129,21 +123,4 @@ var ModalClient = {
     CloseModalUpdate: function () {
         document.getElementById('md-update-client').style.display = 'none';
     },
-
-    ValidateGenderDropdown(gender) {
-        switch (gender) {
-            case gender = "Feminino":
-                return `<option>Feminino</option>
-                        <option>Masculino</option>
-                        <option>Outro</option>`;
-            case gender = "Outro":
-                return `<option>Outro</option>
-                        <option>Masculino</option>
-                        <option>Feminino</option>`;
-            default:
-                return `<option>Masculino</option>
-                        <option>Feminino</option>
-                        <option>Outro</option>`;
-        }
-    }
 }

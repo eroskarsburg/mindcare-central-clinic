@@ -1,4 +1,22 @@
-﻿var ActAppointment = {
+﻿var listClients = [];
+
+window.onload = (event) => {
+    ActAppointment.Get();
+};
+
+var ActAppointment = {
+    Get: function () {
+        $.ajax({
+            url: '/Client/Get',
+            type: 'GET',
+            success: function (data) {
+                listClients = data.listClient;
+            },
+            error: function (data) {
+                alert("Erro: " + data.message);
+            }
+        });
+    },
     Save: function () {
         var obj = {
             client: {
@@ -93,9 +111,6 @@ var ModalAppointment = {
                     <div class="modal-content">
                       <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Atualizar</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
                       </div>
                       <div class="modal-body">
                         <form>
@@ -116,7 +131,7 @@ var ModalAppointment = {
                                 <div class="form-group">
                                     <label for="appoint-update-client" class="col-form-label">Cliente:</label>
                                     <select class="form-select" id="appoint-update-client">
-                                        <option>Fazer dropdown cliente</option>
+                                        ${this.SetClientsDropdown(obj.Client.Id)}
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -135,7 +150,7 @@ var ModalAppointment = {
                                 </div>
                                 <div class="form-label">
                                     <label for="appoint-update-observation" class="col-form-label">Observação:</label>
-                                    <input type="textarea" class="form-control" id="appoint-update-observation" value="${obj.Observation}">
+                                    <textarea class="form-control" id="appoint-update-observation">${obj.Observation}</textarea>
                                 </div>
                             </div>
                             <div class="div-SubTotal" onclick="OpenPaymentInfo(4)">
@@ -189,9 +204,6 @@ var ModalAppointment = {
                     <div class="modal-content">
                       <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Deletar</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
                       </div>
                       <div class="modal-body">
                         Tem certeza que deseja deletar o agendamento ${appointId}?
@@ -214,6 +226,19 @@ var ModalAppointment = {
         document.getElementById('md-update-appoint').style.display = 'none';
     },
 
+    SetClientsDropdown: function (idClient) {
+        var returnedList = this.AddClientsOptions();
+
+        var expectedOption = returnedList.find(e => e.includes(`value="${idClient}"`));
+
+        var index = returnedList.indexOf(expectedOption);
+        if (index === -1) {
+            return returnedList;
+        }
+        returnedList.splice(index, 1);
+        returnedList.unshift(expectedOption);
+        return returnedList;
+    },
     ValidateStatusDropdown: function (status) {
         if (status == 0) {
             return `<option>Pendente</option>
@@ -236,5 +261,15 @@ var ModalAppointment = {
         }
         return `<option>Presencial</option>
                 <option>Teleconsulta</option>`;
-    }
+    },
+
+    AddClientsOptions: function () {
+        var optionList = [];
+        for (var i = 0; i < listClients.length; i++) {
+            var option = `<option value="${listClients[i].id}">${listClients[i].name}</option>\n`;
+            optionList.push(option);
+        }
+        optionList.sort();
+        return optionList;
+    },
 }
