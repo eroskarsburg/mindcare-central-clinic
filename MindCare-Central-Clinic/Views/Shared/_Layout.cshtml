@@ -9,7 +9,11 @@
 </head>
 <body class="vh-100">
     <main>
-        @await Html.PartialAsync("~/Views/Shared/_SideBar.cshtml")
+        @await RenderSectionAsync("NoMenu", required: false)
+        @if (!IsSectionDefined("NoMenu"))
+        {
+            @await Html.PartialAsync("~/Views/Shared/_SideBar.cshtml")
+        }
         <div class="main-container">
             @RenderBody()
         </div>

@@ -1,1 +1,12 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Login";
+}
+@section NoMenu { }
+
+<div>
+    @await Html.PartialAsync("~/Views/Login/Partials/_LoginSection.cshtml");
+
+    <div id="index-warning-login"></div>
+</div>
+
+<script src="~/js/login.js"></script>

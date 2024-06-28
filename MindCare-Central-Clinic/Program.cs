@@ -1,13 +1,5 @@
-using MindCare.Application.DataAccess.Repository;
-using MindCare.Application.DataAccess.Repository.IRepository;
-using MindCare.Application.Services;
-using MindCare.Application.Services.IServices;
 using MindCare.Application.DataAccess.DbContext;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using MindCare_Central_Clinic.Modules;
-using MindCare_Central_Clinic.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +30,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Index}/{id?}");
 
 app.Run();

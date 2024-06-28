@@ -2,7 +2,6 @@
 using MindCare.Application.DataAccess.Repository.IRepository;
 using MindCare.Application.Entities;
 using MindCare.Application.Enums;
-using Org.BouncyCastle.Asn1.X509;
 using System.Globalization;
 
 namespace MindCare.Application.DataAccess.Repository
