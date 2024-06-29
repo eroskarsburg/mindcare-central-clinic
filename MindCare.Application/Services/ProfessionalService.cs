@@ -26,6 +26,11 @@ namespace MindCare.Application.Services
             return list;
         }
 
+        public async Task<Professional> GetProfessional(int userId)
+        {
+            return await _repository.Get(userId);
+        }
+
         public async Task InsertProfessional(Professional professional)
         {
             User user = new()

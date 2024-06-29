@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Perfil";
+}
+
+<div class="secondary-header">
+    <h2>Perfil</h2>
+</div>
+<div>
+    @await Html.PartialAsync("~/Views/Profile/Partials/_ProfileSection.cshtml")
+
+    <div id="modal-index-profile"></div>
+</div>
+
+<script src="~/js/profile.js"></script>

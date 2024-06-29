@@ -44,12 +44,12 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public async Task<Professional> Get(int id)
+        public async Task<Professional> Get(int userId)
         {
             Professional professional = new();
             try
             {
-                _dbContext.Query = $"SELECT * FROM professionals WHERE id_professional={id}";
+                _dbContext.Query = $"SELECT * FROM professionals WHERE id_user_prof={userId}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteReader();

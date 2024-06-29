@@ -41,6 +41,7 @@ namespace MindCare_Central_Clinic.Controllers
                     payment.Client = _clientRepository.Get(value).Result;
                 }
             }
+
             return View(_model);
         }
 

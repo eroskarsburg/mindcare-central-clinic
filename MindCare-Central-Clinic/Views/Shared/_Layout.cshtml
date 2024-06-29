@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor ctx;
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -15,7 +17,14 @@
             @await Html.PartialAsync("~/Views/Shared/_SideBar.cshtml")
         }
         <div class="main-container">
-            @RenderBody()
+            @if (ctx.HttpContext.Session.Keys.Count() > 0)
+            {
+                @RenderBody()
+            }
+            else
+            {
+                @await Html.PartialAsync("~/Views/Login/Index.cshtml")
+            }
         </div>
     </main>
     @await Html.PartialAsync("~/Views/Shared/_SpinnerLoader.cshtml")

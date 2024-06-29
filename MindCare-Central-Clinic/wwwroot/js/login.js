@@ -4,16 +4,15 @@
             username: $('#login-username').val(),
             password: $('#login-password').val(),
         };
-
         $.ajax({
-            url: '/User/Get',
-            type: 'POST',
+            url: '/Login/Get',
+            type: 'GET',
             data: obj,
             success: function (data) {
-                window.location.reload();
+                window.location.pathname = "/Home";
             },
             error: function (data) {
-                alert(data.message);
+                ModalLogin.Warning();
             }
         });
     },
@@ -26,7 +25,7 @@ var ModalLogin = {
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Aviso</h5>
+                        <h5 class="modal-title">Aviso</h5>
                       </div>
                       <div class="modal-body">
                         ${message}
@@ -43,5 +42,14 @@ var ModalLogin = {
 
     CloseWarning: function () {
         document.getElementById('md-warning-login').style.display = 'none';
-    }
+    },
+
+    ShowPassword: function () {
+        var x = document.getElementById("login-password");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    },
 }

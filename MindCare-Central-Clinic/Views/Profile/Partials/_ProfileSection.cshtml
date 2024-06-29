@@ -1,0 +1,46 @@
+﻿@model ProfileViewModel
+@inject IHttpContextAccessor ctx;
+
+<div style="width: 50%;">
+    <h3>Dados de Usuário</h3>
+    <form>
+        <div class="form-group">
+            <label for="profile-username" class="col-form-label">Usuário:</label>
+            <input type="text" class="form-control" id="profile-username">
+        </div>
+        <div class="form-group">
+            <label for="profile-password" class="col-form-label">Senha:</label>
+            <input type="text" class="form-control" id="profile-password">
+        </div>
+        <div class="form-label">
+            <label for="profile-confirmpassword" class="col-form-label">Confirmar Senha:</label>
+            <input type="text" class="form-control" id="profile-confirmpassword">
+        </div>
+    </form>
+    @if (Model.Professional != null)
+    {
+        <h3>Dados de Profissional</h3>
+        <form>
+            <div class="form-group">
+                <label for="profile-professional-name" class="col-form-label">Nome:</label>
+                <input type="text" class="form-control" id="profile-professional-name">
+            </div>
+            <div class="form-group">
+                <label for="profile-professional-cpf" class="col-form-label">CPF:</label>
+                <input type="text" class="form-control" id="profile-professional-cpf">
+            </div>
+            <div class="form-control-color">
+                <label for="message-text" class="col-form-label">Gênero:</label>
+                <select id="profile-professional-gender">
+                    <option>Masculino</option>
+                    <option>Feminino</option>
+                    <option>Outro</option>
+                </select>
+            </div>
+            <div class="form-label">
+                <label for="professional-speciality" class="col-form-label">Especialidade:</label>
+                <input type="text" class="form-control" id="professional-speciality">
+            </div>
+        </form>
+    }
+</div>

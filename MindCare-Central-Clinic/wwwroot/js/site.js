@@ -23,6 +23,6 @@ window.addEventListener('load', function () {
 });
 
 function LogOff() {
-    document.cookie = 'UserLogin=; expires = ' + new Date(2010, 0, 01).toGMTString(); + '; path = /';
-    window.location.href = "/Login.cshtml";
+    document.cookie = 'user=; expires = ' + new Date(2010, 0, 01).toGMTString(); + '; path = /';
+    window.location.href = "/Login";
 }

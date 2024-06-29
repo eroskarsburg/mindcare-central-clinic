@@ -23,6 +23,11 @@ namespace MindCare.Application.Services
             return await _repository.Get(user);
         }
 
+        public async Task<User> GetUser(int id = 0, string username = "")
+        {
+            return await _repository.Get(id: id, username: username);
+        }
+
         public async Task InsertUser(User user)
         {
             await _repository.Insert(user);
