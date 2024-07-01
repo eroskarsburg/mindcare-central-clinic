@@ -33,6 +33,8 @@ app.UseStaticFiles();
 app.UseSession();
 app.UseRouting();
 
+app.UseStatusCodePagesWithRedirects("/Home/Error?statuscode={0}");
+
 app.UseAuthorization();
 
 app.MapControllerRoute(

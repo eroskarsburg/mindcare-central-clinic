@@ -10,6 +10,7 @@
             services.AddScoped<ProfessionalViewModel>();
             services.AddScoped<HomeViewModel>();
             services.AddScoped<UserViewModel>();
+            services.AddScoped<ProfileViewModel>();
             return services;
         }
     }

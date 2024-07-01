@@ -9,11 +9,11 @@
             type: 'GET',
             data: obj,
             success: function (data) {
+                if (data.message == "Credenciais inválidas! Tente novamente ou entre em contato com o suporte.") {
+                    return ModalLogin.Warning(data.message);
+                }
                 window.location.pathname = "/Home";
             },
-            error: function (data) {
-                ModalLogin.Warning();
-            }
         });
     },
 }

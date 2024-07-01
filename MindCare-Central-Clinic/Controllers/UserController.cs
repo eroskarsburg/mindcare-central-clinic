@@ -29,7 +29,7 @@ namespace MindCare_Central_Clinic.Controllers
         [HttpPost]
         public JsonResult Insert(User user)
         {
-            string message = "Profissional inserido!";
+            string message = "Usuário inserido!";
             try
             {
                 _service.InsertUser(user);
@@ -42,7 +42,7 @@ namespace MindCare_Central_Clinic.Controllers
         [HttpPut]
         public JsonResult Update(User user)
         {
-            string message = "Profissional atualizado!";
+            string message = "Usuário atualizado!";
             try
             {
                 _service.UpdateUser(user);
@@ -55,7 +55,7 @@ namespace MindCare_Central_Clinic.Controllers
         [HttpDelete]
         public JsonResult Delete(int id)
         {
-            string message = "Profissional deletado!";
+            string message = "Usuário deletado!";
             try
             {
                 _service.DeleteUser(id);

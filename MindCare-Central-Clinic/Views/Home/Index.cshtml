@@ -4,19 +4,14 @@
 }
 
 <div class="text-center pt-5">
-    <div style="padding: 2%;
-    border-radius: 10px;
-    background-color: #e5d8cd;">
+    <div class="all-table-appoint">
         <h4>Próximas Consultas</h4>
         <div>
             @await Html.PartialAsync("~/Views/Home/Partials/_HomeAppointmentsTable.cshtml")
         </div>
     </div>
     <div style="display: flex;justify-content: space-between;margin: 5% 0;">
-        <div style="width: 50%;
-    padding: 2%;
-    border-radius: 10px;
-    background-color: #e5d8cd;">
+        <div class="all-table-home">
             <h4>Pagamentos Pendentes</h4>
             @await Html.PartialAsync("~/Views/Home/Partials/_HomePaymentsTable.cshtml")
         </div>

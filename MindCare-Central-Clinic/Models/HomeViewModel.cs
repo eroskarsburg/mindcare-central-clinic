@@ -6,5 +6,6 @@ namespace MindCare_Central_Clinic.Models
     {
         public List<Appointment>? ListAppointments { get; set; }
         public List<Payment>? ListPayments { get; set; }
+        public List<Payment>? ListPendingPayments { get; set; }
     }
 }

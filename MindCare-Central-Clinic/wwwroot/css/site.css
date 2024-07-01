@@ -1,5 +1,6 @@
 html {
   font-size: 14px;
+  color: white !important;
 }
 
 @media (min-width: 768px) {
@@ -13,8 +14,13 @@ html {
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
+    color: white !important;
+}
+
+hr{
+    color: white !important;
 }
 
 main {
@@ -26,6 +32,53 @@ main {
     overflow-y: hidden;
 }
 
+.link-dark {
+    color: white !important;
+}
+
+td, tr, tbody, th{
+    border-color: unset;
+    border:none;
+    color: #a9927d;
+}
+
+thead {
+    border-color: unset;
+    border-bottom-width: thin;
+    color: #a9927d;
+}
+
+.nav-item {
+    font-size: 18px;
+}
+.nav-link{
+    display: flex;
+}
+
+.section-table {
+    background-color: #a9927d33;
+    padding: 20px;
+    border-radius: 30px;
+}
+
+.all-table-home {
+    background-color: #a9927d33;
+    width: 50%;
+    padding: 2%;
+    border-radius: 30px;
+}
+
+.all-table-appoint {
+    background-color: #a9927d33;
+    padding: 2%;
+    border-radius: 30px;
+}
+
+/*SIDEBAR*/
+.sidebar {
+    background-color: #a9927dd4;
+}
+
 /*Container*/
 
 .main-container {
@@ -33,6 +86,7 @@ main {
     padding: 0 var(--bs-gutter-x, 6rem);
     margin-right: auto;
     margin-left: auto;
+    color: #a9927d !important;
 }
 
 .secondary-header {
@@ -45,21 +99,20 @@ main {
 
 .button-6 {
     align-items: center;
-    background-color: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: .25rem;
+    background-color: #a9927dd4;
+    border: none;
+    border-radius: 1rem;
     box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
     box-sizing: border-box;
-    color: rgba(0, 0, 0, 0.85);
-    cursor: pointer;
+    color: #ffffff;
+     cursor: pointer; 
     display: inline-flex;
-    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 16px;
-    font-weight: 600;
     justify-content: center;
     line-height: 1.25;
     margin: 0;
-    min-height: 3rem;
+    min-height: 2rem;
     padding: calc(.875rem - 1px) calc(1.5rem - 1px);
     position: relative;
     text-decoration: none;
@@ -198,3 +251,11 @@ span#spanSpinner {
     overflow: auto;
     background-color: #000000d6;
 }
+
+.bi {
+    width: 20px;
+    cursor: pointer;
+}
+    .bi:hover {
+        color: #8e6f59;
+    }

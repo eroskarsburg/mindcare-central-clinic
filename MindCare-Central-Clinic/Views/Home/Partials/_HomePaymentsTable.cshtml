@@ -1,7 +1,7 @@
 ﻿@using MindCare.Application.Enums
 @model HomeViewModel
 
-@if (Model.ListPayments is null || Model.ListPayments.Count == 0)
+@if (Model.ListPendingPayments is null || Model.ListPendingPayments.Count <= 0)
 {
     <p>Não há pagamentos pendentes.</p>
 }
@@ -13,7 +13,7 @@ else
                 <th scope="col">#</th>
                 <th scope="col">Consulta</th>
                 <th scope="col">Cliente</th>
-                <th scope="col">Valor a pagar</th>
+                <th scope="col">Valor da consulta</th>
             </tr>
         </thead>
         <tbody>

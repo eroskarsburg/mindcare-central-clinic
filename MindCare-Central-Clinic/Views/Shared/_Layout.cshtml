@@ -17,14 +17,15 @@
             @await Html.PartialAsync("~/Views/Shared/_SideBar.cshtml")
         }
         <div class="main-container">
-            @if (ctx.HttpContext.Session.Keys.Count() > 0)
+            @RenderBody()
+            @* @if (ctx.HttpContext.Session.Keys.Count() > 0)
             {
                 @RenderBody()
             }
             else
             {
                 @await Html.PartialAsync("~/Views/Login/Index.cshtml")
-            }
+            } *@
         </div>
     </main>
     @await Html.PartialAsync("~/Views/Shared/_SpinnerLoader.cshtml")
