@@ -61,12 +61,6 @@ namespace MindCare.Application.Shared
                     Username = splitted[1],
                     Password = splitted[2]
                 };
-
-                //current = new()
-                //{
-                //    User = _userService.GetUser(user).Result,
-                //    Professional = _professionalService.GetProfessional(current!.User!.Id).Result,
-                //};
             }
             return current;
         }
