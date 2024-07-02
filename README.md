@@ -1,4 +1,4 @@
-# MindCare - Consulting Central Clinic
+# MindCare - Clinic Agenda
 ### About
 MindCare is a web advisory control panel designed for a psychological health clinic. It provides a comprehensive platform to manage patient consultations, schedules, and administrative tasks efficiently.
 
