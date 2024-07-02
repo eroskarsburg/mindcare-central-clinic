@@ -12,6 +12,13 @@ namespace MindCare_Central_Clinic.Controllers
         private readonly IProfessionalService _professionalService;
         private readonly IHttpContextAccessor _contextAccessor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginController"/> class.
+        /// </summary>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="userService">User service instance.</param>
+        /// <param name="professionalService">Professional service instance.</param>
+        /// <param name="contextAccessor">HTTP context accessor instance.</param>
         public LoginController(ILogger<HomeController> logger, IUserService userService, IProfessionalService professionalService, IHttpContextAccessor contextAccessor)
         {
             _logger = logger;
@@ -20,6 +27,10 @@ namespace MindCare_Central_Clinic.Controllers
             _contextAccessor = contextAccessor;
         }
 
+        /// <summary>
+        /// Clears session data and returns the login view.
+        /// </summary>
+        /// <returns>The login view.</returns>
         public IActionResult Index()
         {
             try
@@ -33,6 +44,11 @@ namespace MindCare_Central_Clinic.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Authenticates the user and sets session data, returns a JSON result with a message.
+        /// </summary>
+        /// <param name="user">The user credentials for authentication.</param>
+        /// <returns>A JSON result with a message.</returns>
         public JsonResult Get(User user)
         {
             string message = "Login efetuado!";
@@ -57,4 +73,5 @@ namespace MindCare_Central_Clinic.Controllers
             return Json(new { message });
         }
     }
+
 }
