@@ -1,32 +1,33 @@
-# MindCare - Consulting Central Clinic
-A web advisory control panel for a psychological health clinic.
+## MindCare - Consulting Central Clinic
+### About
+MindCare is a web advisory control panel designed for a psychological health clinic. It provides a comprehensive platform to manage patient consultations, schedules, and administrative tasks efficiently.
 
-## Used technology
+### Technologies Used
+- Frameworks: .NET
+- Programming Languages: C#, HTML, CSS, JavaScript
+- Database: MySQL
+### Features
+- Patient Management: Track patient records, appointments, and treatment plans.
+- Consultation Scheduling: Schedule and manage consultation sessions for clinicians.
+- Administrative Dashboard: Monitor clinic operations, generate reports, and manage user roles.
+- Secure Authentication: Ensure data security with role-based access control and encrypted communication.
+### Installation
+1. Clone the repository: git clone https://github.com/your/repository.git
+2. Navigate to the project directory.
+3. Install dependencies: dotnet restore
+4. Configure database connection in appsettings.json.
+5. Run migrations: dotnet ef database update.
+6. Start the application: dotnet run.
+### Usage
+1. Access the application via your web browser.
+2. Log in with appropriate credentials.
+3. Navigate through the dashboard to manage patients, schedules, and clinic operations.
+4. Consult the documentation for detailed instructions on using specific features.
+### Contributing
+Contributions are welcome! Please fork the repository and submit a pull request with your improvements.
 
-Frameworks, programming languages and databases used.
+### License
+This project is licensed under the MIT License.
 
-![](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) ![](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white) ![](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E) ![](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) ![](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) ![](https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-
-## Commits Patterns
-
-**`test`**: Indica qualquer tipo de criação ou alteração de códigos de teste.
-
-**`feat`**: indica o desenvolvimento de uma nova feature ao projeto.
-
-**`refactor`**: usado quando houver uma refatoração de código que não tenha qualquer tipo de impacto na lógica/regras de negócio do sistema.
-
-**`style`**: empregado quando há mudanças de formatação e estilo do código que não alteram o sistema de nenhuma forma.
-
-**`fix`**: utilizado quando há correção de erros que estão gerando bugs no sistema.
-
-**`chore`**: indica mudanças no projeto que não afetem o sistema ou arquivos de testes. São mudanças de desenvolvimento.
-
-**`docs`**: usado quando há mudanças na documentação do projeto.
-
-**`build`**: utilizada para indicar mudanças que afetam o processo de build do projeto ou dependências externas.
-
-**`perf`**: indica uma alteração que melhorou a performance do sistema.
-
-**`ci`**: utilizada para mudanças nos arquivos de configuração de CI.
-
-**`revert`**: indica a reverão de um commit anterior.
+### Contact
+For inquiries and support, contact "".
