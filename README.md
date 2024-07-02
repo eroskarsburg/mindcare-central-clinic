@@ -7,6 +7,7 @@ MindCare is a web advisory control panel designed for a psychological health cli
 - **Programming Languages:** C#, HTML, CSS, JavaScript
 - **Database:** MySQL
 ![.NET Badge](https://img.shields.io/badge/.NET-512BD4?logo=dotnet&logoColor=fff&style=flat-square)
+![.NET Badge](https://img.shields.io/badge/.NET-512BD4?logo=dotnet&logoColor=fff&style=plastic)
 
 ### Features
 - **Patient Management:** Track patient records, appointments, and treatment plans.
