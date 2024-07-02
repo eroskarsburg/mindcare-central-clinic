@@ -35,4 +35,4 @@ MindCare is a web advisory control panel designed for a psychological health cli
 Contributions are welcome! Please fork the repository and submit a pull request with your improvements.
 
 ### License
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/).
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
