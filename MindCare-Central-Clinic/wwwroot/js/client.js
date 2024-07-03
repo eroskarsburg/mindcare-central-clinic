@@ -74,9 +74,9 @@ var ModalClient = {
                                 <label for="client-update-cpf" class="col-form-label">CPF:</label>
                                 <input type="text" class="form-control" id="client-update-cpf" value="${cpf}">
                             </div>
-                            <div class="form-control-color">
+                            <div class="form-group">
                                 <label for="client-update-gender" class="col-form-label">Gênero:</label>
-                                <select id="client-update-gender">
+                                <select class="form-select" id="client-update-gender">
                                     ${ModalClient.ValidateGenderDropdown(gender)}
                                 </select>
                             </div>

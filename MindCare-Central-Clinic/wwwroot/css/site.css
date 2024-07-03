@@ -48,6 +48,10 @@ thead {
     color: #a9927d;
 }
 
+.form-select, .dropdown-item, .form-control {
+    color: #74573c;
+}
+
 .nav-item {
     font-size: 18px;
 }
@@ -99,13 +103,13 @@ thead {
 
 .button-6 {
     align-items: center;
-    background-color: #a9927dd4;
-    border: none;
+    background-color: #a9927d59;
+    border: 1px solid #a9927d;
     border-radius: 1rem;
     box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
     box-sizing: border-box;
-    color: #ffffff;
-     cursor: pointer; 
+    color: #63472e;
+    cursor: pointer;
     display: inline-flex;
     font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 16px;
@@ -124,28 +128,27 @@ thead {
     width: auto;
 }
 
-.button-6:hover,
-.button-6:focus {
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
-    color: rgba(0, 0, 0, 0.65);
-}
+    .button-6:hover,
+    .button-6:focus {
+        box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+        color: #63472e;
+    }
 
 .button-6:hover {
     transform: translateY(-1px);
 }
 
-.button-6:active {
-    background-color: #F0F0F1;
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
-    color: rgba(0, 0, 0, 0.65);
-    transform: translateY(0);
-}
+    .button-6:active {
+        background-color: #F0F0F1;
+        border-color: rgba(0, 0, 0, 0.15);
+        box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
+        color: #a9927d;
+        transform: translateY(0);
+    }
 
 .button-6-primary {
     margin: 5px;
-    background-color: #55a6ff;
+    background-color: #a9927d;
     color: white;
 }
 

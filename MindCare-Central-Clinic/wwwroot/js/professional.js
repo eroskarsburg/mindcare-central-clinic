@@ -73,9 +73,9 @@ var ModalProfessional = {
                                 <label for="professional-update-cpf" class="col-form-label">CPF:</label>
                                 <input type="text" class="form-control" id="professional-update-cpf" value="${profObj.Cpf}">
                             </div>
-                            <div class="form-control-color">
+                            <div class="form-group">
                                 <label for="professional-update-gender" class="col-form-label">Gênero:</label>
-                                <select id="professional-update-gender">
+                                <select class="form-select" id="professional-update-gender">
                                     ${ModalProfessional.ValidateGenderDropdown(profObj.Gender)}
                                 </select>
                             </div>
