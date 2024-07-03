@@ -152,6 +152,14 @@ thead {
     color: white;
 }
 
+.button-6-login {
+    background-color: #a9927d;
+    color: white;
+    width: 100%;
+    margin-top: 5%;
+    padding: 4%;
+}
+
 .button-6-secondary {
     margin: 5px;
 }
@@ -262,3 +270,13 @@ span#spanSpinner {
     .bi:hover {
         color: #8e6f59;
     }
+
+.container-login {
+    margin: 13% 35%;
+}
+
+.section-login {
+    padding: 10%;
+    border-radius: 30px;
+    background-color: #a9927d33;
+}

@@ -18,14 +18,6 @@
         }
         <div class="main-container">
             @RenderBody()
-            @* @if (ctx.HttpContext.Session.Keys.Count() > 0)
-            {
-                @RenderBody()
-            }
-            else
-            {
-                @await Html.PartialAsync("~/Views/Login/Index.cshtml")
-            } *@
         </div>
     </main>
     @await Html.PartialAsync("~/Views/Shared/_SpinnerLoader.cshtml")
