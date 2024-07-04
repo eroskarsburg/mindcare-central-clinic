@@ -280,3 +280,17 @@ span#spanSpinner {
     border-radius: 30px;
     background-color: #a9927d33;
 }
+
+#search-input {
+    background-image: url(/imgs/search-icon.png);
+    background-size: 25px;
+    background-position: 10px 10px;
+    background-repeat: no-repeat;
+    background-position-y: center;
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 20px 12px 40px;
+    border: none;
+    margin-bottom: 12px;
+    border-radius: 30px;
+}
