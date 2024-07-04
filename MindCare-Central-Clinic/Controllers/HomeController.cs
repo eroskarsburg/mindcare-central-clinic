@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MindCare.Application.DataAccess.Repository.IRepository;
 using MindCare.Application.Services.IServices;
+using MindCare.Application.Entities;
 using MindCare_Central_Clinic.Models;
 using System.Diagnostics;
 
@@ -38,8 +39,8 @@ namespace MindCare_Central_Clinic.Controllers
         /// <returns>A view populated with the model data.</returns>
         public IActionResult Index()
         {
-            Dictionary<int, int> dict = new Dictionary<int, int>();
-            _model.ListPendingPayments = new List<MindCare.Application.Entities.Payment>();
+            Dictionary<int, int> dict = [];
+            _model.ListPendingPayments = new List<Payment>();
             _model.ListAppointments = _appointmentService.GetAppointments().Result;
             _model.ListPayments = _paymentService.GetPayments().Result;
 

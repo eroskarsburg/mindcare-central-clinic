@@ -1,6 +1,7 @@
 ﻿@model HomeViewModel
 
-@if (Model.ListAppointments is null || Model.ListAppointments.Count == 0)
+@if (Model.ListAppointments is null || Model.ListAppointments.Count == 0
+    || Model.ListAppointments.Where(x => DateTime.Parse(x.ScheduledDate) > DateTime.Now).OrderBy(y => y.ScheduledDate).Count() == 0)
 {
     <p>Não há consultas marcadas.</p>
 }
