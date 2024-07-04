@@ -28,7 +28,7 @@ namespace MindCare.Application.Services
 
         public async Task<Professional> GetProfessional(int userId)
         {
-            return await _repository.Get(userId);
+            return await _repository.Get(userId: userId);
         }
 
         public async Task InsertProfessional(Professional professional)
@@ -55,6 +55,10 @@ namespace MindCare.Application.Services
 
         public async Task DeleteProfessional(int professionalId)
         {
+            var prof = await _repository.Get(profId: professionalId);
+
+            await _userRepository.Delete(prof.User.Id);
+
             await _repository.Delete(professionalId);
         }
     }

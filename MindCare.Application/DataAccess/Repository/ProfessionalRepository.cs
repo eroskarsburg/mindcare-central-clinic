@@ -44,12 +44,13 @@ namespace MindCare.Application.DataAccess.Repository
             finally { await _dbContext.Connection.CloseAsync(); }
         }
 
-        public async Task<Professional> Get(int userId)
+        public async Task<Professional> Get(int userId = 0, int profId = 0)
         {
             Professional professional = new();
             try
             {
-                _dbContext.Query = $"SELECT * FROM professionals WHERE id_user_prof={userId}";
+                string condition = userId == 0 ? $"id_professional={profId}" : $"id_user_prof={userId}";
+                _dbContext.Query = $"SELECT * FROM professionals WHERE {condition}";
                 await _dbContext.Connection.OpenAsync();
                 _dbContext.ExecuteQuery();
                 _dbContext.ExecuteReader();
@@ -64,6 +65,14 @@ namespace MindCare.Application.DataAccess.Repository
                         Cpf = _dbContext.Reader["cpf"].ToString() ?? string.Empty,
                         Speciality = _dbContext.Reader["speciality"].ToString() ?? string.Empty
                     };
+
+                    if (userId == 0)
+                    {
+                        professional.User = new()
+                        {
+                            Id = int.TryParse(_dbContext.Reader["id_user_prof"].ToString(), out int iduser) ? iduser : 0,
+                        };
+                    }
                 }
 
                 return await Task.FromResult(professional);
