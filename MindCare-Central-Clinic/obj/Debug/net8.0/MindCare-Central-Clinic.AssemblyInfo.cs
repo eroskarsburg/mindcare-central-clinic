@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MindCare-Central-Clinic")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0346f30baf9d0c611b50b55feef15d6f82eed798")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86053a1d7bc4d913967af276061fe90e086f8790")]
 [assembly: System.Reflection.AssemblyProductAttribute("MindCare-Central-Clinic")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MindCare-Central-Clinic")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
