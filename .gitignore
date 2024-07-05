@@ -397,5 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-/MindCare-Central-Clinic/obj
-/MindCare-Central-Clinic/obj/Debug/net8.0/
+/mindCare-central-clinic/obj
