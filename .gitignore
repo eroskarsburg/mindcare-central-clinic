@@ -403,3 +403,6 @@ obj/
 **/obj/
 **/obj/Debug/
 **/obj/Debug/net8.0
+
+# Specific file to ignore
+MindCare-Central-Clinic.assets.cache
