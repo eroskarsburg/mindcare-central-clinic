@@ -18,7 +18,7 @@
                 <input type="password" class="form-control" id="profile-confirmpassword">
             </div>
             <div style="visibility:hidden" class="form-label">
-                <input type="password" class="form-control" id="profile-confirmpassword" value="@Model.User.AccessLevel">
+                <input type="password" class="form-control" id="profile-accesslevel" value="@Model.User.AccessLevel">
             </div>
             <div>
                 <button class="button-6 button-6-primary" onclick="ActProfile.UpdateUserProfile(@Model.User.Id)">Salvar</button>
