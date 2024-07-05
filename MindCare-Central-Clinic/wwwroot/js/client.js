@@ -1,8 +1,4 @@
-﻿window.addEventListener('DOMContentLoaded', (event) => {
-    Util.MontarTable();
-});
-
-var ActClient = {
+﻿var ActClient = {
     Save: function () {
         var obj = {
             name: $('#client-name').val(),

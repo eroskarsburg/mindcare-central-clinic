@@ -1,4 +1,9 @@
-﻿function OpenPaymentInfo(seta) {
+﻿window.addEventListener('DOMContentLoaded', (event) => {
+    Util.MontarTable();
+});
+
+
+function OpenPaymentInfo(seta) {
 
     if ($("#" + seta).hasClass("active")) {
         $("#" + seta).removeClass("rotate");
@@ -12,7 +17,6 @@
     $("#setaConteudo_" + seta).slideToggle("slow");
 }
 
-
 var spinnerWrapper = document.getElementById("spinnerWrapper");
 var spinnerModal = document.getElementById("spinMod");
 window.addEventListener('load', function () {
@@ -23,9 +27,9 @@ window.addEventListener('load', function () {
 });
 
 var Util = {
-    MontarTable: async (idTabela = "table") => {
+    MontarTable: async (idTable = "table") => {
         return new Promise((resolve, reject) => {
-            $("#" + idTabela).dataTable({
+            $("#" + idTable).dataTable({
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.10.16/i18n/Portuguese-Brasil.json'
                 },
