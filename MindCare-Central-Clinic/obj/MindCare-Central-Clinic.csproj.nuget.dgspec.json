@@ -46,7 +46,7 @@
           "dependencies": {
             "Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter": {
               "target": "Package",
-              "version": "[8.0.4, )"
+              "version": "[8.0.6, )"
             },
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
@@ -83,7 +83,7 @@
         "projectName": "MindCare.Application",
         "projectPath": "C:\\Repositories\\mindcare-central-clinic\\MindCare.Application\\MindCare.Application.csproj",
         "packagesPath": "C:\\Users\\erosk\\.nuget\\packages\\",
-        "outputPath": "C:\\Repositories\\MindCare-Central-Clinic\\MindCare.Application\\obj\\",
+        "outputPath": "C:\\Repositories\\mindcare-central-clinic\\MindCare.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\erosk\\AppData\\Roaming\\NuGet\\NuGet.Config",
