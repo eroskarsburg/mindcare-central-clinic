@@ -33,7 +33,7 @@ namespace MindCare_Central_Clinic.Controllers
         public IActionResult Index()
         {
             _model.UserList = _service.GetUsers().Result;
-
+            Thread.Sleep(250);
             return View(_model);
         }
 

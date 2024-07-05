@@ -32,6 +32,7 @@ namespace MindCare_Central_Clinic.Controllers
         public IActionResult Index()
         {
             _model.ClientList = _service.GetClients().Result;
+            Thread.Sleep(250);
             return View(_model);
         }
 

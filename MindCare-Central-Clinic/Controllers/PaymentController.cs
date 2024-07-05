@@ -33,7 +33,7 @@ namespace MindCare_Central_Clinic.Controllers
         public IActionResult Index()
         {
             _model.PaymentList = _service.GetPayments().Result;
-
+            Thread.Sleep(250);
             return View(_model);
         }
 

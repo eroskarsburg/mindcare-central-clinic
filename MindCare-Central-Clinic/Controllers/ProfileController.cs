@@ -35,7 +35,7 @@ namespace MindCare_Central_Clinic.Controllers
         {
             _model.User = _userService.GetUser(id: (int)_contextAccessor.HttpContext.Session.GetInt32("UserId")).Result;
             _model.Professional = _professionalService.GetProfessional((int)_contextAccessor.HttpContext.Session.GetInt32("UserId")).Result;
-
+            Thread.Sleep(250);
             return View(_model);
         }
 

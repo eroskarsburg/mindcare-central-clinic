@@ -31,9 +31,8 @@ namespace MindCare_Central_Clinic.Controllers
         /// <returns>The view with the model.</returns>
         public IActionResult Index()
         {
-            Thread.Sleep(250);
             _model.ProfessionalList = _service.GetProfessionals().Result;
-
+            Thread.Sleep(250);
             return View(_model);
         }
 

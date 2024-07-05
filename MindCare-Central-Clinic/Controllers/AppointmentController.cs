@@ -34,6 +34,7 @@ namespace MindCare_Central_Clinic.Controllers
         /// <returns>The view with the model.</returns>
         public IActionResult Index()
         {
+            Thread.Sleep(250);
             _model.AppointmentList = _service.GetAppointments().Result;
             _model.ClientList = _clientService.GetClients().Result;
             return View(_model);

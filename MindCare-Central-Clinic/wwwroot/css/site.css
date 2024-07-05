@@ -42,11 +42,15 @@ td, tr, tbody, th{
     color: #a9927d;
 }
 
-thead {
-    border-color: unset;
-    border-bottom-width: thin;
-    color: #a9927d;
+table tr[class="even"] :nth-child(n) {
+    background: #a9927d1f;
 }
+
+    thead {
+        border-color: unset;
+        border-bottom-width: thin;
+        color: #a9927d;
+    }
 
 .form-select, .dropdown-item, .form-control {
     color: #74573c;
@@ -295,13 +299,12 @@ span#spanSpinner {
     border-radius: 30px;
 }
 
-
-.paginate_button.current {
+input[type="search"], select[name="table_length"] {
+    border: none !important;
     border-radius: 8px !important;
-    padding: 5px 15px !important;
-    border: 1px solid #00000024 !important;
+    background-color: white !important;
 }
 
-input[type="search"], select[name="table_length"] {
-    border-radius: 8px !important;
+a:active {
+    background-color: #c9b19c !important;
 }

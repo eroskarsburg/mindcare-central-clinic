@@ -61,6 +61,7 @@ namespace MindCare_Central_Clinic.Controllers
                 }
             }
 
+            Thread.Sleep(250);
             return View(_model);
         }
 
