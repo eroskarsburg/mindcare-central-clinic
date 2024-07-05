@@ -104,7 +104,7 @@ thead {
 .button-6 {
     align-items: center;
     background-color: #a9927d59;
-    border: 1px solid #a9927d;
+    border: none;
     border-radius: 1rem;
     box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
     box-sizing: border-box;
@@ -293,4 +293,15 @@ span#spanSpinner {
     border: none;
     margin-bottom: 12px;
     border-radius: 30px;
+}
+
+
+.paginate_button.current {
+    border-radius: 8px !important;
+    padding: 5px 15px !important;
+    border: 1px solid #00000024 !important;
+}
+
+input[type="search"], select[name="table_length"] {
+    border-radius: 8px !important;
 }
