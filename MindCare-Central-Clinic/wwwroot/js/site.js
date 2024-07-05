@@ -1,10 +1,4 @@
-﻿
-//window.onload = function () {
-//    Util.LimitTableRows(this);
-//}
-
-
-function OpenPaymentInfo(seta) {
+﻿function OpenPaymentInfo(seta) {
 
     if ($("#" + seta).hasClass("active")) {
         $("#" + seta).removeClass("rotate");
