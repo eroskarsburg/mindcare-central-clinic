@@ -18,6 +18,11 @@ namespace MindCare.Application.Services
             return await _clientRepository.Get();
         }
 
+        public async Task<Client> GetClient(int appointId)
+        {
+            return await _clientRepository.GetClientFromAppointment(appointId);
+        }
+
         public async Task InsertClient(Client client)
         {
             await _clientRepository.Insert(client);

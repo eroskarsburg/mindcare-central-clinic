@@ -11,6 +11,7 @@ namespace MindCare_Central_Clinic.Controllers
         private readonly ILogger<PaymentController> _logger;
         public PaymentViewModel _model;
         private readonly IPaymentService _service;
+        private readonly IClientService _clientService;
 
         /// <summary>
         /// Initializes a new instance of the PaymentController class with the specified logger, model, and payment service.
@@ -18,11 +19,12 @@ namespace MindCare_Central_Clinic.Controllers
         /// <param name="logger">The logger instance to log information.</param>
         /// <param name="model">The model representing the view data for the payment page.</param>
         /// <param name="service">The service for handling payments.</param>
-        public PaymentController(ILogger<PaymentController> logger, PaymentViewModel model, IPaymentService service)
+        public PaymentController(ILogger<PaymentController> logger, PaymentViewModel model, IPaymentService service, IClientService clientService)
         {
             _logger = logger;
             _model = model;
             _service = service;
+            _clientService = clientService;
         }
 
         /// <summary>
@@ -33,6 +35,10 @@ namespace MindCare_Central_Clinic.Controllers
         public IActionResult Index()
         {
             _model.PaymentList = _service.GetPayments().Result;
+            foreach (var item in _model.PaymentList)
+            {
+                item.Client = _clientService.GetClient(item.IdAppointment).Result;
+            }
             Thread.Sleep(250);
             return View(_model);
         }
