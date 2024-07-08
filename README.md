@@ -20,7 +20,7 @@ MindCare is a web advisory control panel designed for a psychological health cli
 - **Administrative Dashboard:** Monitor clinic operations, generate reports, and manage user roles.
 - **Secure Authentication:** Ensure data security with role-based access control and encrypted communication.
 ### Installation
-1. Clone the repository: `git clone https://github.com/your/repository.git`
+1. Clone the repository: `git clone https://github.com/eroskarsburg/mindcare-central-clinic.git`
 2. Navigate to the project directory.
 3. Install dependencies: `dotnet restore`
 4. Configure database connection in `appsettings.json`.
