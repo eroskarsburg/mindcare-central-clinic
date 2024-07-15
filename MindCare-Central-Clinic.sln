@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MindCare-Central-Clinic", "MindCare-Central-Clinic\MindCare-Central-Clinic.csproj", "{BF25F5A8-3740-4DF9-BAC2-83D264F59C14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MindCare.Application", "MindCare.Application\MindCare.Application.csproj", "{E69ABC73-464D-458B-808E-65ECF73DF74F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MindCare.Application", "MindCare.Application\MindCare.Application.csproj", "{E69ABC73-464D-458B-808E-65ECF73DF74F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

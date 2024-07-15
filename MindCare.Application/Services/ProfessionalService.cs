@@ -2,6 +2,7 @@
 using MindCare.Application.Entities;
 using MindCare.Application.Enums;
 using MindCare.Application.Services.IServices;
+using System.Text;
 
 namespace MindCare.Application.Services
 {
