@@ -16,6 +16,8 @@ const files = {
     'datatables/dataTables.bootstrap5.min.js': 'datatables.net-bs5/js/dataTables.bootstrap5.min.js',
     'datatables/dataTables.bootstrap5.min.css': 'datatables.net-bs5/css/dataTables.bootstrap5.min.css',
     'datatables/pt-BR.json': 'datatables.net-plugins/i18n/pt-BR.json',
+    'fullcalendar/index.global.min.js': 'fullcalendar/index.global.min.js',
+    'fullcalendar/pt-br.global.min.js': '@fullcalendar/core/locales/pt-br.global.min.js',
 };
 
 rmSync(lib, { recursive: true, force: true });

@@ -10,4 +10,6 @@ public sealed class Professional
     public string Cpf { get; set; } = string.Empty;
     public string Gender { get; set; } = string.Empty;
     public string Speciality { get; set; } = string.Empty;
+
+    public ICollection<ProfessionalAvailability> Availability { get; } = [];
 }

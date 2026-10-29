@@ -32,11 +32,14 @@ public static class DependencyInjection
         services.AddOptions<DatabaseOptions>().Bind(configuration.GetSection(DatabaseOptions.Section));
         services.AddOptions<SeedOptions>().Bind(configuration.GetSection(SeedOptions.Section));
         services.AddOptions<SecurityOptions>().Bind(configuration.GetSection(SecurityOptions.Section));
+        services.AddOptions<TeleconsultOptions>().Bind(configuration.GetSection(TeleconsultOptions.Section));
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordService, PasswordService>();
 
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
+        services.AddScoped<IAccessScope, AccessScope>();
+        services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IClientService, ClientService>();

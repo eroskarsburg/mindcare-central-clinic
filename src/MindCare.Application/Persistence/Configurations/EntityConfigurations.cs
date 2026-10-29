@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MindCare.Application.Domain;
 
 namespace MindCare.Application.Persistence.Configurations;
@@ -75,7 +76,23 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         b.Property(x => x.Modality).HasColumnName("modality").HasConversion<string>().HasMaxLength(20);
         b.Property(x => x.ScheduledAt).HasColumnName("scheduled_date");
         b.Property(x => x.Observation).HasColumnName("observation").HasMaxLength(500);
+        b.Property(x => x.ProfessionalId).HasColumnName("id_professional");
+        b.Property(x => x.DurationMinutes).HasColumnName("duration_minutes").HasDefaultValue(Appointment.DefaultDurationMinutes);
+        b.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20)
+            .HasDefaultValue(AppointmentStatus.Agendada).HasSentinel((AppointmentStatus)(-1));
+        b.Property(x => x.CancellationReason).HasColumnName("cancellation_reason").HasMaxLength(200);
+        b.Property(x => x.SeriesId).HasColumnName("series_id");
+        b.Property(x => x.MeetingUrl).HasColumnName("meeting_url").HasMaxLength(200);
+        b.Ignore(x => x.EndsAt);
+        b.Ignore(x => x.OccupiesSlot);
         b.HasIndex(x => x.ScheduledAt);
+        b.HasIndex(x => new { x.ProfessionalId, x.ScheduledAt });
+        b.HasIndex(x => x.SeriesId);
+
+        b.HasOne(x => x.Professional)
+            .WithMany()
+            .HasForeignKey(x => x.ProfessionalId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         b.HasOne(x => x.Client)
             .WithMany(x => x.Appointments)
@@ -124,5 +141,49 @@ internal sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         b.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(45);
         b.HasIndex(x => x.Timestamp);
         b.HasIndex(x => new { x.Entity, x.EntityId });
+    }
+}
+
+internal sealed class ProfessionalAvailabilityConfiguration : IEntityTypeConfiguration<ProfessionalAvailability>
+{
+    private static readonly ValueConverter<TimeOnly, TimeSpan> TimeOnlyConverter =
+        new(t => t.ToTimeSpan(), ts => TimeOnly.FromTimeSpan(ts));
+
+    public void Configure(EntityTypeBuilder<ProfessionalAvailability> b)
+    {
+        b.ToTable("professional_availability");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_availability");
+        b.Property(x => x.ProfessionalId).HasColumnName("id_professional");
+        b.Property(x => x.DayOfWeek).HasColumnName("day_of_week");
+        // O provider MySQL lê colunas TIME como TimeSpan: converte explicitamente para TimeOnly.
+        b.Property(x => x.StartTime).HasColumnName("start_time").HasConversion(TimeOnlyConverter);
+        b.Property(x => x.EndTime).HasColumnName("end_time").HasConversion(TimeOnlyConverter);
+        b.HasIndex(x => new { x.ProfessionalId, x.DayOfWeek });
+
+        b.HasOne<Professional>()
+            .WithMany(p => p.Availability)
+            .HasForeignKey(x => x.ProfessionalId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class ScheduleBlockConfiguration : IEntityTypeConfiguration<ScheduleBlock>
+{
+    public void Configure(EntityTypeBuilder<ScheduleBlock> b)
+    {
+        b.ToTable("schedule_blocks");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_block");
+        b.Property(x => x.ProfessionalId).HasColumnName("id_professional");
+        b.Property(x => x.StartsAt).HasColumnName("starts_at");
+        b.Property(x => x.EndsAt).HasColumnName("ends_at");
+        b.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(120).IsRequired();
+        b.HasIndex(x => new { x.StartsAt, x.EndsAt });
+
+        b.HasOne(x => x.Professional)
+            .WithMany()
+            .HasForeignKey(x => x.ProfessionalId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -7,10 +7,12 @@
     "vendor": "node scripts/vendor.mjs"
   },
   "dependencies": {
+    "@fullcalendar/core": "6.1.22",
     "bootstrap": "5.3.8",
     "bootstrap-icons": "1.13.2",
     "datatables.net": "3.1.4",
     "datatables.net-bs5": "3.1.4",
-    "datatables.net-plugins": "3.1.2"
+    "datatables.net-plugins": "3.1.2",
+    "fullcalendar": "6.1.22"
   }
 }

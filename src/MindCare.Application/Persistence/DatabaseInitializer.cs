@@ -87,56 +87,97 @@ internal sealed partial class DatabaseInitializer(
             return;
         }
 
-        var today = clock.GetLocalNow().Date;
+        var now = clock.GetLocalNow().DateTime;
+        var today = now.Date;
         Client[] clients =
         [
-            new() { Name = "Ana Beatriz Moura", Cpf = "52998224725", Gender = "Feminino", Age = 29 },
-            new() { Name = "Carlos Eduardo Lima", Cpf = "11144477735", Gender = "Masculino", Age = 41 },
-            new() { Name = "Helena Duarte", Cpf = "39053344705", Gender = "Feminino", Age = 34 },
+            new() { Name = "Ana Beatriz Moura", Cpf = "52998224725", Gender = "Feminino", Age = 29, ConsentAt = today.AddDays(-40) },
+            new() { Name = "Carlos Eduardo Lima", Cpf = "11144477735", Gender = "Masculino", Age = 41, ConsentAt = today.AddDays(-20) },
+            new() { Name = "Helena Duarte", Cpf = "39053344705", Gender = "Feminino", Age = 34, ConsentAt = today.AddDays(-15) },
             new() { Name = "Rafael Nogueira", Cpf = "86288366757", Gender = "Masculino", Age = 23 },
-            new() { Name = "Sam Oliveira", Cpf = "71428793860", Gender = "Outro", Age = 31 },
+            new() { Name = "Sam Oliveira", Cpf = "71428793860", Gender = "Outro", Age = 31, ConsentAt = today.AddDays(-5) },
         ];
         db.Clients.AddRange(clients);
 
-        var professional = new Professional
+        Professional NewProfessional(string name, string cpf, string gender, string speciality, string password) => new()
         {
-            Name = "Letícia Kasper",
-            Cpf = "15350946056",
-            Gender = "Feminino",
-            Speciality = "Psicoterapia",
+            Name = name,
+            Cpf = cpf,
+            Gender = gender,
+            Speciality = speciality,
+            User = new User { Username = cpf, PasswordHash = passwords.Hash(password), AccessLevel = AccessLevel.Profissional },
         };
-        professional.User = new User
-        {
-            Username = professional.Cpf,
-            PasswordHash = passwords.Hash("leticia" + professional.Cpf),
-            AccessLevel = AccessLevel.Profissional,
-        };
-        db.Professionals.Add(professional);
 
-        (int Client, int DayOffset, int Hour, AppointmentModality Modality, decimal Price, decimal Paid)[] plan =
-        [
-            (0, -6, 9, AppointmentModality.Presencial, 180, 180),
-            (1, -3, 14, AppointmentModality.Teleconsulta, 150, 50),
-            (2, -1, 16, AppointmentModality.Presencial, 180, 0),
-            (3, 0, 10, AppointmentModality.Presencial, 160, 0),
-            (4, 0, 15, AppointmentModality.Teleconsulta, 150, 150),
-            (0, 1, 9, AppointmentModality.Presencial, 180, 0),
-            (2, 3, 11, AppointmentModality.Teleconsulta, 180, 0),
-            (1, 5, 17, AppointmentModality.Presencial, 150, 0),
-        ];
+        var leticia = NewProfessional("Letícia Kasper", "15350946056", "Feminino", "Psicoterapia", "leticia" + "15350946056");
+        var marcos = NewProfessional("Marcos Teixeira", "46873529010", "Masculino", "Psiquiatria", "marcos" + "46873529010");
+        db.Professionals.AddRange(leticia, marcos);
 
-        foreach (var (client, offset, hour, modality, price, paid) in plan)
+        // Letícia: seg–sex 08–12 e 13–18 · Marcos: ter e qui 14–20
+        foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })
         {
-            var payment = new Payment { Price = price, PaidPrice = paid };
-            payment.Reconcile(today.AddDays(Math.Min(offset, 0)));
-            db.Appointments.Add(new Appointment
-            {
-                Client = clients[client],
-                Modality = modality,
-                ScheduledAt = today.AddDays(offset).AddHours(hour),
-                Payment = payment,
-            });
+            leticia.Availability.Add(new ProfessionalAvailability { DayOfWeek = day, StartTime = new(8, 0), EndTime = new(12, 0) });
+            leticia.Availability.Add(new ProfessionalAvailability { DayOfWeek = day, StartTime = new(13, 0), EndTime = new(18, 0) });
         }
+
+        foreach (var day in new[] { DayOfWeek.Tuesday, DayOfWeek.Thursday })
+        {
+            marcos.Availability.Add(new ProfessionalAvailability { DayOfWeek = day, StartTime = new(14, 0), EndTime = new(20, 0) });
+        }
+
+        db.ScheduleBlocks.Add(new ScheduleBlock
+        {
+            StartsAt = today.AddDays(20),
+            EndsAt = today.AddDays(21),
+            Reason = "Feriado",
+        });
+
+        Appointment Session(Client client, Professional professional, DateTime start, AppointmentModality modality, decimal price, decimal paid, Guid? series = null)
+        {
+            var status = start < now
+                ? AppointmentStatus.Realizada
+                : start < today.AddDays(2) ? AppointmentStatus.Confirmada : AppointmentStatus.Agendada;
+            var payment = new Payment { Price = price, PaidPrice = paid };
+            payment.Reconcile(start < now ? start : today);
+            return new Appointment
+            {
+                Client = client,
+                Professional = professional,
+                Modality = modality,
+                ScheduledAt = start,
+                Status = status,
+                SeriesId = series,
+                MeetingUrl = modality == AppointmentModality.Teleconsulta ? $"https://meet.jit.si/mindcare-demo-{Guid.NewGuid():N}" : null,
+                Payment = payment,
+            };
+        }
+
+        // Série semanal da Ana com a Letícia: 4 semanas para trás e 4 para frente, mesmo dia e horário.
+        var series = Guid.NewGuid();
+        var anchor = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Wednesday).AddHours(9);
+        for (var week = -4; week <= 4; week++)
+        {
+            var start = anchor.AddDays(7 * week);
+            db.Appointments.Add(Session(clients[0], leticia, start, AppointmentModality.Presencial, 180, start < now ? 180 : 0, series));
+        }
+
+        Appointment[] avulsas =
+        [
+            Session(clients[1], leticia, today.AddDays(-3).AddHours(14), AppointmentModality.Teleconsulta, 150, 50),
+            Session(clients[2], leticia, today.AddDays(-1).AddHours(16), AppointmentModality.Presencial, 180, 0),
+            Session(clients[3], marcos, today.AddDays(-2).AddHours(15), AppointmentModality.Presencial, 300, 300),
+            Session(clients[3], leticia, today.AddHours(10), AppointmentModality.Presencial, 160, 0),
+            Session(clients[4], leticia, today.AddHours(15), AppointmentModality.Teleconsulta, 150, 150),
+            Session(clients[2], leticia, today.AddDays(3).AddHours(11), AppointmentModality.Teleconsulta, 180, 0),
+            Session(clients[1], marcos, today.AddDays(5).AddHours(17), AppointmentModality.Presencial, 300, 0),
+        ];
+        db.Appointments.AddRange(avulsas);
+
+        // Uma falta e um cancelamento para os indicadores.
+        avulsas[1].Status = AppointmentStatus.Faltou;
+        var cancelled = Session(clients[4], marcos, today.AddDays(2).AddHours(16), AppointmentModality.Presencial, 300, 0);
+        cancelled.Status = AppointmentStatus.Cancelada;
+        cancelled.CancellationReason = "Paciente viajando";
+        db.Appointments.Add(cancelled);
 
         await db.SaveChangesAsync(ct);
         LogDemoSeeded(logger);

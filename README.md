@@ -35,8 +35,9 @@
 
 | Área | O que faz |
 | --- | --- |
-| **Visão geral** | Indicadores do dia e do mês (consultas, pacientes, valores recebidos e a receber), próximas consultas e pagamentos em aberto. |
-| **Agenda** | Agendamento presencial ou por teleconsulta, com o pagamento registrado junto da consulta. |
+| **Visão geral** | Agenda do dia, taxa de faltas, consultas aguardando confirmação, valores recebidos e a receber. Profissionais veem apenas os próprios atendimentos. |
+| **Agenda** | Calendário semanal/diário/mensal (FullCalendar) com arrastar para remarcar, sessões recorrentes (semanal/quinzenal), detecção de conflito por profissional e paciente, status (agendada, confirmada, realizada, falta, cancelada) e sala de teleconsulta gerada automaticamente. |
+| **Horários** | Disponibilidade semanal de cada profissional e bloqueios de agenda (férias, feriados da clínica), respeitados ao criar séries. |
 | **Pacientes** | Cadastro com validação de CPF (dígitos verificadores) e bloqueio de exclusão de quem tem consultas. |
 | **Financeiro** | Totais faturado, recebido e em aberto; registro de pagamentos parciais ou integrais. O status é calculado automaticamente. |
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
@@ -103,6 +104,7 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `Seed__AdminUsername` / `Seed__AdminPassword` | ✅ na 1ª execução | Administrador criado quando ainda não existe nenhum. |
 | `Seed__DemoData` | | `true` popula uma base vazia com dados fictícios. Padrão: ligado só em `Development`. |
 | `Security__MaxFailedLoginAttempts` / `Security__LockoutMinutes` | | Bloqueio de conta após tentativas de login erradas. Padrão: 5 tentativas, 15 minutos. |
+| `Teleconsult__BaseUrl` | | Servidor de videochamada das teleconsultas. Padrão: `https://meet.jit.si`. |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |
@@ -193,7 +195,7 @@ O [Dependabot](.github/dependabot.yml) abre PRs semanais (segunda-feira) para:
 
 - **NuGet**, com grupos para EF Core, testes e demais pacotes;
 - **SDK do .NET** (`global.json`);
-- **npm** (Bootstrap, Bootstrap Icons, DataTables);
+- **npm** (Bootstrap, Bootstrap Icons, DataTables, FullCalendar);
 - **Docker** (imagens do `Dockerfile` e do `docker-compose.yml`);
 - **GitHub Actions**.
 

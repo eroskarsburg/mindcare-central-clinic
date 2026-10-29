@@ -1,8 +1,11 @@
 @model AppointmentsPageViewModel
+@using MindCare.Web.Controllers
 @{
     ViewData["Title"] = "Agenda";
     var now = DateTime.Now;
-    var upcoming = Model.Appointments.Count(a => a.ScheduledAt >= now);
+    var upcoming = Model.Appointments.Count(a => a.ScheduledAt >= now && a.OccupiesSlot);
+    var restricted = Model.RestrictedProfessionalId is not null;
+    int[] durations = [30, 40, 45, 50, 60, 90, 120];
 }
 
 <section data-crud data-endpoint="/Appointment" data-modal="#appointmentModal">
@@ -10,69 +13,116 @@
         <div>
             <span class="eyebrow"><i class="bi bi-calendar-heart"></i> Atendimentos</span>
             <h1>Agenda</h1>
-            <p>@upcoming @(upcoming == 1 ? "consulta futura" : "consultas futuras") · @Model.Appointments.Count no total</p>
+            <p>@upcoming @(upcoming == 1 ? "consulta futura" : "consultas futuras") · clique num horário livre para agendar ou arraste para remarcar.</p>
         </div>
-        @if (Model.Clients.Count == 0)
-        {
-            <a class="btn btn-soft" asp-controller="Client" asp-action="Index"><i class="bi bi-person-plus me-1"></i> Cadastre um paciente primeiro</a>
-        }
-        else
-        {
-            <button class="btn btn-primary" type="button" data-crud-create><i class="bi bi-plus-lg me-1"></i> Agendar consulta</button>
-        }
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            @if (!restricted && Model.Professionals.Count > 0)
+            {
+                <select class="form-select w-auto" id="professional-filter" aria-label="Filtrar por profissional">
+                    <option value="">Todos os profissionais</option>
+                    @foreach (var p in Model.Professionals)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                </select>
+            }
+            <a class="btn btn-soft" asp-controller="Schedule" asp-action="Index"><i class="bi bi-clock-history me-1"></i> Horários</a>
+            @if (Model.Clients.Count == 0)
+            {
+                <a class="btn btn-primary" asp-controller="Client" asp-action="Index"><i class="bi bi-person-plus me-1"></i> Cadastre um paciente</a>
+            }
+            else
+            {
+                <button class="btn btn-primary" type="button" data-crud-create><i class="bi bi-plus-lg me-1"></i> Agendar</button>
+            }
+        </div>
     </header>
 
-    <div class="mc-card mc-card-body pt-4">
-        <table class="table table-hover" data-table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Paciente</th>
-                    <th>Modalidade</th>
-                    <th>Valor</th>
-                    <th>Pagamento</th>
-                    <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var a in Model.Appointments)
-                {
-                    var p = a.Payment ?? new Payment();
-                    var past = a.ScheduledAt < now;
-                    <tr class="@(past ? "opacity-75" : null)">
-                        <td data-order="@a.ScheduledAt.ToString("yyyyMMddHHmm")">
-                            <span class="cell-title">@a.ScheduledAt.ToString("dd/MM/yyyy")</span>
-                            <span class="cell-sub">@a.ScheduledAt.ToString("ddd · HH:mm")</span>
-                        </td>
-                        <td>
-                            <span class="cell-title">@a.Client?.Name</span>
-                            @if (!string.IsNullOrEmpty(a.Observation))
-                            {
-                                <span class="cell-sub text-truncate" style="max-width: 280px" title="@a.Observation">@a.Observation</span>
-                            }
-                        </td>
-                        <td><span class="badge-soft slate"><i class="bi @a.Modality.ModalityIcon()"></i>@a.Modality</span></td>
-                        <td data-order="@p.Price">@p.Price.ToString("C")</td>
-                        <td><partial name="_PaymentStatus" model="p.Status" /></td>
-                        <td class="table-actions">
-                            <button class="btn-icon" type="button" title="Editar" aria-label="Editar consulta"
-                                    data-crud-edit data-item="@Html.ToDataJson(new { a.Id, a.ClientId, a.Modality, a.ScheduledAt, a.Observation, p.Price, PaidPrice = p.PaidPrice == 0 ? (decimal?)null : p.PaidPrice })">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir consulta"
-                                    data-crud-delete data-id="@a.Id" data-name="a consulta de @a.Client?.Name em @a.ScheduledAt.ToString("dd/MM 'às' HH:mm")">
-                                <i class="bi bi-trash3"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <ul class="nav nav-pills segmented d-inline-flex mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="btn active" id="tab-calendar" data-bs-toggle="tab" data-bs-target="#pane-calendar" type="button" role="tab" aria-controls="pane-calendar" aria-selected="true">
+                <i class="bi bi-calendar3 me-1"></i> Calendário
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="btn" id="tab-list" data-bs-toggle="tab" data-bs-target="#pane-list" type="button" role="tab" aria-controls="pane-list" aria-selected="false">
+                <i class="bi bi-list-ul me-1"></i> Lista
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="pane-calendar" role="tabpanel" aria-labelledby="tab-calendar">
+            <div class="mc-card mc-card-body pt-4">
+                <div id="calendar"></div>
+                <div class="calendar-legend mt-3">
+                    @foreach (var status in Enum.GetValues<AppointmentStatus>())
+                    {
+                        <span><i class="legend-dot ev-@status.ToString().ToLowerInvariant()"></i>@status</span>
+                    }
+                    <span><i class="legend-dot ev-block"></i>Bloqueio</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
+            <div class="mc-card mc-card-body pt-4">
+                <table class="table table-hover" data-table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Paciente</th>
+                            <th>Profissional</th>
+                            <th>Status</th>
+                            <th>Valor</th>
+                            <th>Pagamento</th>
+                            <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Appointments)
+                        {
+                            var p = a.Payment ?? new Payment();
+                            <tr class="@(a.Status == AppointmentStatus.Cancelada ? "opacity-50" : null)">
+                                <td data-order="@a.ScheduledAt.ToString("yyyyMMddHHmm")">
+                                    <span class="cell-title">@a.ScheduledAt.ToString("dd/MM/yyyy")</span>
+                                    <span class="cell-sub">@a.ScheduledAt.ToString("ddd · HH:mm")–@a.EndsAt.ToString("HH:mm")</span>
+                                </td>
+                                <td>
+                                    <span class="cell-title">@a.Client?.Name</span>
+                                    <span class="cell-sub">
+                                        <i class="bi @a.Modality.ModalityIcon() me-1"></i>@a.Modality
+                                        @if (a.SeriesId is not null)
+                                        {
+                                            <i class="bi bi-arrow-repeat ms-1" title="Sessão recorrente"></i>
+                                        }
+                                    </span>
+                                </td>
+                                <td>@(a.Professional?.Name ?? "—")</td>
+                                <td><partial name="_AppointmentStatus" model="a.Status" /></td>
+                                <td data-order="@p.Price">@p.Price.ToString("C")</td>
+                                <td><partial name="_PaymentStatus" model="p.Status" /></td>
+                                <td class="table-actions">
+                                    <button class="btn-icon" type="button" title="Editar" aria-label="Editar consulta"
+                                            data-crud-edit data-item="@Html.ToDataJson(AppointmentController.ToFormItem(a))">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir consulta"
+                                            data-crud-delete data-id="@a.Id" data-name="a consulta de @a.Client?.Name em @a.ScheduledAt.ToString("dd/MM 'às' HH:mm")">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
 
 <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <form class="modal-content" autocomplete="off">
             <div class="modal-header">
                 <h5 class="modal-title" id="appointmentModalTitle" data-title-create="Agendar consulta" data-title-edit="Editar consulta">Agendar consulta</h5>
@@ -81,7 +131,7 @@
             <div class="modal-body">
                 <div class="form-section"><i class="bi bi-calendar-event"></i> Consulta</div>
                 <div class="row g-3">
-                    <div class="col-md-7">
+                    <div class="col-md-6">
                         <label class="form-label" for="appointment-client">Paciente</label>
                         <select class="form-select" id="appointment-client" name="clientId" required>
                             <option value="" selected disabled>Selecione o paciente</option>
@@ -91,9 +141,28 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-6 @(restricted ? "d-none" : null)">
+                        <label class="form-label" for="appointment-professional">Profissional</label>
+                        <select class="form-select" id="appointment-professional" name="professionalId" required="@(!restricted)">
+                            <option value="" selected disabled>Selecione o profissional</option>
+                            @foreach (var p in Model.Professionals)
+                            {
+                                <option value="@p.Id" selected="@(p.Id == Model.RestrictedProfessionalId)">@p.Name · @p.Speciality</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-7">
                         <label class="form-label" for="appointment-date">Data e horário</label>
                         <input class="form-control" id="appointment-date" name="scheduledAt" type="datetime-local" step="300" required />
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label" for="appointment-duration">Duração</label>
+                        <select class="form-select" id="appointment-duration" name="durationMinutes">
+                            @foreach (var d in durations)
+                            {
+                                <option value="@d" selected="@(d == Appointment.DefaultDurationMinutes)">@d min</option>
+                            }
+                        </select>
                     </div>
                     <div class="col-12">
                         <span class="form-label d-block">Modalidade</span>
@@ -103,7 +172,59 @@
                             <input class="btn-check" type="radio" name="modality" id="modality-tele" value="Teleconsulta" />
                             <label class="btn" for="modality-tele"><i class="bi bi-camera-video me-1"></i> Teleconsulta</label>
                         </div>
+                        <div class="small mt-2 d-none" data-meeting-link>
+                            <i class="bi bi-link-45deg me-1"></i><a href="#" target="_blank" rel="noopener">Abrir sala da teleconsulta</a>
+                        </div>
                     </div>
+
+                    <div class="col-12" data-create-only>
+                        <span class="form-label d-block">Repetição</span>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8">
+                                <div class="segmented" role="radiogroup" aria-label="Repetição">
+                                    <input class="btn-check" type="radio" name="recurrence" id="rec-none" value="Nenhuma" checked data-default />
+                                    <label class="btn" for="rec-none">Avulsa</label>
+                                    <input class="btn-check" type="radio" name="recurrence" id="rec-weekly" value="Semanal" />
+                                    <label class="btn" for="rec-weekly"><i class="bi bi-arrow-repeat me-1"></i> Semanal</label>
+                                    <input class="btn-check" type="radio" name="recurrence" id="rec-biweekly" value="Quinzenal" />
+                                    <label class="btn" for="rec-biweekly">Quinzenal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4" data-occurrences>
+                                <div class="input-group">
+                                    <input class="form-control" type="number" name="occurrences" id="appointment-occurrences" min="1" max="52" value="1" aria-label="Número de sessões" />
+                                    <span class="input-group-text">sessões</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="small text-muted-mc mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>Datas em férias ou feriados cadastrados são puladas automaticamente.</p>
+                    </div>
+
+                    <div class="col-md-6" data-edit-only>
+                        <label class="form-label" for="appointment-status">Status</label>
+                        <select class="form-select" id="appointment-status" name="status">
+                            @foreach (var status in Enum.GetValues<AppointmentStatus>())
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-none" data-cancel-reason>
+                        <label class="form-label" for="appointment-reason">Motivo do cancelamento</label>
+                        <input class="form-control" id="appointment-reason" name="cancellationReason" maxlength="200" />
+                    </div>
+                    <div class="col-12 d-none" data-series-scope>
+                        <div class="alert alert-light border d-flex flex-wrap align-items-center gap-3 mb-0 py-2">
+                            <span><i class="bi bi-arrow-repeat me-1"></i>Esta consulta faz parte de uma série. Aplicar alterações em:</span>
+                            <div class="segmented flex-grow-1" role="radiogroup" aria-label="Abrangência">
+                                <input class="btn-check" type="radio" name="scope" id="scope-one" value="ApenasEsta" checked data-default />
+                                <label class="btn" for="scope-one">Apenas esta</label>
+                                <input class="btn-check" type="radio" name="scope" id="scope-next" value="EstaEProximas" />
+                                <label class="btn" for="scope-next">Esta e as próximas</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-12">
                         <label class="form-label" for="appointment-observation">Observação <span class="text-muted-mc fw-normal">(opcional)</span></label>
                         <textarea class="form-control" id="appointment-observation" name="observation" rows="2" maxlength="500"></textarea>
@@ -127,12 +248,75 @@
                         </div>
                     </div>
                 </div>
-                <p class="small text-muted-mc mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>O status do pagamento é calculado automaticamente a partir dos valores.</p>
+                <p class="small text-muted-mc mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>O status do pagamento é calculado automaticamente. Em séries, o valor pago vale só para a primeira sessão.</p>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-link text-danger me-auto d-none" data-modal-delete><i class="bi bi-trash3 me-1"></i>Excluir</button>
                 <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/lib/fullcalendar/index.global.min.js"></script>
+    <script src="~/lib/fullcalendar/pt-br.global.min.js"></script>
+    <script src="~/js/calendar.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const modal = document.getElementById('appointmentModal');
+            const form = modal.querySelector('form');
+            const section = document.querySelector('[data-crud]');
+            const status = form.querySelector('[name="status"]');
+            const reason = form.querySelector('[data-cancel-reason]');
+            const seriesScope = form.querySelector('[data-series-scope]');
+            const occurrences = form.querySelector('[data-occurrences]');
+            const meeting = form.querySelector('[data-meeting-link]');
+            const deleteButton = modal.querySelector('[data-modal-delete]');
+            let current = null;
+
+            const sync = () => {
+                reason.classList.toggle('d-none', status.value !== 'Cancelada' || !current?.id);
+                const recurrence = form.querySelector('[name="recurrence"]:checked')?.value;
+                occurrences.classList.toggle('invisible', recurrence === 'Nenhuma');
+                if (recurrence !== 'Nenhuma' && Number(form.occurrences.value) < 2) form.occurrences.value = 8;
+                if (recurrence === 'Nenhuma') form.occurrences.value = 1;
+            };
+
+            form.addEventListener('crud:filled', ({ detail }) => {
+                current = detail?.id ? detail : null;
+                seriesScope.classList.toggle('d-none', !current?.isSeries);
+                meeting.classList.toggle('d-none', !current?.meetingUrl);
+                if (current?.meetingUrl) meeting.querySelector('a').href = current.meetingUrl;
+                deleteButton.classList.toggle('d-none', !current);
+                sync();
+            });
+            form.addEventListener('change', sync);
+
+            deleteButton.addEventListener('click', async () => {
+                if (!current) return;
+                bootstrap.Modal.getInstance(modal)?.hide();
+                const ok = await MindCare.confirmDialog(`Excluir a consulta de ${current.clientName}? Para manter o histórico, prefira marcá-la como cancelada.`);
+                if (!ok) return;
+                try {
+                    const result = await MindCare.api('DELETE', `/Appointment/Delete/${current.id}`);
+                    MindCare.Toast.flash(result.message);
+                    window.location.reload();
+                } catch (error) {
+                    MindCare.Toast.show(error.message, 'danger');
+                }
+            });
+
+            // Restaura o último profissional filtrado no calendário.
+            const filter = document.getElementById('professional-filter');
+            try {
+                const saved = localStorage.getItem('mindcare:calendar-professional');
+                if (filter && saved && [...filter.options].some(o => o.value === saved)) {
+                    filter.value = saved;
+                    window.MindCare.calendar?.refetchEvents();
+                }
+            } catch { /* ignore */ }
+        })();
+    </script>
+}

@@ -21,3 +21,28 @@ public enum PaymentStatus
     Confirmado,
     Parcial,
 }
+
+/// <summary>Ciclo de vida de uma consulta.</summary>
+public enum AppointmentStatus
+{
+    Agendada,
+    Confirmada,
+    Realizada,
+    Faltou,
+    Cancelada,
+}
+
+/// <summary>Repetição de uma consulta ao ser criada.</summary>
+public enum RecurrenceFrequency
+{
+    Nenhuma,
+    Semanal,
+    Quinzenal,
+}
+
+/// <summary>Abrangência de uma alteração em consultas de uma série.</summary>
+public enum SeriesScope
+{
+    ApenasEsta,
+    EstaEProximas,
+}

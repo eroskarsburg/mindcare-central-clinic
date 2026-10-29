@@ -46,13 +46,15 @@ public sealed class ServiceTests : IDisposable
         var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
         var service = new AppointmentService(db, _clock);
 
-        var id = await service.CreateAsync(
+        var result = await service.CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Teleconsulta, new DateTime(2026, 5, 6, 14, 0, 0), "  primeira sessão ", 180, 60), Ct);
 
-        var appointment = await db.Appointments.Include(a => a.Payment).AsNoTracking().SingleAsync(a => a.Id == id, Ct);
+        Assert.Equal(1, result.Affected);
+        var appointment = await db.Appointments.Include(a => a.Payment).AsNoTracking().SingleAsync(Ct);
         Assert.Equal("primeira sessão", appointment.Observation);
         Assert.Equal(PaymentStatus.Parcial, appointment.Payment!.Status);
         Assert.Equal(new DateTime(2026, 5, 4), appointment.Payment.PaidDate);
+        Assert.StartsWith("https://meet.jit.si/mindcare-", appointment.MeetingUrl, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -71,10 +73,10 @@ public sealed class ServiceTests : IDisposable
         using var db = _database.CreateContext();
         var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
         var service = new AppointmentService(db, _clock);
-        var id = await service.CreateAsync(
+        await service.CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Presencial, new DateTime(2026, 5, 6, 14, 0, 0), null, 100, 0), Ct);
 
-        await service.DeleteAsync(id, Ct);
+        await service.DeleteAsync((await db.Appointments.SingleAsync(Ct)).Id, Ct);
 
         Assert.False(await db.Payments.AnyAsync(Ct));
     }

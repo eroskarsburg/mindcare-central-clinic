@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Horários de atendimento";
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-clock-history"></i> Agenda</span>
+        <h1>Horários de atendimento</h1>
+    </div>
+</header>
+
+<div class="mc-card">
+    <div class="empty-state">
+        <i class="bi bi-person-badge"></i>
+        Cadastre um profissional para configurar os horários de atendimento.
+        @if (User.IsAdmin())
+        {
+            <div class="mt-3"><a class="btn btn-primary" asp-controller="Professional" asp-action="Index">Cadastrar profissional</a></div>
+        }
+    </div>
+</div>

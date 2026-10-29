@@ -11,6 +11,8 @@ public sealed class MindCareDbContext(DbContextOptions<MindCareDbContext> option
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ProfessionalAvailability> Availability => Set<ProfessionalAvailability>();
+    public DbSet<ScheduleBlock> ScheduleBlocks => Set<ScheduleBlock>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindCareDbContext).Assembly);

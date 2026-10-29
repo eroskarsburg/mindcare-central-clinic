@@ -6,4 +6,6 @@ public sealed record DashboardSummary(
     int AppointmentsNext7Days,
     int TotalClients,
     decimal OutstandingAmount,
-    decimal ReceivedThisMonth);
+    decimal ReceivedThisMonth,
+    decimal? NoShowRate,
+    int PendingConfirmations);
