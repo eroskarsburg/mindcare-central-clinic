@@ -1,0 +1,141 @@
+@model IReadOnlyList<Payment>
+@{
+    ViewData["Title"] = "Financeiro";
+    var received = Model.Sum(p => p.PaidPrice);
+    var outstanding = Model.Where(p => p.Status != PaymentStatus.Confirmado).Sum(p => p.Outstanding);
+    var total = Model.Sum(p => p.Price);
+}
+
+<section data-crud data-endpoint="/Payment" data-update-action="Register" data-modal="#paymentModal">
+    <header class="page-header">
+        <div>
+            <span class="eyebrow"><i class="bi bi-wallet2"></i> Financeiro</span>
+            <h1>Pagamentos</h1>
+            <p>Acompanhe o que já foi recebido e o que está em aberto.</p>
+        </div>
+    </header>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="mc-card kpi tone-taupe">
+                <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+                <div class="kpi-value">@total.ToString("C")</div>
+                <div class="kpi-label">Total faturado</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="mc-card kpi tone-sage">
+                <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
+                <div class="kpi-value">@received.ToString("C")</div>
+                <div class="kpi-label">Recebido</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="mc-card kpi tone-blush">
+                <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="kpi-value">@outstanding.ToString("C")</div>
+                <div class="kpi-label">Em aberto</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mc-card mc-card-body pt-4">
+        <table class="table table-hover" data-table>
+            <thead>
+                <tr>
+                    <th>Consulta</th>
+                    <th>Paciente</th>
+                    <th>Valor</th>
+                    <th>Pago</th>
+                    <th>Data do pagamento</th>
+                    <th>Status</th>
+                    <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var scheduled = p.Appointment?.ScheduledAt;
+                    <tr>
+                        <td data-order="@scheduled?.ToString("yyyyMMddHHmm")">
+                            <span class="cell-title">@scheduled?.ToString("dd/MM/yyyy")</span>
+                            <span class="cell-sub">@scheduled?.ToString("HH:mm")</span>
+                        </td>
+                        <td class="cell-title">@p.Appointment?.Client?.Name</td>
+                        <td data-order="@p.Price">@p.Price.ToString("C")</td>
+                        <td data-order="@p.PaidPrice">@p.PaidPrice.ToString("C")</td>
+                        <td data-order="@p.PaidDate?.ToString("yyyyMMdd")">@(p.PaidDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td><partial name="_PaymentStatus" model="p.Status" /></td>
+                        <td class="table-actions">
+                            <button class="btn btn-soft btn-sm" type="button"
+                                    data-crud-edit data-item="@Html.ToDataJson(new { p.Id, p.Price, PaidPrice = p.PaidPrice, p.PaidDate, ClientName = p.Appointment?.Client?.Name })">
+                                <i class="bi bi-cash-coin me-1"></i>Registrar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" autocomplete="off">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalTitle" data-title-create="Registrar pagamento" data-title-edit="Registrar pagamento">Registrar pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center p-3 mb-3 rounded-4" style="background: var(--mc-primary-soft)">
+                    <div>
+                        <small class="text-muted-mc d-block">Paciente</small>
+                        <strong data-payment-client>—</strong>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted-mc d-block">Valor da consulta</small>
+                        <strong data-payment-price>—</strong>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="payment-paid">Valor pago</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input class="form-control" id="payment-paid" name="paidPrice" type="number" min="0" step="0.01" required />
+                        </div>
+                        <button class="btn btn-link btn-sm px-0" type="button" data-payment-full>Quitar valor total</button>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="payment-date">Data do pagamento</label>
+                        <input class="form-control" id="payment-date" name="paidDate" type="date" />
+                        <small class="text-muted-mc">Em branco: hoje.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const form = document.querySelector('#paymentModal form');
+            const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            let price = 0;
+            form.addEventListener('crud:filled', ({ detail }) => {
+                price = detail.price;
+                form.querySelector('[data-payment-client]').textContent = detail.clientName ?? '—';
+                form.querySelector('[data-payment-price]').textContent = currency.format(detail.price);
+                form.querySelector('[name="paidPrice"]').max = detail.price;
+            });
+            form.querySelector('[data-payment-full]').addEventListener('click', () => {
+                form.querySelector('[name="paidPrice"]').value = price;
+            });
+        })();
+    </script>
+}

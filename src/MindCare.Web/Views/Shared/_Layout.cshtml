@@ -1,0 +1,68 @@
+@inject IOptions<ClinicOptions> Clinic
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var clinic = Clinic.Value;
+    var bare = ViewData["Bare"] is true;
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="csrf-token" content="@tokens.RequestToken" />
+    <title>@ViewData["Title"] · @clinic.Name</title>
+    <script>
+        // Aplica o tema antes da renderização para evitar "flash" de cores.
+        (function () {
+            var theme = null;
+            try { theme = localStorage.getItem('mindcare:theme'); } catch (e) { }
+            if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="~/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (bare)
+    {
+        @RenderBody()
+    }
+    else
+    {
+        <header class="app-topbar">
+            <a class="brand p-0" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark"><i class="bi bi-flower1"></i></span>
+                <span class="brand-name">@clinic.Name</span>
+            </a>
+            <button class="btn btn-link text-white fs-4 p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Abrir menu">
+                <i class="bi bi-list"></i>
+            </button>
+        </header>
+        <div class="app-shell">
+            <partial name="_Sidebar" />
+            <main class="app-main" id="conteudo">
+                @RenderBody()
+            </main>
+        </div>
+        <partial name="_ConfirmModal" />
+    }
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toasts" aria-live="polite"></div>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/datatables/dataTables.min.js"></script>
+    <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

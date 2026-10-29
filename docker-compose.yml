@@ -1,0 +1,50 @@
+# Sobe o MindCare completo (aplicação + MySQL).
+#   cp .env.example .env   # ajuste as senhas
+#   docker compose up -d --build
+# Acesse http://localhost:${APP_PORT:-8080}
+
+name: mindcare
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mindcare_db}
+      MYSQL_USER: ${MYSQL_USER:-mindcare}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Defina MYSQL_PASSWORD no arquivo .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD no arquivo .env}
+      TZ: America/Sao_Paulo
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mindcare-central-clinic:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__MindCare: "Server=db;Port=3306;Database=${MYSQL_DATABASE:-mindcare_db};User ID=${MYSQL_USER:-mindcare};Password=${MYSQL_PASSWORD};"
+      Seed__AdminUsername: ${Seed__AdminUsername:-admin}
+      Seed__AdminPassword: ${Seed__AdminPassword:?Defina Seed__AdminPassword no arquivo .env}
+      Seed__DemoData: ${Seed__DemoData:-false}
+      Clinic__Name: ${Clinic__Name:-MindCare}
+      Clinic__Tagline: ${Clinic__Tagline:-Cuidado que acolhe}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  mysql-data:

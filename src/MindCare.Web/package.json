@@ -1,0 +1,16 @@
+{
+  "name": "mindcare-web",
+  "private": true,
+  "description": "Bibliotecas front-end do MindCare. Copiadas para wwwroot/lib por scripts/vendor.mjs.",
+  "type": "module",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs"
+  },
+  "dependencies": {
+    "bootstrap": "5.3.8",
+    "bootstrap-icons": "1.13.2",
+    "datatables.net": "3.1.4",
+    "datatables.net-bs5": "3.1.4",
+    "datatables.net-plugins": "3.1.2"
+  }
+}
