@@ -23,6 +23,15 @@ builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services.AddMindCareApplication(builder.Configuration);
 builder.Services.Configure<ClinicOptions>(builder.Configuration.GetSection(ClinicOptions.Section));
 
+// Pasta de e-mails de desenvolvimento relativa à raiz do app (ex.: App_Data/mail).
+builder.Services.PostConfigure<MindCare.Application.Notifications.EmailOptions>(options =>
+{
+    if (!string.IsNullOrWhiteSpace(options.PickupDirectory) && !Path.IsPathRooted(options.PickupDirectory))
+    {
+        options.PickupDirectory = Path.Combine(builder.Environment.ContentRootPath, options.PickupDirectory);
+    }
+});
+
 builder.Services
     .AddControllersWithViews(options =>
     {

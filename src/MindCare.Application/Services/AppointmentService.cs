@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MindCare.Application.Common;
 using MindCare.Application.Domain;
+using MindCare.Application.Notifications;
 using MindCare.Application.Persistence;
 using MindCare.Application.Security;
 
@@ -58,7 +59,8 @@ internal sealed class AppointmentService(
     MindCareDbContext db,
     TimeProvider clock,
     IAccessScope? scope = null,
-    IOptions<TeleconsultOptions>? teleconsult = null) : IAppointmentService
+    IOptions<TeleconsultOptions>? teleconsult = null,
+    INotificationOutbox? notifications = null) : IAppointmentService
 {
     private const int MaxOccurrences = 52;
 
@@ -155,6 +157,10 @@ internal sealed class AppointmentService(
         }
 
         db.Appointments.AddRange(created);
+        var seriesNote = created.Count > 1
+            ? $"Sessões {(input.Recurrence == RecurrenceFrequency.Quinzenal ? "quinzenais" : "semanais")}: {created.Count} encontros agendados."
+            : null;
+        await NotifyAsync(created[0], MessageKind.Agendamento, seriesNote, ct);
         await db.SaveChangesAsync(ct);
 
         var warnings = new List<string>();
@@ -176,6 +182,7 @@ internal sealed class AppointmentService(
         var targets = await TargetsAsync(appointment, scope, ct);
         var shift = input.ScheduledAt - appointment.ScheduledAt;
         var ids = targets.Select(t => t.Id).ToArray();
+        var previousStatus = appointment.Status;
 
         foreach (var target in targets)
         {
@@ -186,6 +193,11 @@ internal sealed class AppointmentService(
             if (target.OccupiesSlot)
             {
                 await EnsureNoConflictAsync(professionalId, input.ClientId, start, end, ids, ct);
+            }
+
+            if (target.ScheduledAt != start)
+            {
+                target.ReminderQueuedAt = null; // novo horário → novo lembrete
             }
 
             target.ClientId = input.ClientId;
@@ -209,6 +221,15 @@ internal sealed class AppointmentService(
                 // Nas próximas sessões, o novo valor só é aplicado enquanto nada foi pago.
                 ApplyPayment(target, input.Price, pending.PaidPrice);
             }
+        }
+
+        if (appointment.Status == AppointmentStatus.Cancelada && previousStatus != AppointmentStatus.Cancelada)
+        {
+            await NotifyAsync(appointment, MessageKind.Cancelamento, null, ct);
+        }
+        else if (shift != TimeSpan.Zero && appointment.OccupiesSlot)
+        {
+            await NotifyAsync(appointment, MessageKind.Remarcacao, targets.Count > 1 ? $"As próximas {targets.Count - 1} sessões da série também mudaram de horário." : null, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -242,11 +263,18 @@ internal sealed class AppointmentService(
 
         await EnsureNoConflictAsync(appointment.ProfessionalId, appointment.ClientId, start, end, [appointment.Id], ct);
 
+        var moved = appointment.ScheduledAt != start;
         appointment.ScheduledAt = start;
         appointment.DurationMinutes = duration;
-        if (appointment.Status == AppointmentStatus.Confirmada)
+        if (moved)
         {
-            appointment.Status = AppointmentStatus.Agendada; // nova data precisa de nova confirmação
+            appointment.ReminderQueuedAt = null;
+            if (appointment.Status == AppointmentStatus.Confirmada)
+            {
+                appointment.Status = AppointmentStatus.Agendada; // nova data precisa de nova confirmação
+            }
+
+            await NotifyAsync(appointment, MessageKind.Remarcacao, null, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -261,9 +289,16 @@ internal sealed class AppointmentService(
         var appointment = await LoadEditableAsync(id, ct);
         var targets = await TargetsAsync(appointment, scope, ct);
 
+        var changed = targets.Where(t => t.Status != status).ToList();
         foreach (var target in targets)
         {
             ApplyStatus(target, status, reason);
+        }
+
+        if (status == AppointmentStatus.Cancelada && changed.Count > 0)
+        {
+            await NotifyAsync(changed[0], MessageKind.Cancelamento,
+                changed.Count > 1 ? $"As próximas {changed.Count - 1} sessões da série também foram canceladas." : null, ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -423,6 +458,15 @@ internal sealed class AppointmentService(
 
         target.Status = status;
         target.CancellationReason = status == AppointmentStatus.Cancelada ? Clean(reason) : null;
+    }
+
+    /// <summary>Avisa o paciente apenas sobre consultas futuras.</summary>
+    private async Task NotifyAsync(Appointment appointment, MessageKind kind, string? note, CancellationToken ct)
+    {
+        if (notifications is not null && appointment.ScheduledAt > Now)
+        {
+            await notifications.EnqueueAsync(appointment, kind, note, ct);
+        }
     }
 
     private string NewMeetingUrl()

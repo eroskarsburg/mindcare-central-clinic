@@ -29,6 +29,16 @@ public sealed class Appointment
     public string? Observation { get; set; }
     public Payment? Payment { get; set; }
 
+    /// <summary>Quando o lembrete automático foi colocado na fila (evita envios duplicados).</summary>
+    public DateTime? ReminderQueuedAt { get; set; }
+
+    /// <summary>Hash SHA-256 do token do link de confirmação enviado ao paciente.</summary>
+    public string? ConfirmationTokenHash { get; set; }
+
+    /// <summary>Como a última resposta do paciente chegou (WhatsApp, link), para exibição.</summary>
+    public string? PatientResponseVia { get; set; }
+    public DateTime? PatientRespondedAt { get; set; }
+
     public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
 
     /// <summary>Consultas canceladas liberam o horário e não contam como conflito.</summary>

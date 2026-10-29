@@ -1,0 +1,13 @@
+@inject IOptions<ClinicOptions> Clinic
+@{
+    ViewData["Title"] = "Link inválido";
+    ViewData["Bare"] = true;
+}
+
+<div class="public-page">
+    <div class="public-card mc-card text-center">
+        <span class="brand-mark mx-auto mb-3"><i class="bi bi-flower1"></i></span>
+        <h1 class="h3">Link inválido ou expirado</h1>
+        <p class="text-muted-mc mb-0">Este link não está mais disponível — talvez a consulta tenha sido remarcada e um novo link enviado. Fale com a @Clinic.Value.Name se precisar de ajuda.</p>
+    </div>
+</div>

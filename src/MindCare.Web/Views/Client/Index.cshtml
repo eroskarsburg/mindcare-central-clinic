@@ -20,6 +20,7 @@
                 <tr>
                     <th>Paciente</th>
                     <th>CPF</th>
+                    <th>Contato</th>
                     <th>Gênero</th>
                     <th>Idade</th>
                     <th>LGPD</th>
@@ -37,6 +38,20 @@
                             </div>
                         </td>
                         <td class="font-monospace small">@Cpf.Format(c.Cpf)</td>
+                        <td class="small">
+                            @if (!string.IsNullOrEmpty(c.Phone))
+                            {
+                                <span class="d-block text-nowrap"><i class="bi bi-whatsapp me-1 @(c.NotifyByWhatsApp ? "text-success" : "text-muted-mc")" title="@(c.NotifyByWhatsApp ? "Recebe avisos pelo WhatsApp" : "Não recebe avisos pelo WhatsApp")"></i>@Phone.Format(c.Phone)</span>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <span class="d-block text-truncate" style="max-width: 200px"><i class="bi bi-envelope me-1 @(c.NotifyByEmail ? "text-success" : "text-muted-mc")"></i>@c.Email</span>
+                            }
+                            @if (string.IsNullOrEmpty(c.Phone) && string.IsNullOrEmpty(c.Email))
+                            {
+                                <span class="text-muted-mc">—</span>
+                            }
+                        </td>
                         <td>@c.Gender</td>
                         <td data-order="@(c.Age ?? -1)">@(c.Age?.ToString() ?? "—")</td>
                         <td>
@@ -57,7 +72,7 @@
                             @if (!c.IsAnonymized)
                             {
                                 <button class="btn-icon" type="button" title="Editar" aria-label="Editar @c.Name"
-                                        data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age, ConsentGiven = c.ConsentAt != null })">
+                                        data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age, ConsentGiven = c.ConsentAt != null, Phone = Phone.Format(c.Phone), c.Email, c.NotifyByWhatsApp, c.NotifyByEmail })">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                             }
@@ -133,6 +148,27 @@
                             <option value="@g">@g</option>
                         }
                     </select>
+                </div>
+                <div class="form-section mt-4"><i class="bi bi-chat-dots"></i> Contato e avisos</div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-phone">Celular (WhatsApp)</label>
+                        <input class="form-control" id="client-phone" name="phone" type="tel" inputmode="tel" placeholder="(51) 99999-8888" maxlength="20" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-email">E-mail</label>
+                        <input class="form-control" id="client-email" name="email" type="email" maxlength="120" placeholder="nome@exemplo.com" />
+                    </div>
+                    <div class="col-12 d-flex flex-wrap gap-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="client-notify-wa" name="notifyByWhatsApp" checked />
+                            <label class="form-check-label" for="client-notify-wa"><i class="bi bi-whatsapp me-1"></i>Lembretes e confirmações pelo WhatsApp</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="client-notify-email" name="notifyByEmail" checked />
+                            <label class="form-check-label" for="client-notify-email"><i class="bi bi-envelope me-1"></i>Por e-mail</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-check mt-3 p-3 rounded-3" style="background: var(--mc-surface-muted); padding-left: 2.25rem !important">
                     <input class="form-check-input" type="checkbox" id="client-consent" name="consentGiven" />

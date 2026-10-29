@@ -91,11 +91,11 @@ internal sealed partial class DatabaseInitializer(
         var today = now.Date;
         Client[] clients =
         [
-            new() { Name = "Ana Beatriz Moura", Cpf = "52998224725", Gender = "Feminino", Age = 29, ConsentAt = today.AddDays(-40) },
-            new() { Name = "Carlos Eduardo Lima", Cpf = "11144477735", Gender = "Masculino", Age = 41, ConsentAt = today.AddDays(-20) },
-            new() { Name = "Helena Duarte", Cpf = "39053344705", Gender = "Feminino", Age = 34, ConsentAt = today.AddDays(-15) },
-            new() { Name = "Rafael Nogueira", Cpf = "86288366757", Gender = "Masculino", Age = 23 },
-            new() { Name = "Sam Oliveira", Cpf = "71428793860", Gender = "Outro", Age = 31, ConsentAt = today.AddDays(-5) },
+            new() { Name = "Ana Beatriz Moura", Phone = "5551999990001", Email = "ana.moura@exemplo.com", Cpf = "52998224725", Gender = "Feminino", Age = 29, ConsentAt = today.AddDays(-40) },
+            new() { Name = "Carlos Eduardo Lima", Phone = "5551999990002", Email = "carlos.lima@exemplo.com", Cpf = "11144477735", Gender = "Masculino", Age = 41, ConsentAt = today.AddDays(-20) },
+            new() { Name = "Helena Duarte", Phone = "5551999990003", Email = "helena.duarte@exemplo.com", Cpf = "39053344705", Gender = "Feminino", Age = 34, ConsentAt = today.AddDays(-15) },
+            new() { Name = "Rafael Nogueira", Phone = "5551999990004", Cpf = "86288366757", Gender = "Masculino", Age = 23 },
+            new() { Name = "Sam Oliveira", Phone = "5551999990005", Email = "sam.oliveira@exemplo.com", Cpf = "71428793860", Gender = "Outro", Age = 31, ConsentAt = today.AddDays(-5) },
         ];
         db.Clients.AddRange(clients);
 

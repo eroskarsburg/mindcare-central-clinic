@@ -12,6 +12,12 @@ public sealed class CpfAttribute() : ValidationAttribute("Informe um CPF válido
     public override bool IsValid(object? value) => value is string s && Cpf.IsValid(s);
 }
 
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class PhoneNumberAttribute() : ValidationAttribute("Informe o celular com DDD (ex.: 51 99999-8888).")
+{
+    public override bool IsValid(object? value) => value is not string s || string.IsNullOrWhiteSpace(s) || Phone.IsValid(s);
+}
+
 public static class Genders
 {
     public static readonly string[] All = ["Feminino", "Masculino", "Outro"];
@@ -48,7 +54,27 @@ public sealed class ClientInput
     /// <summary>Termo de consentimento para tratamento de dados (LGPD) assinado.</summary>
     public bool ConsentGiven { get; set; }
 
-    public Client ToDomain(int id = 0) => new() { Id = id, Name = Name, Cpf = Cpf, Gender = Gender, Age = Age };
+    [PhoneNumber]
+    public string? Phone { get; set; }
+
+    [EmailAddress(ErrorMessage = "E-mail inválido."), StringLength(120, ErrorMessage = "O e-mail deve ter até 120 caracteres.")]
+    public string? Email { get; set; }
+
+    public bool NotifyByWhatsApp { get; set; }
+    public bool NotifyByEmail { get; set; }
+
+    public Client ToDomain(int id = 0) => new()
+    {
+        Id = id,
+        Name = Name,
+        Cpf = Cpf,
+        Gender = Gender,
+        Age = Age,
+        Phone = Phone,
+        Email = Email,
+        NotifyByWhatsApp = NotifyByWhatsApp,
+        NotifyByEmail = NotifyByEmail,
+    };
 }
 
 public sealed class ProfessionalInput

@@ -1,0 +1,93 @@
+@model IReadOnlyList<OutboundMessage>
+@{
+    ViewData["Title"] = "Mensagens enviadas";
+    var status = ViewData["Status"] as MessageStatus?;
+    var channel = ViewData["Channel"] as MessageChannel?;
+
+    static string Tone(MessageStatus s) => s switch
+    {
+        MessageStatus.Enviada or MessageStatus.Entregue or MessageStatus.Lida => "success",
+        MessageStatus.Pendente => "warning",
+        MessageStatus.Falhou => "danger",
+        _ => "muted",
+    };
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-send"></i> Comunicação</span>
+        <h1>Mensagens aos pacientes</h1>
+        <p>Confirmações de agendamento, remarcações, cancelamentos e lembretes por WhatsApp e e-mail.</p>
+    </div>
+    <form method="get" class="d-flex flex-wrap gap-2">
+        <select class="form-select w-auto" name="status" onchange="this.form.submit()" aria-label="Status">
+            <option value="">Todos os status</option>
+            @foreach (var s in Enum.GetValues<MessageStatus>())
+            {
+                <option value="@s" selected="@(s == status)">@s</option>
+            }
+        </select>
+        <select class="form-select w-auto" name="channel" onchange="this.form.submit()" aria-label="Canal">
+            <option value="">Todos os canais</option>
+            @foreach (var c in Enum.GetValues<MessageChannel>())
+            {
+                <option value="@c" selected="@(c == channel)">@c</option>
+            }
+        </select>
+    </form>
+</header>
+
+<div class="mc-card mc-card-body pt-4">
+    <table class="table table-hover" data-table>
+        <thead>
+            <tr>
+                <th>Criada</th>
+                <th>Paciente</th>
+                <th>Tipo</th>
+                <th>Canal</th>
+                <th>Status</th>
+                <th>Detalhes</th>
+                <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td data-order="@m.Id">
+                        <span class="cell-title">@m.CreatedAt.ToString("dd/MM/yyyy")</span>
+                        <span class="cell-sub">@m.CreatedAt.ToString("HH:mm")@(m.SentAt is { } sent ? $" · enviada {sent:HH:mm}" : null)</span>
+                    </td>
+                    <td>
+                        <span class="cell-title">@m.Client?.Name</span>
+                        <span class="cell-sub">@(m.Channel == MessageChannel.WhatsApp ? Phone.Format(m.Recipient) : m.Recipient)</span>
+                    </td>
+                    <td>
+                        @m.Kind
+                        @if (m.Appointment is not null)
+                        {
+                            <span class="cell-sub">Consulta @m.Appointment.ScheduledAt.ToString("dd/MM HH:mm")</span>
+                        }
+                    </td>
+                    <td><i class="bi @(m.Channel == MessageChannel.WhatsApp ? "bi-whatsapp" : "bi-envelope") me-1"></i>@m.Channel</td>
+                    <td><span class="badge-soft @Tone(m.Status)">@m.Status</span></td>
+                    <td class="small text-muted-mc" style="max-width: 280px">
+                        @if (m.Attempts > 0)
+                        {
+                            <span class="d-block">@m.Attempts tentativa(s)</span>
+                        }
+                        @m.LastError
+                    </td>
+                    <td class="table-actions">
+                        @if (m.Status is MessageStatus.Falhou or MessageStatus.Ignorada)
+                        {
+                            <button class="btn btn-soft btn-sm" type="button" data-api-action="/Notification/Retry/@m.Id" data-method="POST">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reenviar
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

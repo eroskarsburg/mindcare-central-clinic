@@ -73,6 +73,10 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
                 Cpf = Cpf.Format(client.Cpf),
                 client.Gender,
                 client.Age,
+                Phone = Phone.Format(client.Phone),
+                client.Email,
+                client.NotifyByWhatsApp,
+                client.NotifyByEmail,
                 client.ConsentAt,
                 client.AnonymizedAt,
             },
@@ -100,6 +104,10 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
         client.Cpf = $"X{client.Id:D10}"; // não numérico: nunca colide com um CPF real
         client.Gender = "Outro";
         client.Age = null;
+        client.Phone = null;
+        client.Email = null;
+        client.NotifyByWhatsApp = false;
+        client.NotifyByEmail = false;
         client.AnonymizedAt = clock.GetLocalNow().DateTime;
 
         await db.Appointments.Where(a => a.ClientId == id && a.Observation != null)
@@ -129,6 +137,10 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
         target.Cpf = cpf;
         target.Gender = input.Gender;
         target.Age = input.Age;
+        target.Phone = Phone.Normalize(input.Phone);
+        target.Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim().ToLowerInvariant();
+        target.NotifyByWhatsApp = input.NotifyByWhatsApp;
+        target.NotifyByEmail = input.NotifyByEmail;
 
         if (consentGiven)
         {

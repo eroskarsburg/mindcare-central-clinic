@@ -19,6 +19,11 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         b.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired();
         b.Property(x => x.Age).HasColumnName("age");
         b.Property(x => x.ConsentAt).HasColumnName("consent_at");
+        b.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(15);
+        b.Property(x => x.Email).HasColumnName("email").HasMaxLength(120);
+        b.Property(x => x.NotifyByWhatsApp).HasColumnName("notify_whatsapp").HasDefaultValue(true).HasSentinel(true);
+        b.Property(x => x.NotifyByEmail).HasColumnName("notify_email").HasDefaultValue(true).HasSentinel(true);
+        b.HasIndex(x => x.Phone);
         b.Property(x => x.AnonymizedAt).HasColumnName("anonymized_at");
         b.Ignore(x => x.IsAnonymized);
         b.HasIndex(x => x.Cpf).IsUnique();
@@ -83,6 +88,11 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         b.Property(x => x.CancellationReason).HasColumnName("cancellation_reason").HasMaxLength(200);
         b.Property(x => x.SeriesId).HasColumnName("series_id");
         b.Property(x => x.MeetingUrl).HasColumnName("meeting_url").HasMaxLength(200);
+        b.Property(x => x.ReminderQueuedAt).HasColumnName("reminder_queued_at");
+        b.Property(x => x.ConfirmationTokenHash).HasColumnName("confirmation_token_hash").HasMaxLength(64);
+        b.Property(x => x.PatientResponseVia).HasColumnName("patient_response_via").HasMaxLength(20);
+        b.Property(x => x.PatientRespondedAt).HasColumnName("patient_responded_at");
+        b.HasIndex(x => x.ConfirmationTokenHash);
         b.Ignore(x => x.EndsAt);
         b.Ignore(x => x.OccupiesSlot);
         b.HasIndex(x => x.ScheduledAt);
@@ -185,5 +195,54 @@ internal sealed class ScheduleBlockConfiguration : IEntityTypeConfiguration<Sche
             .WithMany()
             .HasForeignKey(x => x.ProfessionalId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class OutboundMessageConfiguration : IEntityTypeConfiguration<OutboundMessage>
+{
+    public void Configure(EntityTypeBuilder<OutboundMessage> b)
+    {
+        b.ToTable("outbound_messages");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_message");
+        b.Property(x => x.ClientId).HasColumnName("id_client");
+        b.Property(x => x.AppointmentId).HasColumnName("id_appointment");
+        b.Property(x => x.Channel).HasColumnName("channel").HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Kind).HasColumnName("kind").HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Recipient).HasColumnName("recipient").HasMaxLength(120).IsRequired();
+        b.Property(x => x.ConfirmationToken).HasColumnName("confirmation_token").HasMaxLength(64);
+        b.Property(x => x.Note).HasColumnName("note").HasMaxLength(200);
+        b.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Attempts).HasColumnName("attempts");
+        b.Property(x => x.LastError).HasColumnName("last_error").HasMaxLength(500);
+        b.Property(x => x.ExternalId).HasColumnName("external_id").HasMaxLength(200);
+        b.Property(x => x.CreatedAt).HasColumnName("created_at");
+        b.Property(x => x.NextAttemptAt).HasColumnName("next_attempt_at");
+        b.Property(x => x.SentAt).HasColumnName("sent_at");
+        b.HasIndex(x => new { x.Status, x.NextAttemptAt });
+        b.HasIndex(x => x.ExternalId);
+
+        b.HasOne(x => x.Client).WithMany().HasForeignKey(x => x.ClientId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.Appointment).WithMany().HasForeignKey(x => x.AppointmentId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+internal sealed class StaffNotificationConfiguration : IEntityTypeConfiguration<StaffNotification>
+{
+    public void Configure(EntityTypeBuilder<StaffNotification> b)
+    {
+        b.ToTable("staff_notifications");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_notification");
+        b.Property(x => x.UserId).HasColumnName("id_user");
+        b.Property(x => x.Title).HasColumnName("title").HasMaxLength(120).IsRequired();
+        b.Property(x => x.Message).HasColumnName("message").HasMaxLength(500).IsRequired();
+        b.Property(x => x.Link).HasColumnName("link").HasMaxLength(200);
+        b.Property(x => x.Icon).HasColumnName("icon").HasMaxLength(40);
+        b.Property(x => x.CreatedAt).HasColumnName("created_at");
+        b.Property(x => x.ReadAt).HasColumnName("read_at");
+        b.HasIndex(x => new { x.UserId, x.ReadAt });
+
+        b.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }

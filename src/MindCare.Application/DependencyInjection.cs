@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MindCare.Application.Notifications;
 using MindCare.Application.Persistence;
 using MindCare.Application.Security;
 using MindCare.Application.Services;
@@ -33,6 +34,10 @@ public static class DependencyInjection
         services.AddOptions<SeedOptions>().Bind(configuration.GetSection(SeedOptions.Section));
         services.AddOptions<SecurityOptions>().Bind(configuration.GetSection(SecurityOptions.Section));
         services.AddOptions<TeleconsultOptions>().Bind(configuration.GetSection(TeleconsultOptions.Section));
+        services.AddOptions<NotificationOptions>().Bind(configuration.GetSection(NotificationOptions.Section));
+        services.AddOptions<WhatsAppOptions>().Bind(configuration.GetSection(WhatsAppOptions.Section));
+        services.AddOptions<EmailOptions>().Bind(configuration.GetSection(EmailOptions.Section));
+        services.AddOptions<ClinicIdentity>().Bind(configuration.GetSection(ClinicIdentity.Section));
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordService, PasswordService>();
@@ -48,6 +53,18 @@ public static class DependencyInjection
         services.AddScoped<IProfessionalService, ProfessionalService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IDashboardService, DashboardService>();
+
+        // Notificações: fila (outbox), canais de envio, respostas do paciente e processamento em segundo plano.
+        services.AddScoped<INotificationOutbox, NotificationOutbox>();
+        services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+        services.AddScoped<IStaffNotificationService, StaffNotificationService>();
+        services.AddScoped<IMessageLogService, MessageLogService>();
+        services.AddScoped<IPatientResponseService, PatientResponseService>();
+        services.AddScoped<IWhatsAppWebhookService, WhatsAppWebhookService>();
+        services.AddHttpClient<WhatsAppChannel>(http => http.Timeout = TimeSpan.FromSeconds(20));
+        services.AddScoped<IMessageChannel>(sp => sp.GetRequiredService<WhatsAppChannel>());
+        services.AddScoped<IMessageChannel, EmailChannel>();
+        services.AddHostedService<NotificationWorker>();
 
         services.AddHealthChecks().AddDbContextCheck<MindCareDbContext>("database");
 

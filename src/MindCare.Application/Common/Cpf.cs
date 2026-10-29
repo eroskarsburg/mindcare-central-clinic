@@ -1,5 +1,46 @@
 namespace MindCare.Application.Common;
 
+public static class Phone
+{
+    /// <summary>
+    /// Normaliza para o formato internacional usado pelo WhatsApp (somente dígitos, com DDI).
+    /// Números brasileiros com DDD (10 ou 11 dígitos) recebem o 55 automaticamente;
+    /// números digitados com "+" já trazem o DDI e são mantidos.
+    /// </summary>
+    public static string? Normalize(string? value)
+    {
+        var digits = Cpf.Normalize(value);
+        var international = value?.TrimStart().StartsWith('+') == true;
+        return digits.Length switch
+        {
+            0 => null,
+            10 or 11 when !international => "55" + digits,
+            _ => digits,
+        };
+    }
+
+    public static bool IsValid(string? value) => Normalize(value) is { Length: >= 12 and <= 15 };
+
+    /// <summary>Exibição amigável: +55 (51) 99999-8888.</summary>
+    public static string Format(string? value)
+    {
+        var digits = Normalize(value);
+        if (digits is null)
+        {
+            return string.Empty;
+        }
+
+        if (digits.StartsWith("55", StringComparison.Ordinal) && digits.Length is 12 or 13)
+        {
+            var local = digits[4..];
+            var split = local.Length - 4;
+            return $"+55 ({digits[2..4]}) {local[..split]}-{local[split..]}";
+        }
+
+        return "+" + digits;
+    }
+}
+
 public static class Cpf
 {
     /// <summary>Remove pontuação, mantendo apenas os dígitos.</summary>

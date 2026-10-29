@@ -13,6 +13,8 @@ public sealed class MindCareDbContext(DbContextOptions<MindCareDbContext> option
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<ProfessionalAvailability> Availability => Set<ProfessionalAvailability>();
     public DbSet<ScheduleBlock> ScheduleBlocks => Set<ScheduleBlock>();
+    public DbSet<OutboundMessage> OutboundMessages => Set<OutboundMessage>();
+    public DbSet<StaffNotification> StaffNotifications => Set<StaffNotification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindCareDbContext).Assembly);

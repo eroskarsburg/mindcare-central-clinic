@@ -1,0 +1,74 @@
+@model MindCare.Application.Notifications.PublicAppointment
+@using MindCare.Application.Notifications
+@inject IOptions<ClinicOptions> Clinic
+@{
+    ViewData["Title"] = "Sua consulta";
+    ViewData["Bare"] = true;
+    var done = ViewData["Done"] as PatientAction?;
+    var error = ViewData["Error"] as string;
+    var token = Context.GetRouteValue("token")?.ToString();
+    var pt = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+}
+
+<div class="public-page">
+    <div class="public-card mc-card">
+        <div class="brand p-0 mb-4" style="color: var(--mc-text)">
+            <span class="brand-mark"><i class="bi bi-flower1"></i></span>
+            <span>
+                <span class="brand-name d-block">@Clinic.Value.Name</span>
+                <span class="brand-tagline text-muted-mc">@Clinic.Value.Tagline</span>
+            </span>
+        </div>
+
+        @if (done == PatientAction.Confirm)
+        {
+            <div class="public-result success"><i class="bi bi-check2-circle"></i><div><strong>Presença confirmada!</strong><br />Obrigado, @Model.PatientFirstName. Até lá.</div></div>
+        }
+        else if (done == PatientAction.Cancel)
+        {
+            <div class="public-result danger"><i class="bi bi-x-circle"></i><div><strong>Consulta cancelada.</strong><br />A clínica foi avisada. Entre em contato para remarcar quando quiser.</div></div>
+        }
+        else if (error is not null)
+        {
+            <div class="alert alert-warning">@error</div>
+        }
+
+        <span class="eyebrow"><i class="bi bi-calendar-heart"></i> Sua consulta</span>
+        @{ var day = Model.ScheduledAt.ToString("dddd, dd 'de' MMMM", pt); }
+        <h1 class="h2 mb-1">@(char.ToUpper(day[0], pt) + day[1..])</h1>
+        <p class="fs-5 mb-3">@Model.ScheduledAt.ToString("HH:mm") às @Model.ScheduledAt.AddMinutes(Model.DurationMinutes).ToString("HH:mm")</p>
+
+        <dl class="public-details">
+            @if (Model.ProfessionalName is not null)
+            {
+                <div><dt>Profissional</dt><dd>@Model.ProfessionalName</dd></div>
+            }
+            <div><dt>Modalidade</dt><dd><i class="bi @Model.Modality.ModalityIcon() me-1"></i>@Model.Modality</dd></div>
+            <div><dt>Situação</dt><dd><partial name="_AppointmentStatus" model="Model.Status" /></dd></div>
+        </dl>
+
+        @if (!string.IsNullOrEmpty(Model.MeetingUrl))
+        {
+            <a class="btn btn-soft w-100 mb-3" href="@Model.MeetingUrl" target="_blank" rel="noopener"><i class="bi bi-camera-video me-1"></i> Abrir sala da teleconsulta</a>
+        }
+
+        @if (Model.CanRespond && done is null)
+        {
+            <div class="d-grid gap-2">
+                @if (Model.Status != AppointmentStatus.Confirmada)
+                {
+                    <form method="post" action="/c/@token/confirmar" asp-antiforgery="true">
+                        <button class="btn btn-primary btn-lg w-100" type="submit"><i class="bi bi-check2 me-1"></i> Confirmar presença</button>
+                    </form>
+                }
+                <form method="post" action="/c/@token/cancelar" asp-antiforgery="true" onsubmit="return confirm('Cancelar esta consulta?');">
+                    <button class="btn btn-link text-danger w-100" type="submit">Não poderei comparecer — cancelar</button>
+                </form>
+            </div>
+        }
+        else if (!Model.CanRespond && done is null)
+        {
+            <p class="small text-muted-mc mb-0">Esta consulta não pode mais ser alterada por aqui. Em caso de dúvida, fale com a clínica.</p>
+        }
+    </div>
+</div>

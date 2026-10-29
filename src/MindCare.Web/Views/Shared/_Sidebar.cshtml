@@ -29,6 +29,7 @@
                 <ul class="nav flex-column">
                     <li><a class="nav-link @Html.ActiveWhen("Professional")" asp-controller="Professional" asp-action="Index"><i class="bi bi-person-badge"></i> Profissionais</a></li>
                     <li><a class="nav-link @Html.ActiveWhen("User")" asp-controller="User" asp-action="Index"><i class="bi bi-shield-lock"></i> Usuários</a></li>
+                    <li><a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Messages" ? "active" : null)" asp-controller="Notification" asp-action="Messages"><i class="bi bi-send"></i> Mensagens</a></li>
                     <li><a class="nav-link @Html.ActiveWhen("Audit")" asp-controller="Audit" asp-action="Index"><i class="bi bi-journal-text"></i> Auditoria</a></li>
                 </ul>
             }
@@ -54,6 +55,7 @@
                         </li>
                     </ul>
                 </div>
+                @await Component.InvokeAsync("NotificationBell")
                 <button class="btn btn-link theme-toggle fs-5" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
                     <i class="bi bi-moon-stars" data-theme-icon></i>
                 </button>

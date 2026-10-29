@@ -157,7 +157,17 @@ h1, h2, h3, .font-display {
         position: sticky;
         top: 0;
         height: 100vh;
+        z-index: 1020; /* menus da sidebar (avisos, usuário) ficam acima do conteúdo */
     }
+}
+
+.sidebar-footer .flex-grow-1 {
+    min-width: 0;
+}
+
+.sidebar-footer .theme-toggle {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
 }
 
 .sidebar .offcanvas-body {
@@ -1219,3 +1229,113 @@ div.dt-container .dt-info {
         gap: 0.5rem;
     }
 }
+
+/* ---------- Avisos (sino) ---------- */
+
+.bell-badge {
+    position: absolute;
+    top: 0.1rem;
+    right: 0.05rem;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--mc-blush);
+    color: var(--mc-slate-deep);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1.1rem;
+    text-align: center;
+}
+
+.bell-menu {
+    width: min(340px, 90vw);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.bell-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    color: var(--mc-text);
+    text-decoration: none;
+    border-top: 1px solid var(--mc-border);
+}
+
+.bell-item:hover {
+    background: var(--mc-surface-muted);
+    color: var(--mc-text);
+}
+
+.bell-item i {
+    font-size: 1.1rem;
+    color: var(--mc-taupe);
+}
+
+.bell-item.unread {
+    background: var(--mc-primary-soft);
+}
+
+/* ---------- Página pública (confirmação do paciente) ---------- */
+
+.public-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 1.25rem;
+    background:
+        radial-gradient(80% 60% at 100% 0%, rgba(242, 167, 160, 0.25), transparent 60%),
+        radial-gradient(70% 50% at 0% 100%, rgba(169, 146, 125, 0.25), transparent 60%),
+        var(--mc-bg);
+}
+
+.public-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 2rem 1.75rem;
+}
+
+.public-details {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--mc-radius-sm);
+    background: var(--mc-surface-muted);
+}
+
+.public-details div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.public-details dt {
+    font-weight: 500;
+    color: var(--mc-text-muted);
+}
+
+.public-details dd {
+    margin: 0;
+    font-weight: 600;
+    text-align: right;
+}
+
+.public-result {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--mc-radius-sm);
+}
+
+.public-result i {
+    font-size: 1.5rem;
+}
+
+.public-result.success { background: rgba(127, 156, 122, 0.16); color: #3e5a3a; }
+.public-result.danger { background: rgba(192, 100, 90, 0.12); color: #873d35; }
+[data-bs-theme="dark"] .public-result.success { color: #c9dcc5; }
+[data-bs-theme="dark"] .public-result.danger { color: #f1bdb6; }

@@ -38,7 +38,8 @@
 | **Visão geral** | Agenda do dia, taxa de faltas, consultas aguardando confirmação, valores recebidos e a receber. Profissionais veem apenas os próprios atendimentos. |
 | **Agenda** | Calendário semanal/diário/mensal (FullCalendar) com arrastar para remarcar, sessões recorrentes (semanal/quinzenal), detecção de conflito por profissional e paciente, status (agendada, confirmada, realizada, falta, cancelada) e sala de teleconsulta gerada automaticamente. |
 | **Horários** | Disponibilidade semanal de cada profissional e bloqueios de agenda (férias, feriados da clínica), respeitados ao criar séries. |
-| **Pacientes** | Cadastro com validação de CPF (dígitos verificadores) e bloqueio de exclusão de quem tem consultas. |
+| **Pacientes** | Cadastro com validação de CPF (dígitos verificadores), celular e e-mail, preferências de aviso e bloqueio de exclusão de quem tem consultas. |
+| **Notificações** | Confirmação de agendamento, aviso de remarcação/cancelamento e lembrete automático por **WhatsApp** (Cloud API oficial da Meta, com botões Confirmar/Cancelar) e **e-mail**. Fila com reenvio automático, link público de confirmação e avisos no sino do painel quando o paciente responde. [Guia de configuração](docs/whatsapp.md). |
 | **Financeiro** | Totais faturado, recebido e em aberto; registro de pagamentos parciais ou integrais. O status é calculado automaticamente. |
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
 | **Usuários** *(admin)* | Perfis de acesso (Administrador/Profissional), proteção contra remover o último administrador. |
@@ -105,6 +106,10 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `Seed__DemoData` | | `true` popula uma base vazia com dados fictícios. Padrão: ligado só em `Development`. |
 | `Security__MaxFailedLoginAttempts` / `Security__LockoutMinutes` | | Bloqueio de conta após tentativas de login erradas. Padrão: 5 tentativas, 15 minutos. |
 | `Teleconsult__BaseUrl` | | Servidor de videochamada das teleconsultas. Padrão: `https://meet.jit.si`. |
+| `Notifications__PublicBaseUrl` | Produção | Endereço público usado nos links enviados ao paciente (ex.: `https://agenda.suaclinica.com.br`). |
+| `Notifications__ReminderHoursBefore` | | Antecedência do lembrete automático. Padrão: `24`. |
+| `WhatsApp__Mode` | | `Disabled`, `Simulated` ou `Live`. Veja o [guia do WhatsApp](docs/whatsapp.md) para `PhoneNumberId`, `AccessToken`, `AppSecret` e `VerifyToken`. |
+| `Email__Enabled` / `Email__Host` / `Email__Port` / `Email__Username` / `Email__Password` / `Email__FromAddress` | | Envio de e-mails por SMTP. `Email__PickupDirectory` grava `.eml` em disco (desenvolvimento). |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |

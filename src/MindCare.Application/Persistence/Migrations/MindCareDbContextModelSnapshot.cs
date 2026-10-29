@@ -35,6 +35,11 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_client");
 
+                    b.Property<string>("ConfirmationTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("confirmation_token_hash");
+
                     b.Property<int>("DurationMinutes")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -57,9 +62,22 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(500)")
                         .HasColumnName("observation");
 
+                    b.Property<DateTime?>("PatientRespondedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("patient_responded_at");
+
+                    b.Property<string>("PatientResponseVia")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("patient_response_via");
+
                     b.Property<int?>("ProfessionalId")
                         .HasColumnType("int")
                         .HasColumnName("id_professional");
+
+                    b.Property<DateTime?>("ReminderQueuedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("reminder_queued_at");
 
                     b.Property<DateTime>("ScheduledAt")
                         .HasColumnType("datetime(6)")
@@ -80,6 +98,8 @@ namespace MindCare.Application.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("ConfirmationTokenHash");
 
                     b.HasIndex("ScheduledAt");
 
@@ -171,6 +191,11 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(11)")
                         .HasColumnName("cpf");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("email");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -183,12 +208,119 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
 
+                    b.Property<bool>("NotifyByEmail")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_email");
+
+                    b.Property<bool>("NotifyByWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_whatsapp");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("phone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Cpf")
                         .IsUnique();
 
+                    b.HasIndex("Phone");
+
                     b.ToTable("clients", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.OutboundMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_message");
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_appointment");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int")
+                        .HasColumnName("attempts");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("channel");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<string>("ConfirmationToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("confirmation_token");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("external_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("NextAttemptAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("recipient");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("ExternalId");
+
+                    b.HasIndex("Status", "NextAttemptAt");
+
+                    b.ToTable("outbound_messages", (string)null);
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.Payment", b =>
@@ -342,6 +474,55 @@ namespace MindCare.Application.Persistence.Migrations
                     b.ToTable("schedule_blocks", (string)null);
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_notification");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("icon");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("link");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("message");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("read_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("title");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ReadAt");
+
+                    b.ToTable("staff_notifications", (string)null);
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.User", b =>
                 {
                     b.Property<int>("Id")
@@ -407,6 +588,24 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("Professional");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.OutboundMessage", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Client");
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Payment", b =>
                 {
                     b.HasOne("MindCare.Application.Domain.Appointment", "Appointment")
@@ -446,6 +645,15 @@ namespace MindCare.Application.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Professional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.Appointment", b =>
