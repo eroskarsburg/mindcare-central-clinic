@@ -328,6 +328,32 @@ function initApiForm(form) {
     });
 }
 
+/* Botões de ação avulsos:
+   <button data-api-action="/Client/Anonymize/5" data-method="POST" data-confirm="Tem certeza?" data-confirm-text="Anonimizar"> */
+function initApiActions() {
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-api-action]');
+        if (!button) return;
+        event.preventDefault();
+
+        if (button.dataset.confirm) {
+            const ok = await confirmDialog(button.dataset.confirm, {
+                confirmText: button.dataset.confirmText ?? 'Confirmar',
+                tone: button.dataset.tone ?? 'danger',
+            });
+            if (!ok) return;
+        }
+
+        try {
+            const result = await api(button.dataset.method ?? 'POST', button.dataset.apiAction);
+            Toast.flash(result.message);
+            window.location.reload();
+        } catch (error) {
+            Toast.show(error.message, 'danger');
+        }
+    });
+}
+
 /* ------------------------------------------------------------------ */
 /* Tabelas                                                             */
 /* ------------------------------------------------------------------ */
@@ -360,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('table[data-table]').forEach(initTable);
     document.querySelectorAll('[data-crud]').forEach(initCrud);
     document.querySelectorAll('form[data-api-form]').forEach(initApiForm);
+    initApiActions();
     document.querySelectorAll('[data-mask="cpf"]').forEach(input => input.addEventListener('input', () => Masks.cpf(input)));
 
     document.querySelectorAll('[data-password-toggle]').forEach(btn => {

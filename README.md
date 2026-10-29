@@ -42,9 +42,11 @@
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
 | **Usuários** *(admin)* | Perfis de acesso (Administrador/Profissional), proteção contra remover o último administrador. |
 | **Perfil** | Troca de senha (com confirmação da senha atual) e edição dos dados profissionais. |
+| **Auditoria** *(admin)* | Registro de quem criou, alterou, excluiu, exportou ou anonimizou dados, e de todos os logins. |
+| **LGPD** | Termo de consentimento por paciente, exportação dos dados do titular (JSON) e anonimização que preserva o histórico. |
 | **Interface** | Tema claro/escuro, layout responsivo com menu lateral recolhível, tabelas com busca, ordenação e paginação. |
 
-**Segurança:** autenticação por cookie com políticas de autorização por perfil, senhas com hash PBKDF2 (formato do ASP.NET Core Identity; senhas legadas em texto puro são convertidas no primeiro login), proteção CSRF em todas as requisições de escrita, consultas parametrizadas via EF Core e nenhum segredo versionado.
+**Segurança:** autenticação por cookie com políticas de autorização por perfil, senha temporária aleatória com troca obrigatória no primeiro acesso, bloqueio de conta após tentativas erradas e limite de requisições no login, senhas com hash PBKDF2 (formato do ASP.NET Core Identity; senhas legadas em texto puro são convertidas no primeiro login), proteção CSRF em todas as requisições de escrita, consultas parametrizadas via EF Core e nenhum segredo versionado.
 
 ## Stack
 
@@ -100,6 +102,7 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `ConnectionStrings__MindCare` | ✅ | String de conexão MySQL. No Docker Compose é montada a partir das variáveis `MYSQL_*`. |
 | `Seed__AdminUsername` / `Seed__AdminPassword` | ✅ na 1ª execução | Administrador criado quando ainda não existe nenhum. |
 | `Seed__DemoData` | | `true` popula uma base vazia com dados fictícios. Padrão: ligado só em `Development`. |
+| `Security__MaxFailedLoginAttempts` / `Security__LockoutMinutes` | | Bloqueio de conta após tentativas de login erradas. Padrão: 5 tentativas, 15 minutos. |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |

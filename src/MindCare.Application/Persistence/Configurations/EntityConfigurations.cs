@@ -17,6 +17,9 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         b.Property(x => x.Cpf).HasColumnName("cpf").HasMaxLength(11).IsRequired();
         b.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired();
         b.Property(x => x.Age).HasColumnName("age");
+        b.Property(x => x.ConsentAt).HasColumnName("consent_at");
+        b.Property(x => x.AnonymizedAt).HasColumnName("anonymized_at");
+        b.Ignore(x => x.IsAnonymized);
         b.HasIndex(x => x.Cpf).IsUnique();
     }
 }
@@ -32,6 +35,9 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         b.Property(x => x.PasswordHash).HasColumnName("password").HasMaxLength(255).IsRequired();
         b.Property(x => x.AccessLevel).HasColumnName("id_access_level");
         b.Property(x => x.LastActivity).HasColumnName("last_activity");
+        b.Property(x => x.MustChangePassword).HasColumnName("must_change_password");
+        b.Property(x => x.FailedLoginCount).HasColumnName("failed_login_count");
+        b.Property(x => x.LockoutUntil).HasColumnName("lockout_until");
         b.HasIndex(x => x.Username).IsUnique();
     }
 }
@@ -98,5 +104,25 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         b.Ignore(x => x.Outstanding);
         b.HasIndex(x => x.AppointmentId).IsUnique();
         b.HasIndex(x => x.Status);
+    }
+}
+
+internal sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
+{
+    public void Configure(EntityTypeBuilder<AuditLog> b)
+    {
+        b.ToTable("audit_logs");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_audit");
+        b.Property(x => x.Timestamp).HasColumnName("timestamp");
+        b.Property(x => x.UserId).HasColumnName("id_user");
+        b.Property(x => x.Username).HasColumnName("username").HasMaxLength(50);
+        b.Property(x => x.Action).HasColumnName("action").HasMaxLength(40).IsRequired();
+        b.Property(x => x.Entity).HasColumnName("entity").HasMaxLength(40).IsRequired();
+        b.Property(x => x.EntityId).HasColumnName("entity_id").HasMaxLength(40);
+        b.Property(x => x.Details).HasColumnName("details").HasMaxLength(500);
+        b.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(45);
+        b.HasIndex(x => x.Timestamp);
+        b.HasIndex(x => new { x.Entity, x.EntityId });
     }
 }

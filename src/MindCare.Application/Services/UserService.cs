@@ -28,7 +28,14 @@ internal sealed class UserService(MindCareDbContext db, IPasswordService passwor
         username = username.Trim();
         await EnsureUniqueAsync(username, 0, ct);
 
-        var user = new User { Username = username, PasswordHash = passwords.Hash(password), AccessLevel = accessLevel };
+        // Senha definida pelo administrador: o usuário troca no primeiro acesso.
+        var user = new User
+        {
+            Username = username,
+            PasswordHash = passwords.Hash(password),
+            AccessLevel = accessLevel,
+            MustChangePassword = true,
+        };
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
         return user.Id;
@@ -55,6 +62,9 @@ internal sealed class UserService(MindCareDbContext db, IPasswordService passwor
         if (!string.IsNullOrWhiteSpace(newPassword))
         {
             user.PasswordHash = passwords.Hash(newPassword);
+            user.MustChangePassword = id != currentUserId;
+            user.LockoutUntil = null;
+            user.FailedLoginCount = 0;
         }
 
         await db.SaveChangesAsync(ct);

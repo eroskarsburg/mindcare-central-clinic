@@ -44,6 +44,9 @@ public sealed class ClientInput
     [Range(0, 130, ErrorMessage = "Idade inválida.")]
     public int? Age { get; set; }
 
+    /// <summary>Termo de consentimento para tratamento de dados (LGPD) assinado.</summary>
+    public bool ConsentGiven { get; set; }
+
     public Client ToDomain(int id = 0) => new() { Id = id, Name = Name, Cpf = Cpf, Gender = Gender, Age = Age };
 }
 

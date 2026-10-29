@@ -1,6 +1,7 @@
 @model IReadOnlyList<Client>
 @{
     ViewData["Title"] = "Pacientes";
+    var isAdmin = User.IsAdmin();
 }
 
 <section data-crud data-endpoint="/Client" data-modal="#clientModal">
@@ -21,6 +22,7 @@
                     <th>CPF</th>
                     <th>Gênero</th>
                     <th>Idade</th>
+                    <th>LGPD</th>
                     <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
                 </tr>
             </thead>
@@ -37,15 +39,62 @@
                         <td class="font-monospace small">@Cpf.Format(c.Cpf)</td>
                         <td>@c.Gender</td>
                         <td data-order="@(c.Age ?? -1)">@(c.Age?.ToString() ?? "—")</td>
+                        <td>
+                            @if (c.IsAnonymized)
+                            {
+                                <span class="badge-soft slate" title="Anonimizado em @c.AnonymizedAt?.ToString("dd/MM/yyyy")"><i class="bi bi-incognito"></i>Anonimizado</span>
+                            }
+                            else if (c.ConsentAt is not null)
+                            {
+                                <span class="badge-soft success" title="Termo registrado em @c.ConsentAt?.ToString("dd/MM/yyyy")"><i class="bi bi-file-earmark-check"></i>Termo</span>
+                            }
+                            else
+                            {
+                                <span class="badge-soft warning"><i class="bi bi-file-earmark-x"></i>Sem termo</span>
+                            }
+                        </td>
                         <td class="table-actions">
-                            <button class="btn-icon" type="button" title="Editar" aria-label="Editar @c.Name"
-                                    data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age })">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @c.Name"
-                                    data-crud-delete data-id="@c.Id" data-name="@c.Name">
-                                <i class="bi bi-trash3"></i>
-                            </button>
+                            @if (!c.IsAnonymized)
+                            {
+                                <button class="btn-icon" type="button" title="Editar" aria-label="Editar @c.Name"
+                                        data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age, ConsentGiven = c.ConsentAt != null })">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            }
+                            @if (isAdmin)
+                            {
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn-icon" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Mais ações" aria-label="Mais ações para @c.Name">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><a class="dropdown-item" asp-action="Export" asp-route-id="@c.Id"><i class="bi bi-download me-2"></i>Exportar dados (LGPD)</a></li>
+                                        @if (!c.IsAnonymized)
+                                        {
+                                            <li>
+                                                <button class="dropdown-item text-danger" type="button"
+                                                        data-api-action="/Client/Anonymize/@c.Id" data-method="POST" data-confirm-text="Anonimizar"
+                                                        data-confirm="Anonimizar @c.Name? Nome, CPF e observações serão removidos de forma irreversível. O histórico de consultas e pagamentos é mantido sem identificação.">
+                                                    <i class="bi bi-incognito me-2"></i>Anonimizar
+                                                </button>
+                                            </li>
+                                        }
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <button class="dropdown-item text-danger" type="button" data-crud-delete data-id="@c.Id" data-name="@c.Name">
+                                                <i class="bi bi-trash3 me-2"></i>Excluir
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @c.Name"
+                                        data-crud-delete data-id="@c.Id" data-name="@c.Name">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            }
                         </td>
                     </tr>
                 }
@@ -84,6 +133,13 @@
                             <option value="@g">@g</option>
                         }
                     </select>
+                </div>
+                <div class="form-check mt-3 p-3 rounded-3" style="background: var(--mc-surface-muted); padding-left: 2.25rem !important">
+                    <input class="form-check-input" type="checkbox" id="client-consent" name="consentGiven" />
+                    <label class="form-check-label" for="client-consent">
+                        Termo de consentimento para tratamento de dados assinado
+                        <span class="d-block small text-muted-mc">Exigido pela LGPD para dados de saúde (art. 11).</span>
+                    </label>
                 </div>
             </div>
             <div class="modal-footer">

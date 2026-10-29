@@ -51,8 +51,13 @@ internal sealed class AppointmentService(MindCareDbContext db, TimeProvider cloc
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(int id, CancellationToken ct = default) =>
-        await db.Appointments.Where(a => a.Id == id).ExecuteDeleteAsync(ct);
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    {
+        var appointment = await db.Appointments.FindAsync([id], ct)
+            ?? throw new BusinessException("Agendamento não encontrado.");
+        db.Appointments.Remove(appointment); // pagamento removido em cascata pelo banco
+        await db.SaveChangesAsync(ct);
+    }
 
     private async Task ApplyAsync(Appointment target, AppointmentInput input, CancellationToken ct)
     {

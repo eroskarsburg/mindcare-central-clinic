@@ -17,7 +17,7 @@ public sealed class ProfessionalController(IProfessionalService professionals) :
     {
         var created = await professionals.CreateAsync(input.ToDomain(), ct);
         return Success(
-            $"Profissional cadastrado. Login: {created.Username} · Senha inicial: {created.InitialPassword}",
+            $"Profissional cadastrado. Login: {created.Username} · Senha temporária: {created.InitialPassword} (anote: ela não será exibida novamente).",
             created);
     }
 

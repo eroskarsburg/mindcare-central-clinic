@@ -54,6 +54,62 @@ namespace MindCare.Application.Persistence.Migrations
                     b.ToTable("appointments", (string)null);
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.AuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_audit");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("details");
+
+                    b.Property<string>("Entity")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("entity");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("varchar(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("timestamp");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("username");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("Entity", "EntityId");
+
+                    b.ToTable("audit_logs", (string)null);
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -64,6 +120,14 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Property<int?>("Age")
                         .HasColumnType("int")
                         .HasColumnName("age");
+
+                    b.Property<DateTime?>("AnonymizedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("anonymized_at");
+
+                    b.Property<DateTime?>("ConsentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("consent_at");
 
                     b.Property<string>("Cpf")
                         .IsRequired()
@@ -189,9 +253,21 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_access_level");
 
+                    b.Property<int>("FailedLoginCount")
+                        .HasColumnType("int")
+                        .HasColumnName("failed_login_count");
+
                     b.Property<DateTime?>("LastActivity")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_activity");
+
+                    b.Property<DateTime?>("LockoutUntil")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("lockout_until");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("must_change_password");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
