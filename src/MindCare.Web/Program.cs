@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,21 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services.AddMindCareApplication(builder.Configuration);
 builder.Services.Configure<ClinicOptions>(builder.Configuration.GetSection(ClinicOptions.Section));
+
+// Chaves do Data Protection: protegem o cookie de login e o conteúdo do prontuário.
+// Precisam persistir entre reinícios/implantações (volume no Docker), senão o prontuário fica ilegível.
+var keysPath = builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } configured ? configured : "App_Data/keys";
+builder.Services.AddDataProtection()
+    .SetApplicationName("MindCare")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.IsPathRooted(keysPath) ? keysPath : Path.Combine(builder.Environment.ContentRootPath, keysPath)));
+
+builder.Services.PostConfigure<MindCare.Application.Records.StorageOptions>(options =>
+{
+    if (!Path.IsPathRooted(options.Path))
+    {
+        options.Path = Path.Combine(builder.Environment.ContentRootPath, options.Path);
+    }
+});
 
 // Pasta de e-mails de desenvolvimento relativa à raiz do app (ex.: App_Data/mail).
 builder.Services.PostConfigure<MindCare.Application.Notifications.EmailOptions>(options =>

@@ -91,9 +91,9 @@ internal sealed partial class DatabaseInitializer(
         var today = now.Date;
         Client[] clients =
         [
-            new() { Name = "Ana Beatriz Moura", Phone = "5551999990001", Email = "ana.moura@exemplo.com", Cpf = "52998224725", Gender = "Feminino", Age = 29, ConsentAt = today.AddDays(-40) },
-            new() { Name = "Carlos Eduardo Lima", Phone = "5551999990002", Email = "carlos.lima@exemplo.com", Cpf = "11144477735", Gender = "Masculino", Age = 41, ConsentAt = today.AddDays(-20) },
-            new() { Name = "Helena Duarte", Phone = "5551999990003", Email = "helena.duarte@exemplo.com", Cpf = "39053344705", Gender = "Feminino", Age = 34, ConsentAt = today.AddDays(-15) },
+            new() { Name = "Ana Beatriz Moura", Phone = "5551999990001", Email = "ana.moura@exemplo.com", Cpf = "52998224725", Gender = "Feminino", BirthDate = today.AddYears(-29).AddDays(3), HealthInsurance = "Particular", EmergencyContactName = "Marta Moura (mãe)", EmergencyContactPhone = "5551988887777", ConsentAt = today.AddDays(-40) },
+            new() { Name = "Carlos Eduardo Lima", Phone = "5551999990002", Email = "carlos.lima@exemplo.com", Cpf = "11144477735", Gender = "Masculino", BirthDate = new DateTime(1985, 3, 14), HealthInsurance = "Unimed", ConsentAt = today.AddDays(-20) },
+            new() { Name = "Helena Duarte", Phone = "5551999990003", Email = "helena.duarte@exemplo.com", Cpf = "39053344705", Gender = "Feminino", BirthDate = new DateTime(1992, 7, 2), ConsentAt = today.AddDays(-15) },
             new() { Name = "Rafael Nogueira", Phone = "5551999990004", Cpf = "86288366757", Gender = "Masculino", Age = 23 },
             new() { Name = "Sam Oliveira", Phone = "5551999990005", Email = "sam.oliveira@exemplo.com", Cpf = "71428793860", Gender = "Outro", Age = 31, ConsentAt = today.AddDays(-5) },
         ];
@@ -111,6 +111,10 @@ internal sealed partial class DatabaseInitializer(
         var leticia = NewProfessional("Letícia Kasper", "15350946056", "Feminino", "Psicoterapia", "leticia" + "15350946056");
         var marcos = NewProfessional("Marcos Teixeira", "46873529010", "Masculino", "Psiquiatria", "marcos" + "46873529010");
         db.Professionals.AddRange(leticia, marcos);
+        foreach (var (client, index) in clients.Select((c, i) => (c, i)))
+        {
+            client.ResponsibleProfessional = index == 3 ? marcos : leticia;
+        }
 
         // Letícia: seg–sex 08–12 e 13–18 · Marcos: ter e qui 14–20
         foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })

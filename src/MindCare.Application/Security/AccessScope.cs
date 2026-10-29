@@ -12,6 +12,9 @@ public interface IAccessScope
 {
     /// <summary>Id do profissional ao qual o acesso está restrito, ou nulo quando o acesso é total.</summary>
     Task<int?> RestrictedProfessionalIdAsync(CancellationToken ct = default);
+
+    /// <summary>Profissional vinculado ao usuário atual (mesmo que seja administrador), ou nulo.</summary>
+    Task<int?> OwnProfessionalIdAsync(CancellationToken ct = default);
 }
 
 internal sealed class AccessScope(MindCareDbContext db, ICurrentActor actor) : IAccessScope
@@ -19,7 +22,10 @@ internal sealed class AccessScope(MindCareDbContext db, ICurrentActor actor) : I
     private bool _resolved;
     private int? _professionalId;
 
-    public async Task<int?> RestrictedProfessionalIdAsync(CancellationToken ct = default)
+    public async Task<int?> RestrictedProfessionalIdAsync(CancellationToken ct = default) =>
+        actor.IsAdmin ? null : await OwnProfessionalIdAsync(ct);
+
+    public async Task<int?> OwnProfessionalIdAsync(CancellationToken ct = default)
     {
         if (_resolved)
         {
@@ -27,7 +33,7 @@ internal sealed class AccessScope(MindCareDbContext db, ICurrentActor actor) : I
         }
 
         _resolved = true;
-        if (actor.UserId is not { } userId || actor.IsAdmin)
+        if (actor.UserId is not { } userId)
         {
             return null;
         }

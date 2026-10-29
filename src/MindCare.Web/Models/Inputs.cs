@@ -63,6 +63,27 @@ public sealed class ClientInput
     public bool NotifyByWhatsApp { get; set; }
     public bool NotifyByEmail { get; set; }
 
+    [DataType(DataType.Date)]
+    public DateTime? BirthDate { get; set; }
+
+    public ClientStatus Status { get; set; } = ClientStatus.Ativo;
+    public int? ResponsibleProfessionalId { get; set; }
+
+    [StringLength(100, ErrorMessage = "O nome do contato deve ter até 100 caracteres.")]
+    public string? EmergencyContactName { get; set; }
+
+    [PhoneNumber]
+    public string? EmergencyContactPhone { get; set; }
+
+    [StringLength(250, ErrorMessage = "O endereço deve ter até 250 caracteres.")]
+    public string? Address { get; set; }
+
+    [StringLength(80, ErrorMessage = "O convênio deve ter até 80 caracteres.")]
+    public string? HealthInsurance { get; set; }
+
+    [StringLength(1000, ErrorMessage = "As observações devem ter até 1000 caracteres.")]
+    public string? Notes { get; set; }
+
     public Client ToDomain(int id = 0) => new()
     {
         Id = id,
@@ -74,6 +95,14 @@ public sealed class ClientInput
         Email = Email,
         NotifyByWhatsApp = NotifyByWhatsApp,
         NotifyByEmail = NotifyByEmail,
+        BirthDate = BirthDate,
+        Status = Status,
+        ResponsibleProfessionalId = ResponsibleProfessionalId,
+        EmergencyContactName = EmergencyContactName,
+        EmergencyContactPhone = EmergencyContactPhone,
+        Address = Address,
+        HealthInsurance = HealthInsurance,
+        Notes = Notes,
     };
 }
 
@@ -244,4 +273,29 @@ public sealed class ChangePasswordInput
 
     [Compare(nameof(NewPassword), ErrorMessage = "As senhas não coincidem.")]
     public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public sealed class NoteInput
+{
+    [Range(1, int.MaxValue)]
+    public int ClientId { get; set; }
+
+    public int? AppointmentId { get; set; }
+
+    [Required(ErrorMessage = "Escreva a evolução."), StringLength(20_000, ErrorMessage = "A evolução deve ter até 20.000 caracteres.")]
+    public string Content { get; set; } = string.Empty;
+}
+
+public sealed class DocumentInput
+{
+    [Range(1, int.MaxValue)]
+    public int ClientId { get; set; }
+
+    public DocumentCategory Category { get; set; } = DocumentCategory.Administrativo;
+
+    [StringLength(200, ErrorMessage = "A descrição deve ter até 200 caracteres.")]
+    public string? Description { get; set; }
+
+    [Required(ErrorMessage = "Selecione um arquivo.")]
+    public IFormFile? File { get; set; }
 }

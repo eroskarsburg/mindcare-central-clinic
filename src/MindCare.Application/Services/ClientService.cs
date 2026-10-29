@@ -11,8 +11,23 @@ public sealed record ClientDataExport(
     object Patient,
     IReadOnlyList<object> Appointments);
 
+/// <summary>Ficha do paciente: dados, histórico de consultas e indicadores.</summary>
+public sealed record ClientDetails(
+    Client Client,
+    IReadOnlyList<Appointment> Appointments,
+    Appointment? NextAppointment,
+    int SessionsDone,
+    int NoShows,
+    int Cancelled,
+    decimal TotalBilled,
+    decimal TotalPaid,
+    decimal Outstanding,
+    DateTime? FirstSession,
+    DateTime? LastSession);
+
 public interface IClientService
 {
+    Task<ClientDetails> GetDetailsAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<Client>> ListAsync(CancellationToken ct = default);
     Task<int> CreateAsync(Client input, bool consentGiven, CancellationToken ct = default);
     Task UpdateAsync(Client input, bool consentGiven, CancellationToken ct = default);
@@ -24,7 +39,42 @@ public interface IClientService
 internal sealed class ClientService(MindCareDbContext db, IAuditService audit, TimeProvider clock) : IClientService
 {
     public async Task<IReadOnlyList<Client>> ListAsync(CancellationToken ct = default) =>
-        await db.Clients.AsNoTracking().OrderBy(c => c.AnonymizedAt != null).ThenBy(c => c.Name).ToListAsync(ct);
+        await db.Clients.AsNoTracking()
+            .Include(c => c.ResponsibleProfessional)
+            .OrderBy(c => c.AnonymizedAt != null).ThenBy(c => c.Name)
+            .ToListAsync(ct);
+
+    public async Task<ClientDetails> GetDetailsAsync(int id, CancellationToken ct = default)
+    {
+        var client = await db.Clients.AsNoTracking()
+            .Include(c => c.ResponsibleProfessional)
+            .FirstOrDefaultAsync(c => c.Id == id, ct)
+            ?? throw new BusinessException("Paciente não encontrado.");
+
+        var appointments = await db.Appointments.AsNoTracking()
+            .Include(a => a.Professional)
+            .Include(a => a.Payment)
+            .Where(a => a.ClientId == id)
+            .OrderByDescending(a => a.ScheduledAt)
+            .ToListAsync(ct);
+
+        var now = clock.GetLocalNow().DateTime;
+        var billable = appointments.Where(a => a.Status != AppointmentStatus.Cancelada && a.Payment is not null).ToList();
+        var done = appointments.Where(a => a.Status == AppointmentStatus.Realizada).ToList();
+
+        return new ClientDetails(
+            client,
+            appointments,
+            appointments.Where(a => a.ScheduledAt >= now && a.OccupiesSlot).MinBy(a => a.ScheduledAt),
+            done.Count,
+            appointments.Count(a => a.Status == AppointmentStatus.Faltou),
+            appointments.Count(a => a.Status == AppointmentStatus.Cancelada),
+            billable.Sum(a => a.Payment!.Price),
+            billable.Sum(a => a.Payment!.PaidPrice),
+            billable.Where(a => a.ScheduledAt < now).Sum(a => a.Payment!.Outstanding),
+            done.MinBy(a => a.ScheduledAt)?.ScheduledAt,
+            done.MaxBy(a => a.ScheduledAt)?.ScheduledAt);
+    }
 
     public async Task<int> CreateAsync(Client input, bool consentGiven, CancellationToken ct = default)
     {
@@ -74,6 +124,12 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
                 client.Gender,
                 client.Age,
                 Phone = Phone.Format(client.Phone),
+                client.BirthDate,
+                Status = client.Status.ToString(),
+                client.EmergencyContactName,
+                EmergencyContactPhone = Phone.Format(client.EmergencyContactPhone),
+                client.Address,
+                client.HealthInsurance,
                 client.Email,
                 client.NotifyByWhatsApp,
                 client.NotifyByEmail,
@@ -106,6 +162,12 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
         client.Age = null;
         client.Phone = null;
         client.Email = null;
+        client.BirthDate = null;
+        client.EmergencyContactName = null;
+        client.EmergencyContactPhone = null;
+        client.Address = null;
+        client.HealthInsurance = null;
+        client.Notes = null;
         client.NotifyByWhatsApp = false;
         client.NotifyByEmail = false;
         client.AnonymizedAt = clock.GetLocalNow().DateTime;
@@ -116,6 +178,8 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
         await db.SaveChangesAsync(ct);
         await audit.LogAsync(AuditActions.Anonymized, Audit.EntityName<Client>(), id.ToString(), ct: ct);
     }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private async Task<Client> FindEditableAsync(int id, CancellationToken ct)
     {
@@ -136,11 +200,27 @@ internal sealed class ClientService(MindCareDbContext db, IAuditService audit, T
         target.Name = input.Name.Trim();
         target.Cpf = cpf;
         target.Gender = input.Gender;
-        target.Age = input.Age;
+        // Com data de nascimento a idade é calculada; sem ela, preserva a idade informada (cadastros antigos).
+        target.Age = input.BirthDate is null ? input.Age ?? target.Age : null;
         target.Phone = Phone.Normalize(input.Phone);
         target.Email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim().ToLowerInvariant();
         target.NotifyByWhatsApp = input.NotifyByWhatsApp;
         target.NotifyByEmail = input.NotifyByEmail;
+        target.BirthDate = input.BirthDate?.Date;
+        target.Status = input.Status;
+        target.EmergencyContactName = Clean(input.EmergencyContactName);
+        target.EmergencyContactPhone = Phone.Normalize(input.EmergencyContactPhone);
+        target.Address = Clean(input.Address);
+        target.HealthInsurance = Clean(input.HealthInsurance);
+        target.Notes = Clean(input.Notes);
+
+        if (input.ResponsibleProfessionalId is { } professionalId
+            && !await db.Professionals.AnyAsync(p => p.Id == professionalId, ct))
+        {
+            throw new BusinessException("Selecione um profissional de referência válido.");
+        }
+
+        target.ResponsibleProfessionalId = input.ResponsibleProfessionalId;
 
         if (consentGiven)
         {

@@ -1,18 +1,39 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using MindCare.Application.Records;
 using MindCare.Application.Services;
 using MindCare.Web.Infrastructure;
 using MindCare.Web.Models;
 
 namespace MindCare.Web.Controllers;
 
-public sealed class ClientController(IClientService clients) : AppController
+public sealed class ClientController(
+    IClientService clients,
+    IProfessionalService professionals,
+    IClinicalNoteService notes,
+    IClientDocumentService documents,
+    IOptions<StorageOptions> storage) : AppController
 {
     private static readonly JsonSerializerOptions ExportJson = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken ct) => View(await clients.ListAsync(ct));
+    public async Task<IActionResult> Index(CancellationToken ct) =>
+        View(new ClientsPageViewModel(await clients.ListAsync(ct), await professionals.ListAsync(ct)));
+
+    /// <summary>Ficha do paciente: dados, histórico, financeiro, prontuário e documentos.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Details(int id, CancellationToken ct)
+    {
+        var details = await clients.GetDetailsAsync(id, ct);
+        return View(new ClientDetailsViewModel(
+            details,
+            await notes.ListAsync(id, ct),
+            await documents.ListAsync(id, ct),
+            await professionals.ListAsync(ct),
+            storage.Value.MaxUploadMegabytes));
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ClientInput input, CancellationToken ct)

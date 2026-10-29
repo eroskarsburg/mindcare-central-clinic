@@ -1339,3 +1339,59 @@ div.dt-container .dt-info {
 .public-result.danger { background: rgba(192, 100, 90, 0.12); color: #873d35; }
 [data-bs-theme="dark"] .public-result.success { color: #c9dcc5; }
 [data-bs-theme="dark"] .public-result.danger { color: #f1bdb6; }
+
+/* ---------- Ficha do paciente ---------- */
+
+.info-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+}
+
+.info-list div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.info-list dt {
+    font-weight: 500;
+    color: var(--mc-text-muted);
+}
+
+.info-list dd {
+    margin: 0;
+    font-weight: 500;
+}
+
+.emergency {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+    border-radius: var(--mc-radius-sm);
+    background: rgba(242, 167, 160, 0.14);
+}
+
+.emergency i {
+    font-size: 1.2rem;
+    color: var(--mc-clay);
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.note-card {
+    position: relative;
+    padding: 1.1rem 1.35rem;
+    border-left: 3px solid var(--mc-taupe);
+}
+
+.note-content {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}

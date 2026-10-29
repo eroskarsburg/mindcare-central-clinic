@@ -173,6 +173,11 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_client");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)")
+                        .HasColumnName("address");
+
                     b.Property<int?>("Age")
                         .HasColumnType("int")
                         .HasColumnName("age");
@@ -180,6 +185,10 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Property<DateTime?>("AnonymizedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("anonymized_at");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
 
                     b.Property<DateTime?>("ConsentAt")
                         .HasColumnType("datetime(6)")
@@ -196,17 +205,37 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(120)")
                         .HasColumnName("email");
 
+                    b.Property<string>("EmergencyContactName")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("emergency_contact_name");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("emergency_contact_phone");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
                         .HasColumnName("gender");
 
+                    b.Property<string>("HealthInsurance")
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("health_insurance");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)")
+                        .HasColumnName("notes");
 
                     b.Property<bool>("NotifyByEmail")
                         .ValueGeneratedOnAdd()
@@ -225,6 +254,18 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(15)")
                         .HasColumnName("phone");
 
+                    b.Property<int?>("ResponsibleProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_responsible_professional");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Ativo")
+                        .HasColumnName("status");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Cpf")
@@ -232,7 +273,116 @@ namespace MindCare.Application.Persistence.Migrations
 
                     b.HasIndex("Phone");
 
+                    b.HasIndex("ResponsibleProfessionalId");
+
                     b.ToTable("clients", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClientDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_document");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("category");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)")
+                        .HasColumnName("file_name");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("storage_path");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<int?>("UploadedByProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional_uploaded");
+
+                    b.Property<int>("UploadedByUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user_uploaded");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("client_documents", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClinicalNote", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_note");
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_appointment");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EncryptedContent")
+                        .IsRequired()
+                        .HasMaxLength(60000)
+                        .HasColumnType("longtext")
+                        .HasColumnName("encrypted_content");
+
+                    b.Property<int>("ProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.ToTable("clinical_notes", (string)null);
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.OutboundMessage", b =>
@@ -582,6 +732,53 @@ namespace MindCare.Application.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ProfessionalId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Professional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Professional", "ResponsibleProfessional")
+                        .WithMany()
+                        .HasForeignKey("ResponsibleProfessionalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ResponsibleProfessional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClientDocument", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClinicalNote", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MindCare.Application.Domain.Professional", "Professional")
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("Client");
 

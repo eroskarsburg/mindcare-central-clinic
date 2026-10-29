@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MindCare.Application.Notifications;
 using MindCare.Application.Persistence;
+using MindCare.Application.Records;
 using MindCare.Application.Security;
 using MindCare.Application.Services;
 
@@ -38,6 +39,7 @@ public static class DependencyInjection
         services.AddOptions<WhatsAppOptions>().Bind(configuration.GetSection(WhatsAppOptions.Section));
         services.AddOptions<EmailOptions>().Bind(configuration.GetSection(EmailOptions.Section));
         services.AddOptions<ClinicIdentity>().Bind(configuration.GetSection(ClinicIdentity.Section));
+        services.AddOptions<StorageOptions>().Bind(configuration.GetSection(StorageOptions.Section));
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordService, PasswordService>();
@@ -53,6 +55,11 @@ public static class DependencyInjection
         services.AddScoped<IProfessionalService, ProfessionalService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IDashboardService, DashboardService>();
+
+        // Prontuário (criptografado com Data Protection, registrado pelo host) e documentos.
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
+        services.AddScoped<IClientDocumentService, ClientDocumentService>();
 
         // Notificações: fila (outbox), canais de envio, respostas do paciente e processamento em segundo plano.
         services.AddScoped<INotificationOutbox, NotificationOutbox>();

@@ -5,11 +5,14 @@ using MindCare.Application.Security;
 
 namespace MindCare.Application.Services;
 
+public sealed record Birthday(int ClientId, string Name, DateTime Date, int Age);
+
 public sealed record DashboardData(
     DashboardSummary Summary,
     IReadOnlyList<Appointment> Today,
     IReadOnlyList<Appointment> Upcoming,
-    IReadOnlyList<Payment> OpenPayments);
+    IReadOnlyList<Payment> OpenPayments,
+    IReadOnlyList<Birthday> Birthdays);
 
 public interface IDashboardService
 {
@@ -82,6 +85,30 @@ internal sealed class DashboardService(MindCareDbContext db, TimeProvider clock,
             .Take(ListSize)
             .ToListAsync(ct);
 
-        return new DashboardData(summary, todayList, upcoming, openPayments);
+        // Aniversariantes dos próximos 7 dias entre os pacientes em acompanhamento.
+        var withBirthday = await db.Clients.AsNoTracking()
+            .Where(c => c.BirthDate != null && c.AnonymizedAt == null && c.Status == ClientStatus.Ativo
+                        && (own == null || c.ResponsibleProfessionalId == own))
+            .Select(c => new { c.Id, c.Name, BirthDate = c.BirthDate!.Value })
+            .ToListAsync(ct);
+
+        var birthdays = withBirthday
+            .Select(c =>
+            {
+                var next = NextBirthday(c.BirthDate, today);
+                return new Birthday(c.Id, c.Name, next, next.Year - c.BirthDate.Year);
+            })
+            .Where(b => b.Date < today.AddDays(7))
+            .OrderBy(b => b.Date)
+            .ToList();
+
+        return new DashboardData(summary, todayList, upcoming, openPayments, birthdays);
+    }
+
+    private static DateTime NextBirthday(DateTime birth, DateTime today)
+    {
+        DateTime On(int year) => new(year, birth.Month, Math.Min(birth.Day, DateTime.DaysInMonth(year, birth.Month)));
+        var thisYear = On(today.Year);
+        return thisYear >= today ? thisYear : On(today.Year + 1);
     }
 }

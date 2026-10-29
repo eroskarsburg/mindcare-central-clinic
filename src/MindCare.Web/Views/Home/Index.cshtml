@@ -84,7 +84,7 @@
                             <span>@a.ScheduledAt.ToString("mm")</span>
                         </div>
                         <div class="flex-grow-1 min-w-0">
-                            <div class="fw-semibold text-truncate">@a.Client?.Name @(live ? "· agora" : null)</div>
+                            <a class="fw-semibold text-truncate d-block text-reset" asp-controller="Client" asp-action="Details" asp-route-id="@a.ClientId">@a.Client?.Name @(live ? "· agora" : null)</a>
                             <small class="text-muted-mc">
                                 <i class="bi bi-clock me-1"></i>@a.ScheduledAt.ToString("HH:mm")–@a.EndsAt.ToString("HH:mm")
                                 @if (a.Professional is not null)
@@ -139,8 +139,30 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="mc-card h-100">
+    <div class="col-lg-5 d-flex flex-column gap-4">
+        @if (Model.Birthdays.Count > 0)
+        {
+            <div class="mc-card">
+                <div class="mc-card-header"><h2><i class="bi bi-balloon-heart me-2" style="color: var(--mc-blush)"></i>Aniversários da semana</h2></div>
+                <div class="mc-card-body">
+                    @foreach (var b in Model.Birthdays)
+                    {
+                        <a class="agenda-item text-reset text-decoration-none" asp-controller="Client" asp-action="Details" asp-route-id="@b.ClientId">
+                            <div class="agenda-date @(b.Date == DateTime.Today ? "is-live" : null)">
+                                <strong>@b.Date.ToString("dd")</strong>
+                                <span>@b.Date.ToString("MMM").TrimEnd('.')</span>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-semibold text-truncate">@b.Name</div>
+                                <small class="text-muted-mc">@(b.Date == DateTime.Today ? "Hoje! " : null)Completa @b.Age anos</small>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="mc-card flex-grow-1">
             <div class="mc-card-header">
                 <h2>Pagamentos em aberto</h2>
                 <a class="btn btn-soft btn-sm" asp-controller="Payment" asp-action="Index">Financeiro</a>

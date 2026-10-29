@@ -37,6 +37,11 @@ ENV ASPNETCORE_HTTP_PORTS=8080 \
 
 COPY --from=build /app .
 
+# Dados persistentes (chaves de criptografia do prontuário, documentos, e-mails de teste):
+# a pasta pertence ao usuário da aplicação para que o volume nomeado herde a permissão.
+RUN mkdir -p /app/App_Data && chown -R $APP_UID /app/App_Data
+VOLUME /app/App_Data
+
 # Usuário sem privilégios fornecido pela imagem oficial
 USER $APP_UID
 EXPOSE 8080

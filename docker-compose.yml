@@ -59,6 +59,10 @@ services:
       Clinic__Tagline: ${Clinic__Tagline:-Cuidado que acolhe}
     ports:
       - "${APP_PORT:-8080}:8080"
+    volumes:
+      # Chaves do Data Protection (sem elas o prontuário fica ilegível) e documentos dos pacientes.
+      - app-data:/app/App_Data
 
 volumes:
   mysql-data:
+  app-data:

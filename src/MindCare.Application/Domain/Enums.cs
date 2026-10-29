@@ -22,6 +22,23 @@ public enum PaymentStatus
     Parcial,
 }
 
+/// <summary>Situação do acompanhamento do paciente.</summary>
+public enum ClientStatus
+{
+    Ativo,
+    EmPausa,
+    Alta,
+}
+
+public enum DocumentCategory
+{
+    /// <summary>Visível a toda a equipe (termos, comprovantes, encaminhamentos administrativos).</summary>
+    Administrativo,
+
+    /// <summary>Visível apenas ao autor e ao profissional de referência (laudos, avaliações).</summary>
+    Clinico,
+}
+
 /// <summary>Ciclo de vida de uma consulta.</summary>
 public enum AppointmentStatus
 {

@@ -89,7 +89,7 @@
                                     <span class="cell-sub">@a.ScheduledAt.ToString("ddd · HH:mm")–@a.EndsAt.ToString("HH:mm")</span>
                                 </td>
                                 <td>
-                                    <span class="cell-title">@a.Client?.Name</span>
+                                    <a class="cell-title text-reset" asp-controller="Client" asp-action="Details" asp-route-id="@a.ClientId">@a.Client?.Name</a>
                                     <span class="cell-sub">
                                         <i class="bi @a.Modality.ModalityIcon() me-1"></i>@a.Modality
                                         @if (a.SeriesId is not null)

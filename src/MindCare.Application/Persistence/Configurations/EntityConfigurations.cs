@@ -24,6 +24,19 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         b.Property(x => x.NotifyByWhatsApp).HasColumnName("notify_whatsapp").HasDefaultValue(true).HasSentinel(true);
         b.Property(x => x.NotifyByEmail).HasColumnName("notify_email").HasDefaultValue(true).HasSentinel(true);
         b.HasIndex(x => x.Phone);
+        b.Property(x => x.BirthDate).HasColumnName("birth_date").HasColumnType("date");
+        b.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20)
+            .HasDefaultValue(ClientStatus.Ativo).HasSentinel((ClientStatus)(-1));
+        b.Property(x => x.ResponsibleProfessionalId).HasColumnName("id_responsible_professional");
+        b.Property(x => x.EmergencyContactName).HasColumnName("emergency_contact_name").HasMaxLength(100);
+        b.Property(x => x.EmergencyContactPhone).HasColumnName("emergency_contact_phone").HasMaxLength(15);
+        b.Property(x => x.Address).HasColumnName("address").HasMaxLength(250);
+        b.Property(x => x.HealthInsurance).HasColumnName("health_insurance").HasMaxLength(80);
+        b.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(1000);
+        b.HasOne(x => x.ResponsibleProfessional)
+            .WithMany()
+            .HasForeignKey(x => x.ResponsibleProfessionalId)
+            .OnDelete(DeleteBehavior.SetNull);
         b.Property(x => x.AnonymizedAt).HasColumnName("anonymized_at");
         b.Ignore(x => x.IsAnonymized);
         b.HasIndex(x => x.Cpf).IsUnique();
@@ -244,5 +257,49 @@ internal sealed class StaffNotificationConfiguration : IEntityTypeConfiguration<
         b.HasIndex(x => new { x.UserId, x.ReadAt });
 
         b.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class ClinicalNoteConfiguration : IEntityTypeConfiguration<ClinicalNote>
+{
+    public void Configure(EntityTypeBuilder<ClinicalNote> b)
+    {
+        b.ToTable("clinical_notes");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_note");
+        b.Property(x => x.ClientId).HasColumnName("id_client");
+        b.Property(x => x.ProfessionalId).HasColumnName("id_professional");
+        b.Property(x => x.AppointmentId).HasColumnName("id_appointment");
+        b.Property(x => x.EncryptedContent).HasColumnName("encrypted_content").HasMaxLength(60_000).IsRequired();
+        b.Property(x => x.CreatedAt).HasColumnName("created_at");
+        b.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+        b.HasIndex(x => x.ClientId);
+
+        b.HasOne(x => x.Client).WithMany().HasForeignKey(x => x.ClientId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(x => x.Professional).WithMany().HasForeignKey(x => x.ProfessionalId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.Appointment).WithMany().HasForeignKey(x => x.AppointmentId).OnDelete(DeleteBehavior.SetNull);
+    }
+}
+
+internal sealed class ClientDocumentConfiguration : IEntityTypeConfiguration<ClientDocument>
+{
+    public void Configure(EntityTypeBuilder<ClientDocument> b)
+    {
+        b.ToTable("client_documents");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_document");
+        b.Property(x => x.ClientId).HasColumnName("id_client");
+        b.Property(x => x.Category).HasColumnName("category").HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.FileName).HasColumnName("file_name").HasMaxLength(160).IsRequired();
+        b.Property(x => x.StoragePath).HasColumnName("storage_path").HasMaxLength(200).IsRequired();
+        b.Property(x => x.ContentType).HasColumnName("content_type").HasMaxLength(120).IsRequired();
+        b.Property(x => x.SizeBytes).HasColumnName("size_bytes");
+        b.Property(x => x.Description).HasColumnName("description").HasMaxLength(200);
+        b.Property(x => x.UploadedByUserId).HasColumnName("id_user_uploaded");
+        b.Property(x => x.UploadedByProfessionalId).HasColumnName("id_professional_uploaded");
+        b.Property(x => x.UploadedAt).HasColumnName("uploaded_at");
+        b.HasIndex(x => x.ClientId);
+
+        b.HasOne(x => x.Client).WithMany().HasForeignKey(x => x.ClientId).OnDelete(DeleteBehavior.Cascade);
     }
 }

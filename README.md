@@ -38,7 +38,10 @@
 | **Visão geral** | Agenda do dia, taxa de faltas, consultas aguardando confirmação, valores recebidos e a receber. Profissionais veem apenas os próprios atendimentos. |
 | **Agenda** | Calendário semanal/diário/mensal (FullCalendar) com arrastar para remarcar, sessões recorrentes (semanal/quinzenal), detecção de conflito por profissional e paciente, status (agendada, confirmada, realizada, falta, cancelada) e sala de teleconsulta gerada automaticamente. |
 | **Horários** | Disponibilidade semanal de cada profissional e bloqueios de agenda (férias, feriados da clínica), respeitados ao criar séries. |
-| **Pacientes** | Cadastro com validação de CPF (dígitos verificadores), celular e e-mail, preferências de aviso e bloqueio de exclusão de quem tem consultas. |
+| **Pacientes** | Cadastro completo (CPF validado, nascimento, convênio, contato de emergência, endereço, situação e profissional de referência), preferências de aviso e bloqueio de exclusão de quem tem consultas. |
+| **Ficha do paciente** | Indicadores (sessões, faltas, saldo em aberto, próxima sessão), histórico de consultas e pagamentos, e atalho para conversar no WhatsApp. |
+| **Prontuário** | Evoluções clínicas **criptografadas em repouso** (ASP.NET Data Protection), vinculadas à sessão. Só o autor e o profissional de referência leem; administradores não têm acesso ao conteúdo; toda leitura é auditada. |
+| **Documentos** | Anexos em PDF, imagem ou Word com verificação do conteúdo real do arquivo. Documentos **clínicos** ficam restritos ao profissional de referência; **administrativos** ficam visíveis à equipe. |
 | **Notificações** | Confirmação de agendamento, aviso de remarcação/cancelamento e lembrete automático por **WhatsApp** (Cloud API oficial da Meta, com botões Confirmar/Cancelar) e **e-mail**. Fila com reenvio automático, link público de confirmação e avisos no sino do painel quando o paciente responde. [Guia de configuração](docs/whatsapp.md). |
 | **Financeiro** | Totais faturado, recebido e em aberto; registro de pagamentos parciais ou integrais. O status é calculado automaticamente. |
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
@@ -110,6 +113,8 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `Notifications__ReminderHoursBefore` | | Antecedência do lembrete automático. Padrão: `24`. |
 | `WhatsApp__Mode` | | `Disabled`, `Simulated` ou `Live`. Veja o [guia do WhatsApp](docs/whatsapp.md) para `PhoneNumberId`, `AccessToken`, `AppSecret` e `VerifyToken`. |
 | `Email__Enabled` / `Email__Host` / `Email__Port` / `Email__Username` / `Email__Password` / `Email__FromAddress` | | Envio de e-mails por SMTP. `Email__PickupDirectory` grava `.eml` em disco (desenvolvimento). |
+| `DataProtection__KeysPath` | Produção | Pasta das chaves que cifram o prontuário e o cookie de login. **Precisa ser persistente** (o volume `app-data` no Docker). Padrão: `App_Data/keys`. |
+| `Storage__Path` / `Storage__MaxUploadMegabytes` | | Pasta dos documentos dos pacientes e tamanho máximo por arquivo. Padrão: `App_Data/storage`, 10 MB. |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |
@@ -173,6 +178,7 @@ flowchart LR
     EF --> DB[(MySQL 8.4)]
 ```
 
+- **Backups:** além do banco (volume `mysql-data`), faça backup do volume `app-data`. Ele contém as chaves de criptografia do prontuário: sem elas, as evoluções não podem ser lidas.
 - **Páginas** são renderizadas no servidor. As **ações de escrita** são endpoints JSON consumidos por um único módulo JavaScript genérico de CRUD (`wwwroot/js/app.js`).
 - Erros de regra de negócio (`BusinessException`) viram respostas `400 { message }`, exibidas como toast.
 - Builds rodam com `TreatWarningsAsErrors` e os analisadores recomendados do .NET.

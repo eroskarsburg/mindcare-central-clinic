@@ -13,6 +13,15 @@ public sealed record SchedulePageViewModel(
     IReadOnlyList<Professional> Professionals,
     bool CanChooseProfessional);
 
+public sealed record ClientsPageViewModel(IReadOnlyList<Client> Clients, IReadOnlyList<Professional> Professionals);
+
+public sealed record ClientDetailsViewModel(
+    MindCare.Application.Services.ClientDetails Details,
+    MindCare.Application.Records.NotesResult Notes,
+    IReadOnlyList<ClientDocument> Documents,
+    IReadOnlyList<Professional> Professionals,
+    int MaxUploadMegabytes);
+
 public sealed record ProfileViewModel(User User, Professional? Professional);
 
 public sealed record ErrorViewModel(int StatusCode, string Title, string Message, string? RequestId);
