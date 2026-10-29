@@ -12,6 +12,7 @@ public sealed class AppointmentController(
     IClientService clients,
     IProfessionalService professionals,
     IScheduleService schedule,
+    IPaymentService payments,
     IAccessScope scope) : AppController
 {
     private static readonly string[] BlockClasses = ["ev-block"];
@@ -24,7 +25,8 @@ public sealed class AppointmentController(
             await appointments.ListAsync(ct: ct),
             [.. allClients.Where(c => !c.IsAnonymized)],
             await professionals.ListAsync(ct),
-            await scope.RestrictedProfessionalIdAsync(ct)));
+            await scope.RestrictedProfessionalIdAsync(ct),
+            await payments.ListServiceTypesAsync(onlyActive: true, ct)));
     }
 
     /// <summary>Eventos do calendário (FullCalendar) no intervalo visível.</summary>
@@ -117,6 +119,8 @@ public sealed class AppointmentController(
         a.Modality,
         a.ScheduledAt,
         a.DurationMinutes,
+        a.ServiceTypeId,
+        UsesPackage = a.PackageId is not null,
         a.Status,
         a.CancellationReason,
         a.Observation,

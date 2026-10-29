@@ -20,6 +20,7 @@
                     <th>Profissional</th>
                     <th>CPF</th>
                     <th>Especialidade</th>
+                    <th>Repasse</th>
                     <th>Login</th>
                     <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
                 </tr>
@@ -33,11 +34,18 @@
                             <span class="cell-sub">@p.Gender</span>
                         </td>
                         <td class="font-monospace small">@Cpf.Format(p.Cpf)</td>
-                        <td><span class="badge-soft neutral">@p.Speciality</span></td>
+                        <td>
+                            <span class="badge-soft neutral">@p.Speciality</span>
+                            @if (!string.IsNullOrEmpty(p.RegistrationNumber))
+                            {
+                                <span class="cell-sub">@p.RegistrationNumber</span>
+                            }
+                        </td>
+                        <td data-order="@p.CommissionPercent">@((p.CommissionPercent / 100m).ToString("P0"))</td>
                         <td class="small">@p.User?.Username</td>
                         <td class="table-actions">
                             <button class="btn-icon" type="button" title="Editar" aria-label="Editar @p.Name"
-                                    data-crud-edit data-item="@Html.ToDataJson(new { p.Id, p.Name, p.Cpf, p.Gender, p.Speciality })">
+                                    data-crud-edit data-item="@Html.ToDataJson(new { p.Id, p.Name, p.Cpf, p.Gender, p.Speciality, p.RegistrationNumber, p.CommissionPercent })">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @p.Name"
@@ -90,9 +98,23 @@
                         <option value="Neuropsicologia"></option>
                     </datalist>
                 </div>
+                <div class="row g-3 mt-0">
+                    <div class="col-sm-7">
+                        <label class="form-label" for="professional-registration">Registro profissional</label>
+                        <input class="form-control" id="professional-registration" name="registrationNumber" maxlength="40" placeholder="Ex.: CRP 07/12345" />
+                        <small class="text-muted-mc">Impresso nos recibos.</small>
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label" for="professional-commission">Repasse</label>
+                        <div class="input-group">
+                            <input class="form-control" id="professional-commission" name="commissionPercent" type="number" min="0" max="100" step="0.5" value="0" />
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="alert alert-light border small mt-3 mb-0" data-create-only>
                     <i class="bi bi-key me-1"></i>
-                    O login será o CPF e a senha inicial, o primeiro nome em minúsculas seguido do CPF. Ela será exibida após salvar.
+                    O login será o CPF. Uma senha temporária aleatória será exibida após salvar e deverá ser trocada no primeiro acesso.
                 </div>
             </div>
             <div class="modal-footer">

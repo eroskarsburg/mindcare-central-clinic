@@ -29,6 +29,14 @@ public sealed class Appointment
     public string? Observation { get; set; }
     public Payment? Payment { get; set; }
 
+    /// <summary>Tipo de atendimento (define duração e preço padrão).</summary>
+    public int? ServiceTypeId { get; set; }
+    public ServiceType? ServiceType { get; set; }
+
+    /// <summary>Pacote que cobre esta sessão (o pagamento fica no pacote).</summary>
+    public int? PackageId { get; set; }
+    public SessionPackage? Package { get; set; }
+
     /// <summary>Quando o lembrete automático foi colocado na fila (evita envios duplicados).</summary>
     public DateTime? ReminderQueuedAt { get; set; }
 

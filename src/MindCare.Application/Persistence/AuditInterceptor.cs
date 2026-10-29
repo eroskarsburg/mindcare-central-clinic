@@ -148,6 +148,9 @@ public static class Audit
         [typeof(ScheduleBlock)] = "Bloqueio de agenda",
         [typeof(ClinicalNote)] = "Prontuário",
         [typeof(ClientDocument)] = "Documento",
+        [typeof(PaymentEntry)] = "Recebimento",
+        [typeof(SessionPackage)] = "Pacote",
+        [typeof(ServiceType)] = "Tipo de serviço",
     };
 
     public static void Register<T>(string displayName) => Names[typeof(T)] = displayName;

@@ -120,8 +120,22 @@ public sealed class ProfessionalInput
     [Required(ErrorMessage = "Informe a especialidade."), StringLength(60, ErrorMessage = "A especialidade deve ter até 60 caracteres.")]
     public string Speciality { get; set; } = string.Empty;
 
-    public Professional ToDomain(int id = 0) =>
-        new() { Id = id, Name = Name, Cpf = Cpf, Gender = Gender, Speciality = Speciality };
+    [StringLength(40, ErrorMessage = "O registro deve ter até 40 caracteres.")]
+    public string? RegistrationNumber { get; set; }
+
+    [Range(0, 100, ErrorMessage = "O repasse deve ficar entre 0% e 100%.")]
+    public decimal CommissionPercent { get; set; }
+
+    public Professional ToDomain(int id = 0) => new()
+    {
+        Id = id,
+        Name = Name,
+        Cpf = Cpf,
+        Gender = Gender,
+        Speciality = Speciality,
+        RegistrationNumber = RegistrationNumber,
+        CommissionPercent = CommissionPercent,
+    };
 }
 
 public sealed class AppointmentFormInput
@@ -162,6 +176,10 @@ public sealed class AppointmentFormInput
     /// <summary>Somente na edição de consultas em série.</summary>
     public SeriesScope Scope { get; set; } = SeriesScope.ApenasEsta;
 
+    public int? ServiceTypeId { get; set; }
+    public bool UsePackage { get; set; }
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Pix;
+
     public AppointmentInput ToInput() =>
         new(ClientId, Modality, ScheduledAt!.Value, Observation, Price, PaidPrice ?? 0)
         {
@@ -171,6 +189,9 @@ public sealed class AppointmentFormInput
             Occurrences = Occurrences,
             Status = Status,
             CancellationReason = CancellationReason,
+            ServiceTypeId = ServiceTypeId,
+            UsePackage = UsePackage,
+            PaymentMethod = PaymentMethod,
         };
 }
 
@@ -298,4 +319,54 @@ public sealed class DocumentInput
 
     [Required(ErrorMessage = "Selecione um arquivo.")]
     public IFormFile? File { get; set; }
+}
+
+public sealed class EntryFormInput
+{
+    [Range(0.01, 100_000, ErrorMessage = "Informe um valor maior que zero.")]
+    public decimal Amount { get; set; }
+
+    public DateTime? PaidAt { get; set; }
+    public PaymentMethod Method { get; set; } = PaymentMethod.Pix;
+
+    [StringLength(200, ErrorMessage = "A observação deve ter até 200 caracteres.")]
+    public string? Note { get; set; }
+
+    public EntryInput ToInput() => new(Amount, PaidAt, Method, Note);
+}
+
+public sealed class PackageFormInput
+{
+    [Range(1, int.MaxValue)]
+    public int ClientId { get; set; }
+
+    [Required(ErrorMessage = "Informe o nome do pacote."), StringLength(80, ErrorMessage = "O nome deve ter até 80 caracteres.")]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(1, 100, ErrorMessage = "O pacote deve ter de 1 a 100 sessões.")]
+    public int TotalSessions { get; set; } = 4;
+
+    [Range(0, 100_000, ErrorMessage = "Valor inválido.")]
+    public decimal Price { get; set; }
+
+    public DateTime? ExpiresAt { get; set; }
+
+    public PackageInput ToInput() => new(ClientId, Name, TotalSessions, Price, ExpiresAt);
+}
+
+public sealed class ServiceTypeInput
+{
+    [Required(ErrorMessage = "Informe o nome."), StringLength(80, ErrorMessage = "O nome deve ter até 80 caracteres.")]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(10, Appointment.MaxDurationMinutes, ErrorMessage = "Duração inválida.")]
+    public int DurationMinutes { get; set; } = Appointment.DefaultDurationMinutes;
+
+    [Range(0, 100_000, ErrorMessage = "Valor inválido.")]
+    public decimal Price { get; set; }
+
+    public bool Active { get; set; } = true;
+
+    public ServiceType ToDomain(int id = 0) =>
+        new() { Id = id, Name = Name, DurationMinutes = DurationMinutes, Price = Price, Active = Active };
 }

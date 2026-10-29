@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MindCare.Application.Finance;
 using MindCare.Application.Notifications;
 using MindCare.Application.Persistence;
 using MindCare.Application.Records;
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddOptions<EmailOptions>().Bind(configuration.GetSection(EmailOptions.Section));
         services.AddOptions<ClinicIdentity>().Bind(configuration.GetSection(ClinicIdentity.Section));
         services.AddOptions<StorageOptions>().Bind(configuration.GetSection(StorageOptions.Section));
+        services.AddOptions<ClinicLegalOptions>().Bind(configuration.GetSection(ClinicLegalOptions.Section));
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordService, PasswordService>();
@@ -55,6 +57,10 @@ public static class DependencyInjection
         services.AddScoped<IProfessionalService, ProfessionalService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IDashboardService, DashboardService>();
+
+        // Financeiro: recibos (PDF) e relatórios (Excel).
+        services.AddScoped<IReceiptService, ReceiptService>();
+        services.AddScoped<IReportService, ReportService>();
 
         // Prontuário (criptografado com Data Protection, registrado pelo host) e documentos.
         services.AddSingleton<IFileStorage, LocalFileStorage>();

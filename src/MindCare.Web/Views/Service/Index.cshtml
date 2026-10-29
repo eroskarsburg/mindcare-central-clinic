@@ -1,0 +1,88 @@
+@model IReadOnlyList<ServiceType>
+@{
+    ViewData["Title"] = "Tipos de serviço";
+}
+
+<section data-crud data-endpoint="/Service" data-modal="#serviceModal">
+    <header class="page-header">
+        <div>
+            <span class="eyebrow"><i class="bi bi-tags"></i> Financeiro</span>
+            <h1>Tipos de serviço</h1>
+            <p>Duração e valor padrão usados ao agendar (sessão individual, casal, avaliação...).</p>
+        </div>
+        <button class="btn btn-primary" type="button" data-crud-create><i class="bi bi-plus-lg me-1"></i> Novo serviço</button>
+    </header>
+
+    <div class="mc-card mc-card-body pt-4">
+        <table class="table table-hover" data-table>
+            <thead>
+                <tr>
+                    <th>Serviço</th>
+                    <th>Duração</th>
+                    <th>Valor</th>
+                    <th>Situação</th>
+                    <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr class="@(s.Active ? null : "opacity-50")">
+                        <td class="cell-title">@s.Name</td>
+                        <td data-order="@s.DurationMinutes">@s.DurationMinutes min</td>
+                        <td data-order="@s.Price">@s.Price.ToString("C")</td>
+                        <td><span class="badge-soft @(s.Active ? "success" : "muted")">@(s.Active ? "Ativo" : "Inativo")</span></td>
+                        <td class="table-actions">
+                            <button class="btn-icon" type="button" title="Editar" aria-label="Editar @s.Name"
+                                    data-crud-edit data-item="@Html.ToDataJson(new { s.Id, s.Name, s.DurationMinutes, s.Price, s.Active })">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @s.Name"
+                                    data-crud-delete data-id="@s.Id" data-name="@s.Name">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" autocomplete="off">
+            <div class="modal-header">
+                <h5 class="modal-title" id="serviceModalTitle" data-title-create="Novo tipo de serviço" data-title-edit="Editar tipo de serviço">Novo tipo de serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label" for="service-name">Nome</label>
+                    <input class="form-control" id="service-name" name="name" maxlength="80" required placeholder="Ex.: Sessão individual" />
+                </div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="service-duration">Duração (min)</label>
+                        <input class="form-control" id="service-duration" name="durationMinutes" type="number" min="10" max="240" step="5" value="50" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="service-price">Valor</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input class="form-control" id="service-price" name="price" type="number" min="0" step="0.01" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-check form-switch mt-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="service-active" name="active" checked />
+                    <label class="form-check-label" for="service-active">Disponível para novos agendamentos</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>

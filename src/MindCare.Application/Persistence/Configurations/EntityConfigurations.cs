@@ -73,6 +73,8 @@ internal sealed class ProfessionalConfiguration : IEntityTypeConfiguration<Profe
         b.Property(x => x.Cpf).HasColumnName("cpf").HasMaxLength(11).IsRequired();
         b.Property(x => x.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired();
         b.Property(x => x.Speciality).HasColumnName("speciality").HasMaxLength(60).IsRequired();
+        b.Property(x => x.RegistrationNumber).HasColumnName("registration_number").HasMaxLength(40);
+        b.Property(x => x.CommissionPercent).HasColumnName("commission_percent").HasPrecision(5, 2);
         b.HasIndex(x => x.Cpf).IsUnique();
         b.HasIndex(x => x.UserId).IsUnique();
 
@@ -106,6 +108,10 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
         b.Property(x => x.PatientResponseVia).HasColumnName("patient_response_via").HasMaxLength(20);
         b.Property(x => x.PatientRespondedAt).HasColumnName("patient_responded_at");
         b.HasIndex(x => x.ConfirmationTokenHash);
+        b.Property(x => x.ServiceTypeId).HasColumnName("id_service_type");
+        b.Property(x => x.PackageId).HasColumnName("id_package");
+        b.HasOne(x => x.ServiceType).WithMany().HasForeignKey(x => x.ServiceTypeId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(x => x.Package).WithMany(p => p.Appointments).HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.SetNull);
         b.Ignore(x => x.EndsAt);
         b.Ignore(x => x.OccupiesSlot);
         b.HasIndex(x => x.ScheduledAt);
@@ -142,6 +148,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         b.Property(x => x.PaidDate).HasColumnName("paid_date").HasColumnType("date");
         b.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20);
         b.Ignore(x => x.Outstanding);
+        b.HasMany(x => x.Entries).WithOne(e => e.Payment).HasForeignKey(e => e.PaymentId).OnDelete(DeleteBehavior.Cascade);
         b.HasIndex(x => x.AppointmentId).IsUnique();
         b.HasIndex(x => x.Status);
     }
@@ -301,5 +308,61 @@ internal sealed class ClientDocumentConfiguration : IEntityTypeConfiguration<Cli
         b.HasIndex(x => x.ClientId);
 
         b.HasOne(x => x.Client).WithMany().HasForeignKey(x => x.ClientId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class ServiceTypeConfiguration : IEntityTypeConfiguration<ServiceType>
+{
+    public void Configure(EntityTypeBuilder<ServiceType> b)
+    {
+        b.ToTable("service_types");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_service_type");
+        b.Property(x => x.Name).HasColumnName("name").HasMaxLength(80).IsRequired();
+        b.Property(x => x.DurationMinutes).HasColumnName("duration_minutes");
+        b.Property(x => x.Price).HasColumnName("price").HasPrecision(10, 2);
+        b.Property(x => x.Active).HasColumnName("active").HasDefaultValue(true).HasSentinel(true);
+        b.HasIndex(x => x.Name).IsUnique();
+    }
+}
+
+internal sealed class PaymentEntryConfiguration : IEntityTypeConfiguration<PaymentEntry>
+{
+    public void Configure(EntityTypeBuilder<PaymentEntry> b)
+    {
+        b.ToTable("payment_entries");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_entry");
+        b.Property(x => x.PaymentId).HasColumnName("id_payments");
+        b.Property(x => x.PackageId).HasColumnName("id_package");
+        b.Property(x => x.Amount).HasColumnName("amount").HasPrecision(10, 2);
+        b.Property(x => x.PaidAt).HasColumnName("paid_at").HasColumnType("date");
+        b.Property(x => x.Method).HasColumnName("method").HasConversion<string>().HasMaxLength(20);
+        b.Property(x => x.Note).HasColumnName("note").HasMaxLength(200);
+        b.Property(x => x.CreatedAt).HasColumnName("created_at");
+        b.HasIndex(x => x.PaidAt);
+    }
+}
+
+internal sealed class SessionPackageConfiguration : IEntityTypeConfiguration<SessionPackage>
+{
+    public void Configure(EntityTypeBuilder<SessionPackage> b)
+    {
+        b.ToTable("session_packages");
+        b.HasKey(x => x.Id);
+        b.Property(x => x.Id).HasColumnName("id_package");
+        b.Property(x => x.ClientId).HasColumnName("id_client");
+        b.Property(x => x.Name).HasColumnName("name").HasMaxLength(80).IsRequired();
+        b.Property(x => x.TotalSessions).HasColumnName("total_sessions");
+        b.Property(x => x.Price).HasColumnName("price").HasPrecision(10, 2);
+        b.Property(x => x.PurchasedAt).HasColumnName("purchased_at").HasColumnType("date");
+        b.Property(x => x.ExpiresAt).HasColumnName("expires_at").HasColumnType("date");
+        b.Ignore(x => x.PaidAmount);
+        b.Ignore(x => x.UsedSessions);
+        b.Ignore(x => x.RemainingSessions);
+        b.HasIndex(x => x.ClientId);
+
+        b.HasOne(x => x.Client).WithMany().HasForeignKey(x => x.ClientId).OnDelete(DeleteBehavior.Cascade);
+        b.HasMany(x => x.Entries).WithOne(e => e.Package).HasForeignKey(e => e.PackageId).OnDelete(DeleteBehavior.Cascade);
     }
 }

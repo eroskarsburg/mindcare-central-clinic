@@ -14,6 +14,7 @@ public sealed class ClientController(
     IProfessionalService professionals,
     IClinicalNoteService notes,
     IClientDocumentService documents,
+    IPaymentService payments,
     IOptions<StorageOptions> storage) : AppController
 {
     private static readonly JsonSerializerOptions ExportJson = new(JsonSerializerDefaults.Web) { WriteIndented = true };
@@ -32,7 +33,8 @@ public sealed class ClientController(
             await notes.ListAsync(id, ct),
             await documents.ListAsync(id, ct),
             await professionals.ListAsync(ct),
-            storage.Value.MaxUploadMegabytes));
+            storage.Value.MaxUploadMegabytes,
+            await payments.ListPackagesAsync(id, ct)));
     }
 
     [HttpPost]

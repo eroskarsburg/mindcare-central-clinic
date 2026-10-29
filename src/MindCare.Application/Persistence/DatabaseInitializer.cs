@@ -110,6 +110,16 @@ internal sealed partial class DatabaseInitializer(
 
         var leticia = NewProfessional("Letícia Kasper", "15350946056", "Feminino", "Psicoterapia", "leticia" + "15350946056");
         var marcos = NewProfessional("Marcos Teixeira", "46873529010", "Masculino", "Psiquiatria", "marcos" + "46873529010");
+        leticia.RegistrationNumber = "CRP 07/12345";
+        leticia.CommissionPercent = 60;
+        marcos.RegistrationNumber = "CRM-RS 54321";
+        marcos.CommissionPercent = 70;
+
+        db.ServiceTypes.AddRange(
+            new ServiceType { Name = "Sessão individual", DurationMinutes = 50, Price = 180 },
+            new ServiceType { Name = "Terapia de casal", DurationMinutes = 80, Price = 260 },
+            new ServiceType { Name = "Avaliação psicológica", DurationMinutes = 60, Price = 300 },
+            new ServiceType { Name = "Consulta psiquiátrica", DurationMinutes = 40, Price = 300 });
         db.Professionals.AddRange(leticia, marcos);
         foreach (var (client, index) in clients.Select((c, i) => (c, i)))
         {
@@ -128,6 +138,19 @@ internal sealed partial class DatabaseInitializer(
             marcos.Availability.Add(new ProfessionalAvailability { DayOfWeek = day, StartTime = new(14, 0), EndTime = new(20, 0) });
         }
 
+        // Pacote mensal do Carlos, pago em duas vezes.
+        var package = new SessionPackage
+        {
+            Client = clients[1],
+            Name = "Pacote mensal · 4 sessões",
+            TotalSessions = 4,
+            Price = 560,
+            PurchasedAt = today.AddDays(-10),
+            ExpiresAt = today.AddDays(50),
+        };
+        package.Entries.Add(new PaymentEntry { Amount = 280, PaidAt = today.AddDays(-10), Method = PaymentMethod.Pix, CreatedAt = now });
+        db.Packages.Add(package);
+
         db.ScheduleBlocks.Add(new ScheduleBlock
         {
             StartsAt = today.AddDays(20),
@@ -140,8 +163,20 @@ internal sealed partial class DatabaseInitializer(
             var status = start < now
                 ? AppointmentStatus.Realizada
                 : start < today.AddDays(2) ? AppointmentStatus.Confirmada : AppointmentStatus.Agendada;
-            var payment = new Payment { Price = price, PaidPrice = paid };
-            payment.Reconcile(start < now ? start : today);
+            var payment = new Payment { Price = price };
+            if (paid > 0)
+            {
+                var paidAt = (start < now ? start : today).Date;
+                payment.Entries.Add(new PaymentEntry
+                {
+                    Amount = paid,
+                    PaidAt = paidAt,
+                    Method = paid >= 300 ? PaymentMethod.Cartao : PaymentMethod.Pix,
+                    CreatedAt = now,
+                });
+            }
+
+            payment.SyncFromEntries(start < now ? start : today);
             return new Appointment
             {
                 Client = client,

@@ -88,5 +88,13 @@ internal sealed class ProfessionalService(MindCareDbContext db, IPasswordService
         target.Cpf = cpf;
         target.Gender = input.Gender;
         target.Speciality = input.Speciality.Trim();
+        target.RegistrationNumber = string.IsNullOrWhiteSpace(input.RegistrationNumber) ? null : input.RegistrationNumber.Trim();
+
+        if (input.CommissionPercent is < 0 or > 100)
+        {
+            throw new BusinessException("O repasse deve ficar entre 0% e 100%.");
+        }
+
+        target.CommissionPercent = input.CommissionPercent;
     }
 }

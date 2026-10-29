@@ -62,6 +62,10 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(500)")
                         .HasColumnName("observation");
 
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
                     b.Property<DateTime?>("PatientRespondedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("patient_responded_at");
@@ -87,6 +91,10 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("series_id");
 
+                    b.Property<int?>("ServiceTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_service_type");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -101,9 +109,13 @@ namespace MindCare.Application.Persistence.Migrations
 
                     b.HasIndex("ConfirmationTokenHash");
 
+                    b.HasIndex("PackageId");
+
                     b.HasIndex("ScheduledAt");
 
                     b.HasIndex("SeriesId");
+
+                    b.HasIndex("ServiceTypeId");
 
                     b.HasIndex("ProfessionalId", "ScheduledAt");
 
@@ -514,12 +526,67 @@ namespace MindCare.Application.Persistence.Migrations
                     b.ToTable("payments", (string)null);
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.PaymentEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_entry");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("note");
+
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("date")
+                        .HasColumnName("paid_at");
+
+                    b.Property<int?>("PaymentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_payments");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("PaidAt");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("payment_entries", (string)null);
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id_professional");
+
+                    b.Property<decimal>("CommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("commission_percent");
 
                     b.Property<string>("Cpf")
                         .IsRequired()
@@ -538,6 +605,11 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("registration_number");
 
                     b.Property<string>("Speciality")
                         .IsRequired()
@@ -622,6 +694,83 @@ namespace MindCare.Application.Persistence.Migrations
                     b.HasIndex("StartsAt", "EndsAt");
 
                     b.ToTable("schedule_blocks", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ServiceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_service_type");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("active");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int")
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("price");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("service_types", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("date")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("price");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("date")
+                        .HasColumnName("purchased_at");
+
+                    b.Property<int>("TotalSessions")
+                        .HasColumnType("int")
+                        .HasColumnName("total_sessions");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("session_packages", (string)null);
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
@@ -728,14 +877,28 @@ namespace MindCare.Application.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MindCare.Application.Domain.SessionPackage", "Package")
+                        .WithMany("Appointments")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("MindCare.Application.Domain.Professional", "Professional")
                         .WithMany()
                         .HasForeignKey("ProfessionalId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MindCare.Application.Domain.ServiceType", "ServiceType")
+                        .WithMany()
+                        .HasForeignKey("ServiceTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Client");
 
+                    b.Navigation("Package");
+
                     b.Navigation("Professional");
+
+                    b.Navigation("ServiceType");
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
@@ -814,6 +977,23 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("Appointment");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.PaymentEntry", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.SessionPackage", "Package")
+                        .WithMany("Entries")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MindCare.Application.Domain.Payment", "Payment")
+                        .WithMany("Entries")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Payment");
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
                 {
                     b.HasOne("MindCare.Application.Domain.User", "User")
@@ -844,6 +1024,17 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("Professional");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
                 {
                     b.HasOne("MindCare.Application.Domain.User", null)
@@ -863,9 +1054,21 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("Appointments");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.Payment", b =>
+                {
+                    b.Navigation("Entries");
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
                 {
                     b.Navigation("Availability");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.User", b =>

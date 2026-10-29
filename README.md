@@ -43,7 +43,10 @@
 | **Prontuário** | Evoluções clínicas **criptografadas em repouso** (ASP.NET Data Protection), vinculadas à sessão. Só o autor e o profissional de referência leem; administradores não têm acesso ao conteúdo; toda leitura é auditada. |
 | **Documentos** | Anexos em PDF, imagem ou Word com verificação do conteúdo real do arquivo. Documentos **clínicos** ficam restritos ao profissional de referência; **administrativos** ficam visíveis à equipe. |
 | **Notificações** | Confirmação de agendamento, aviso de remarcação/cancelamento e lembrete automático por **WhatsApp** (Cloud API oficial da Meta, com botões Confirmar/Cancelar) e **e-mail**. Fila com reenvio automático, link público de confirmação e avisos no sino do painel quando o paciente responde. [Guia de configuração](docs/whatsapp.md). |
-| **Financeiro** | Totais faturado, recebido e em aberto; registro de pagamentos parciais ou integrais. O status é calculado automaticamente. |
+| **Financeiro** | Recebimentos em parcelas com data e forma de pagamento (Pix, cartão, dinheiro, transferência, convênio), status calculado automaticamente e **recibo em PDF** com valor por extenso. |
+| **Pacotes** | Pacotes de sessões pré-pagos por paciente, consumidos automaticamente ao agendar com "Usar pacote", com controle de sessões restantes, validade e pagamento. |
+| **Tipos de serviço** *(admin)* | Sessão individual, casal, avaliação... com duração e valor padrão que preenchem o agendamento. |
+| **Relatórios** | Faturado × recebido (12 meses), recebimentos por forma de pagamento, desempenho, ocupação e **repasse por profissional**, inadimplência, exportação para **Excel** e **recibo mensal** do paciente para o IR. |
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
 | **Usuários** *(admin)* | Perfis de acesso (Administrador/Profissional), proteção contra remover o último administrador. |
 | **Perfil** | Troca de senha (com confirmação da senha atual) e edição dos dados profissionais. |
@@ -61,6 +64,7 @@
 | Dados | Entity Framework Core 10 · provider oficial `MySql.EntityFrameworkCore` · MySQL 8.4 |
 | Front-end | Razor · Bootstrap 5.3 · Bootstrap Icons · DataTables 3 · JavaScript sem jQuery |
 | Testes | xUnit v3 · Microsoft.Testing.Platform · SQLite em memória |
+| Documentos | QuestPDF (recibos) · ClosedXML (Excel) · Chart.js (gráficos) · MailKit (e-mail) |
 | Infra | Docker (multi-stage) · Docker Compose · GitHub Actions · Dependabot |
 
 ## Começando
@@ -117,6 +121,7 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `Storage__Path` / `Storage__MaxUploadMegabytes` | | Pasta dos documentos dos pacientes e tamanho máximo por arquivo. Padrão: `App_Data/storage`, 10 MB. |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
+| `Clinic__LegalName` / `Clinic__Cnpj` / `Clinic__Address` / `Clinic__City` | | Dados impressos nos recibos em PDF. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |
 | `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD` | Docker | Credenciais do container MySQL. |
 | `APP_PORT`, `MYSQL_PORT` | | Portas publicadas pelo Compose (padrão `8080` e `3306`). |
@@ -206,7 +211,7 @@ O [Dependabot](.github/dependabot.yml) abre PRs semanais (segunda-feira) para:
 
 - **NuGet**, com grupos para EF Core, testes e demais pacotes;
 - **SDK do .NET** (`global.json`);
-- **npm** (Bootstrap, Bootstrap Icons, DataTables, FullCalendar);
+- **npm** (Bootstrap, Bootstrap Icons, DataTables, FullCalendar, Chart.js);
 - **Docker** (imagens do `Dockerfile` e do `docker-compose.yml`);
 - **GitHub Actions**.
 
@@ -219,3 +224,5 @@ Contribuições são bem-vindas! Veja o [guia de contribuição](CONTRIBUTING.md
 ## Licença
 
 Distribuído sob a licença [MIT](LICENSE).
+
+Os recibos usam o [QuestPDF](https://www.questpdf.com/license/) na licença **Community**, gratuita para organizações com receita bruta anual inferior a US$ 1 milhão. Acima disso, é necessária uma licença comercial.

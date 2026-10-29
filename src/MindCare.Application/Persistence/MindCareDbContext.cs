@@ -17,6 +17,9 @@ public sealed class MindCareDbContext(DbContextOptions<MindCareDbContext> option
     public DbSet<StaffNotification> StaffNotifications => Set<StaffNotification>();
     public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
     public DbSet<ClientDocument> ClientDocuments => Set<ClientDocument>();
+    public DbSet<ServiceType> ServiceTypes => Set<ServiceType>();
+    public DbSet<PaymentEntry> PaymentEntries => Set<PaymentEntry>();
+    public DbSet<SessionPackage> Packages => Set<SessionPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindCareDbContext).Assembly);

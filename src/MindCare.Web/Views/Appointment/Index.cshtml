@@ -1,5 +1,6 @@
 @model AppointmentsPageViewModel
 @using MindCare.Web.Controllers
+@using MindCare.Application.Finance
 @{
     ViewData["Title"] = "Agenda";
     var now = DateTime.Now;
@@ -151,6 +152,19 @@
                             }
                         </select>
                     </div>
+                    @if (Model.ServiceTypes.Count > 0)
+                    {
+                        <div class="col-12">
+                            <label class="form-label" for="appointment-service">Tipo de serviço</label>
+                            <select class="form-select" id="appointment-service" name="serviceTypeId">
+                                <option value="">Personalizado</option>
+                                @foreach (var st in Model.ServiceTypes)
+                                {
+                                    <option value="@st.Id" data-duration="@st.DurationMinutes" data-price="@st.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)">@st.Name · @st.DurationMinutes min · @st.Price.ToString("C")</option>
+                                }
+                            </select>
+                        </div>
+                    }
                     <div class="col-sm-7">
                         <label class="form-label" for="appointment-date">Data e horário</label>
                         <input class="form-control" id="appointment-date" name="scheduledAt" type="datetime-local" step="300" required />
@@ -232,23 +246,41 @@
                 </div>
 
                 <div class="form-section mt-4"><i class="bi bi-wallet2"></i> Pagamento</div>
-                <div class="row g-3">
-                    <div class="col-sm-6">
+                <div class="form-check form-switch mb-3" data-create-only>
+                    <input class="form-check-input" type="checkbox" role="switch" id="appointment-package" name="usePackage" />
+                    <label class="form-check-label" for="appointment-package">
+                        <i class="bi bi-box2-heart me-1"></i>Usar pacote de sessões do paciente
+                        <span class="d-block small text-muted-mc">As sessões cobertas não geram cobrança avulsa.</span>
+                    </label>
+                </div>
+                <div class="row g-3" data-pricing>
+                    <div class="col-sm-4">
                         <label class="form-label" for="appointment-price">Valor da consulta</label>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
                             <input class="form-control" id="appointment-price" name="price" type="number" min="0" step="0.01" required />
                         </div>
                     </div>
-                    <div class="col-sm-6">
-                        <label class="form-label" for="appointment-paid">Valor já pago</label>
+                    <div class="col-sm-4" data-create-only>
+                        <label class="form-label" for="appointment-paid">Já pago</label>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
                             <input class="form-control" id="appointment-paid" name="paidPrice" type="number" min="0" step="0.01" placeholder="0,00" />
                         </div>
                     </div>
+                    <div class="col-sm-4" data-create-only>
+                        <label class="form-label" for="appointment-method">Forma</label>
+                        <select class="form-select" id="appointment-method" name="paymentMethod">
+                            @foreach (var m in Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Outro))
+                            {
+                                <option value="@m">@(m.DisplayName())</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <p class="small text-muted-mc mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>O status do pagamento é calculado automaticamente. Em séries, o valor pago vale só para a primeira sessão.</p>
+                <p class="small text-muted-mc mt-2 mb-0" data-create-only><i class="bi bi-info-circle me-1"></i>Em séries, o valor já pago vale só para a primeira sessão. Os demais recebimentos são registrados no Financeiro.</p>
+                <p class="small text-muted-mc mt-2 mb-0" data-edit-only><i class="bi bi-info-circle me-1"></i>Recebimentos (parcelas e forma de pagamento) são registrados em <a href="/Payment">Financeiro</a>.</p>
+                <p class="small mt-2 mb-0 d-none" data-package-note><span class="badge-soft neutral"><i class="bi bi-box2-heart"></i>Sessão coberta por pacote</span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-danger me-auto d-none" data-modal-delete><i class="bi bi-trash3 me-1"></i>Excluir</button>
@@ -274,10 +306,29 @@
             const occurrences = form.querySelector('[data-occurrences]');
             const meeting = form.querySelector('[data-meeting-link]');
             const deleteButton = modal.querySelector('[data-modal-delete]');
+            const service = form.querySelector('[name="serviceTypeId"]');
+            const packageSwitch = form.querySelector('[name="usePackage"]');
             let current = null;
+
+            // Tipo de serviço preenche duração e valor padrão.
+            service?.addEventListener('change', () => {
+                const option = service.selectedOptions[0];
+                if (!option?.dataset.duration) return;
+                const duration = form.querySelector('[name="durationMinutes"]');
+                if (![...duration.options].some(o => o.value === option.dataset.duration)) {
+                    duration.add(new Option(`${option.dataset.duration} min`, option.dataset.duration));
+                }
+                duration.value = option.dataset.duration;
+                form.price.value = option.dataset.price;
+            });
 
             const sync = () => {
                 reason.classList.toggle('d-none', status.value !== 'Cancelada' || !current?.id);
+                const covered = Boolean(current?.usesPackage) || (!current && packageSwitch?.checked);
+                form.querySelector('[data-pricing]').classList.toggle('d-none', covered);
+                form.querySelector('[data-package-note]').classList.toggle('d-none', !current?.usesPackage);
+                form.price.required = !covered;
+                if (covered && !form.price.value) form.price.value = 0;
                 const recurrence = form.querySelector('[name="recurrence"]:checked')?.value;
                 occurrences.classList.toggle('invisible', recurrence === 'Nenhuma');
                 if (recurrence !== 'Nenhuma' && Number(form.occurrences.value) < 2) form.occurrences.value = 8;

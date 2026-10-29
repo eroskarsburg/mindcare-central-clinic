@@ -1395,3 +1395,70 @@ div.dt-container .dt-info {
     white-space: pre-wrap;
     line-height: 1.6;
 }
+
+/* ---------- Financeiro e relatórios ---------- */
+
+.entry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--mc-border);
+}
+
+.package-card {
+    padding: 1rem 0;
+    border-bottom: 1px dashed var(--mc-border);
+}
+
+.package-card:last-child {
+    border-bottom: 0;
+}
+
+.session-dots {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.session-dots span {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    border: 2px solid var(--mc-taupe);
+}
+
+.session-dots span.used {
+    background: var(--mc-taupe);
+}
+
+.report-filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.report-filters .segmented .btn {
+    flex: 0 0 auto;
+    --bs-btn-padding-y: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.report-filters .segmented .btn.active-preset {
+    background: var(--mc-surface);
+    color: var(--mc-primary);
+    box-shadow: var(--mc-shadow);
+}
+
+.chart-box {
+    position: relative;
+    height: 300px;
+}
+
+.chart-box-sm {
+    height: 240px;
+}

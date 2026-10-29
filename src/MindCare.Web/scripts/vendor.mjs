@@ -18,6 +18,7 @@ const files = {
     'datatables/pt-BR.json': 'datatables.net-plugins/i18n/pt-BR.json',
     'fullcalendar/index.global.min.js': 'fullcalendar/index.global.min.js',
     'fullcalendar/pt-br.global.min.js': '@fullcalendar/core/locales/pt-br.global.min.js',
+    'chartjs/chart.umd.min.js': 'chart.js/dist/chart.umd.min.js',
 };
 
 rmSync(lib, { recursive: true, force: true });

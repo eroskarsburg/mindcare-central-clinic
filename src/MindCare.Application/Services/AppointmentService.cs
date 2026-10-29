@@ -34,6 +34,14 @@ public sealed record AppointmentInput(
 
     public AppointmentStatus? Status { get; init; }
     public string? CancellationReason { get; init; }
+
+    public int? ServiceTypeId { get; init; }
+
+    /// <summary>Cobre as sessões com o pacote ativo do paciente (sem cobrança avulsa).</summary>
+    public bool UsePackage { get; init; }
+
+    /// <summary>Forma do valor já pago informado no agendamento.</summary>
+    public PaymentMethod PaymentMethod { get; init; } = PaymentMethod.Pix;
 }
 
 public sealed record AppointmentQuery(DateTime? From = null, DateTime? To = null, int? ProfessionalId = null, int? ClientId = null);
@@ -114,6 +122,9 @@ internal sealed class AppointmentService(
         var seriesId = occurrences > 1 ? Guid.NewGuid() : (Guid?)null;
         var meetingUrl = input.Modality == AppointmentModality.Teleconsulta ? NewMeetingUrl() : null;
 
+        var package = input.UsePackage ? await FindPackageAsync(input.ClientId, input.ScheduledAt, ct) : null;
+        var packageSlots = package?.RemainingSessions ?? 0;
+
         var created = new List<Appointment>();
         var skipped = new List<DateTime>();
         for (var i = 0; i < occurrences; i++)
@@ -145,9 +156,29 @@ internal sealed class AppointmentService(
                 Observation = Clean(input.Observation),
                 SeriesId = seriesId,
                 MeetingUrl = meetingUrl,
-                Payment = new Payment { Price = input.Price, PaidPrice = i == 0 ? input.PaidPrice : 0 },
+                ServiceTypeId = input.ServiceTypeId,
+                Payment = new Payment { Price = input.Price },
             };
-            appointment.Payment.Reconcile(Now);
+
+            if (package is not null && packageSlots > 0 && package.IsAvailable(start))
+            {
+                // Sessão coberta pelo pacote: a cobrança fica no pacote.
+                appointment.Package = package;
+                appointment.Payment.Price = 0;
+                packageSlots--;
+            }
+            else if (created.Count == 0 && input.PaidPrice > 0)
+            {
+                appointment.Payment.Entries.Add(new PaymentEntry
+                {
+                    Amount = input.PaidPrice,
+                    PaidAt = Now.Date,
+                    Method = input.PaymentMethod,
+                    CreatedAt = Now,
+                });
+            }
+
+            appointment.Payment.SyncFromEntries(Now);
             created.Add(appointment);
         }
 
@@ -164,6 +195,14 @@ internal sealed class AppointmentService(
         await db.SaveChangesAsync(ct);
 
         var warnings = new List<string>();
+        var covered = created.Count(a => a.Package is not null);
+        if (package is not null && covered < created.Count)
+        {
+            warnings.Add(covered == 0
+                ? "O pacote não tinha sessões disponíveis nestas datas: as sessões foram cobradas avulsas."
+                : $"O pacote cobriu {covered} de {created.Count} sessões; as demais foram cobradas avulsas.");
+        }
+
         if (skipped.Count > 0)
         {
             warnings.Add($"Datas puladas por bloqueio de agenda: {string.Join(", ", skipped.Select(d => d.ToString("dd/MM")))}.");
@@ -210,7 +249,8 @@ internal sealed class AppointmentService(
             if (isCurrent)
             {
                 target.Observation = Clean(input.Observation);
-                ApplyPayment(target, input.Price, input.PaidPrice);
+                target.ServiceTypeId = input.ServiceTypeId;
+                ApplyPrice(target, input.Price);
                 if (input.Status is { } status && status != target.Status)
                 {
                     ApplyStatus(target, status, input.CancellationReason);
@@ -219,7 +259,7 @@ internal sealed class AppointmentService(
             else if (target.Payment is { PaidPrice: 0 } pending)
             {
                 // Nas próximas sessões, o novo valor só é aplicado enquanto nada foi pago.
-                ApplyPayment(target, input.Price, pending.PaidPrice);
+                ApplyPrice(target, input.Price);
             }
         }
 
@@ -375,6 +415,11 @@ internal sealed class AppointmentService(
             throw new BusinessException("O valor pago não pode ser maior que o valor da consulta.");
         }
 
+        if (input.ServiceTypeId is { } serviceTypeId && !await db.ServiceTypes.AnyAsync(s => s.Id == serviceTypeId, ct))
+        {
+            throw new BusinessException("Selecione um tipo de serviço válido.");
+        }
+
         ValidateDuration(input.DurationMinutes);
     }
 
@@ -436,17 +481,41 @@ internal sealed class AppointmentService(
         }
     }
 
-    private void ApplyPayment(Appointment target, decimal price, decimal paidPrice)
+    /// <summary>
+    /// Altera apenas o valor da consulta. Os recebimentos são registrados no Financeiro
+    /// (parcelas com data e forma de pagamento); sessões de pacote continuam sem cobrança avulsa.
+    /// </summary>
+    private void ApplyPrice(Appointment target, decimal price)
     {
         var payment = target.Payment!;
-        if (payment.PaidPrice != paidPrice)
+        if (target.PackageId is not null)
         {
-            payment.PaidDate = null; // novo valor pago → data do pagamento passa a ser hoje
+            return;
+        }
+
+        if (price < payment.PaidPrice)
+        {
+            throw new BusinessException($"O valor da consulta não pode ser menor que o já recebido ({payment.PaidPrice:C}).");
         }
 
         payment.Price = price;
-        payment.PaidPrice = paidPrice;
         payment.Reconcile(Now);
+    }
+
+    /// <summary>Pacote ativo do paciente com sessões disponíveis (o que vence primeiro).</summary>
+    private async Task<SessionPackage> FindPackageAsync(int clientId, DateTime start, CancellationToken ct)
+    {
+        var packages = await db.Packages
+            .Include(p => p.Appointments)
+            .Where(p => p.ClientId == clientId)
+            .ToListAsync(ct);
+
+        return packages
+            .Where(p => p.IsAvailable(start))
+            .OrderBy(p => p.ExpiresAt ?? DateTime.MaxValue)
+            .ThenBy(p => p.PurchasedAt)
+            .FirstOrDefault()
+            ?? throw new BusinessException("O paciente não tem pacote com sessões disponíveis.");
     }
 
     private void ApplyStatus(Appointment target, AppointmentStatus status, string? reason)

@@ -1,5 +1,6 @@
 @model ClientDetailsViewModel
 @using MindCare.Web.Controllers
+@using MindCare.Application.Finance
 @{
     var d = Model.Details;
     var c = d.Client;
@@ -129,6 +130,7 @@
         <ul class="nav nav-pills segmented d-inline-flex mb-3 flex-wrap" role="tablist">
             <li class="nav-item" role="presentation"><button class="btn active" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button" role="tab"><i class="bi bi-journal-medical me-1"></i> Evolução</button></li>
             <li class="nav-item" role="presentation"><button class="btn" data-bs-toggle="tab" data-bs-target="#tab-sessions" type="button" role="tab"><i class="bi bi-calendar3 me-1"></i> Consultas <span class="badge-soft neutral ms-1">@d.Appointments.Count</span></button></li>
+            <li class="nav-item" role="presentation"><button class="btn" data-bs-toggle="tab" data-bs-target="#tab-finance" type="button" role="tab"><i class="bi bi-wallet2 me-1"></i> Financeiro</button></li>
             <li class="nav-item" role="presentation"><button class="btn" data-bs-toggle="tab" data-bs-target="#tab-docs" type="button" role="tab"><i class="bi bi-paperclip me-1"></i> Documentos <span class="badge-soft neutral ms-1">@Model.Documents.Count</span></button></li>
         </ul>
 
@@ -247,6 +249,121 @@
                             }
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            @* ---------------- Financeiro: pacotes e recibos ---------------- *@
+            <div class="tab-pane fade" id="tab-finance" role="tabpanel">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <form class="mc-card mc-card-body pt-4 h-100" method="get" asp-controller="Report" asp-action="MonthlyReceipt">
+                            <input type="hidden" name="clientId" value="@c.Id" />
+                            <h2 class="h6"><i class="bi bi-file-earmark-pdf me-1"></i>Recibo mensal (IR)</h2>
+                            <p class="small text-muted-mc">Consolida tudo o que foi pago no mês, com valor por extenso e dados do profissional.</p>
+                            <div class="d-flex gap-2">
+                                <input class="form-control" type="month" name="month" value="@DateTime.Today.ToString("yyyy-MM")" max="@DateTime.Today.ToString("yyyy-MM")" required aria-label="Mês" />
+                                <button class="btn btn-primary text-nowrap" type="submit">Gerar PDF</button>
+                            </div>
+                        </form>
+                    </div>
+                    @if (!c.IsAnonymized)
+                    {
+                        <div class="col-md-6">
+                            <form class="mc-card mc-card-body pt-4 h-100" data-api-form data-method="POST" data-reload action="/Package/Create" autocomplete="off">
+                                <input type="hidden" name="clientId" value="@c.Id" />
+                                <h2 class="h6"><i class="bi bi-box2-heart me-1"></i>Novo pacote de sessões</h2>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <input class="form-control form-control-sm" name="name" maxlength="80" required value="Pacote mensal" aria-label="Nome do pacote" />
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="input-group input-group-sm">
+                                            <input class="form-control" name="totalSessions" type="number" min="1" max="100" value="4" required aria-label="Sessões" />
+                                            <span class="input-group-text">sessões</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">R$</span>
+                                            <input class="form-control" name="price" type="number" min="0" step="0.01" required aria-label="Valor" />
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <input class="form-control form-control-sm" name="expiresAt" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" title="Validade (opcional)" aria-label="Validade" />
+                                    </div>
+                                </div>
+                                <div class="text-end mt-2"><button class="btn btn-soft btn-sm" type="submit">Criar pacote</button></div>
+                            </form>
+                        </div>
+                    }
+                </div>
+
+                <div class="mc-card mc-card-body pt-4">
+                    <h2 class="h6 mb-3">Pacotes</h2>
+                    @if (Model.Packages.Count == 0)
+                    {
+                        <div class="empty-state py-3"><i class="bi bi-box2"></i>Nenhum pacote. Ao agendar, marque “Usar pacote” para consumir as sessões.</div>
+                    }
+                    @foreach (var pkg in Model.Packages)
+                    {
+                        var used = pkg.UsedSessions;
+                        var paidPct = pkg.Price == 0 ? 100 : (int)(pkg.PaidAmount / pkg.Price * 100);
+                        var expired = pkg.ExpiresAt is { } exp && exp < DateTime.Today;
+                        <div class="package-card @(pkg.RemainingSessions == 0 || expired ? "opacity-75" : null)">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <strong>@pkg.Name</strong>
+                                    <span class="d-block small text-muted-mc">
+                                        Comprado em @pkg.PurchasedAt.ToString("dd/MM/yyyy")@(pkg.ExpiresAt is { } e ? $" · válido até {e:dd/MM/yyyy}" : null)@(expired ? " · vencido" : null)
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <strong>@pkg.Price.ToString("C")</strong>
+                                    <span class="d-block small text-muted-mc">@pkg.PaidAmount.ToString("C") pagos</span>
+                                </div>
+                            </div>
+                            <div class="session-dots my-2" aria-label="@used de @pkg.TotalSessions sessões usadas">
+                                @for (var i = 0; i < pkg.TotalSessions; i++)
+                                {
+                                    <span class="@(i < used ? "used" : null)"></span>
+                                }
+                                <small class="ms-2 text-muted-mc">@pkg.RemainingSessions de @pkg.TotalSessions restantes</small>
+                            </div>
+                            <div class="progress progress-thin mb-2" role="progressbar" aria-label="Percentual pago" aria-valuenow="@paidPct" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: @paidPct%"></div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                @foreach (var entry in pkg.Entries.OrderBy(e => e.PaidAt))
+                                {
+                                    <span class="badge-soft neutral">
+                                        @entry.PaidAt.ToString("dd/MM") · @entry.Amount.ToString("C") · @(entry.Method.DisplayName())
+                                        <button class="btn-close btn-close-sm ms-1" type="button" style="font-size:.5rem" aria-label="Remover recebimento"
+                                                data-api-action="/Payment/DeleteEntry/@entry.Id" data-method="DELETE" data-confirm="Remover este recebimento do pacote?" data-confirm-text="Remover"></button>
+                                    </span>
+                                }
+                                @if (pkg.PaidAmount < pkg.Price)
+                                {
+                                    <form class="d-flex gap-1 ms-auto" data-api-form data-method="POST" data-reload action="/Package/Receive/@pkg.Id">
+                                        <input class="form-control form-control-sm" style="width: 7rem" name="amount" type="number" min="0.01" step="0.01" max="@((pkg.Price - pkg.PaidAmount).ToString(System.Globalization.CultureInfo.InvariantCulture))" value="@((pkg.Price - pkg.PaidAmount).ToString(System.Globalization.CultureInfo.InvariantCulture))" required aria-label="Valor recebido" />
+                                        <select class="form-select form-select-sm w-auto" name="method" aria-label="Forma">
+                                            @foreach (var m in Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Outro))
+                                            {
+                                                <option value="@m">@(m.DisplayName())</option>
+                                            }
+                                        </select>
+                                        <button class="btn btn-soft btn-sm" type="submit">Receber</button>
+                                    </form>
+                                }
+                                @if (used == 0)
+                                {
+                                    <button class="btn-icon danger" type="button" title="Excluir pacote"
+                                            data-api-action="/Package/Delete/@pkg.Id" data-method="DELETE" data-confirm="Excluir o pacote “@pkg.Name”?" data-confirm-text="Excluir">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -375,6 +492,16 @@
             if (window.location.hash === '#documentos') {
                 bootstrap.Tab.getOrCreateInstance(document.querySelector('[data-bs-target="#tab-docs"]')).show();
             }
+
+            // Mantém a aba aberta após ações que recarregam a página.
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => tab.addEventListener('shown.bs.tab', () => {
+                try { sessionStorage.setItem('mindcare:client-tab', tab.dataset.bsTarget); } catch { }
+            }));
+            try {
+                const saved = sessionStorage.getItem('mindcare:client-tab');
+                const tab = saved && document.querySelector(`[data-bs-target="${saved}"]`);
+                if (tab && window.location.hash !== '#documentos') bootstrap.Tab.getOrCreateInstance(tab).show();
+            } catch { }
         })();
     </script>
 }
