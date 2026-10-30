@@ -1,12 +1,16 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using MindCare.Application;
 using MindCare.Application.Domain;
+using MindCare.Application.Security;
+using MindCare.Web.Controllers;
 using MindCare.Web.Infrastructure;
 
 // Carrega o arquivo .env (se existir) sem sobrescrever variáveis já definidas no ambiente.
@@ -14,8 +18,35 @@ DotNetEnv.Env.TraversePath().NoClobber().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Usuário da requisição: usado pela auditoria. Registrado antes para substituir o ator padrão (sistema).
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 builder.Services.AddMindCareApplication(builder.Configuration);
 builder.Services.Configure<ClinicOptions>(builder.Configuration.GetSection(ClinicOptions.Section));
+
+// Chaves do Data Protection: protegem o cookie de login e o conteúdo do prontuário.
+// Precisam persistir entre reinícios/implantações (volume no Docker), senão o prontuário fica ilegível.
+var keysPath = builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } configured ? configured : "App_Data/keys";
+builder.Services.AddDataProtection()
+    .SetApplicationName("MindCare")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.IsPathRooted(keysPath) ? keysPath : Path.Combine(builder.Environment.ContentRootPath, keysPath)));
+
+builder.Services.PostConfigure<MindCare.Application.Records.StorageOptions>(options =>
+{
+    if (!Path.IsPathRooted(options.Path))
+    {
+        options.Path = Path.Combine(builder.Environment.ContentRootPath, options.Path);
+    }
+});
+
+// Pasta de e-mails de desenvolvimento relativa à raiz do app (ex.: App_Data/mail).
+builder.Services.PostConfigure<MindCare.Application.Notifications.EmailOptions>(options =>
+{
+    if (!string.IsNullOrWhiteSpace(options.PickupDirectory) && !Path.IsPathRooted(options.PickupDirectory))
+    {
+        options.PickupDirectory = Path.Combine(builder.Environment.ContentRootPath, options.PickupDirectory);
+    }
+});
 
 builder.Services
     .AddControllersWithViews(options =>
@@ -23,6 +54,7 @@ builder.Services
         options.Filters.Add(new AuthorizeFilter());
         options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
         options.Filters.Add<ApiExceptionFilter>();
+        options.Filters.Add<RequirePasswordChangeFilter>();
     })
     .AddJsonOptions(options =>
     {
@@ -48,6 +80,20 @@ builder.Services
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.Admin, policy => policy.RequireRole(nameof(AccessLevel.Administrador)));
+
+// Limita tentativas de login por IP (complementa o bloqueio por conta do AuthService).
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(LoginController.RateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status303SeeOther;
+        context.HttpContext.Response.Headers.Location = "/Login?throttled=true";
+        return ValueTask.CompletedTask;
+    };
+});
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -83,6 +129,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

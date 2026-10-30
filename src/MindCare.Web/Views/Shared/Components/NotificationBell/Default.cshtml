@@ -1,0 +1,37 @@
+@model (IReadOnlyList<StaffNotification> Latest, int Unread)
+
+<div class="dropup">
+    <button class="btn btn-link theme-toggle fs-5 position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+            aria-label="Avisos@(Model.Unread > 0 ? $" ({Model.Unread} não lidos)" : string.Empty)">
+        <i class="bi bi-bell"></i>
+        @if (Model.Unread > 0)
+        {
+            <span class="bell-badge">@(Model.Unread > 9 ? "9+" : Model.Unread.ToString())</span>
+        }
+    </button>
+    <div class="dropdown-menu dropdown-menu-end shadow bell-menu p-0">
+        <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2">
+            <strong>Avisos</strong>
+            @if (Model.Unread > 0)
+            {
+                <button class="btn btn-link btn-sm p-0" type="button" data-api-action="/Notification/MarkAllRead" data-method="POST">Marcar como lidos</button>
+            }
+        </div>
+        @if (Model.Latest.Count == 0)
+        {
+            <div class="px-3 pb-3 small text-muted-mc">Nenhum aviso por enquanto.</div>
+        }
+        @foreach (var n in Model.Latest)
+        {
+            <a class="bell-item @(n.ReadAt is null ? "unread" : null)" href="@(n.Link ?? "/Notification")">
+                <i class="bi @n.Icon"></i>
+                <span>
+                    <strong>@n.Title</strong>
+                    <span class="d-block small">@n.Message</span>
+                    <span class="d-block small text-muted-mc">@n.CreatedAt.ToString("dd/MM HH:mm")</span>
+                </span>
+            </a>
+        }
+        <a class="dropdown-item text-center small py-2 border-top" asp-controller="Notification" asp-action="Index">Ver todos</a>
+    </div>
+</div>

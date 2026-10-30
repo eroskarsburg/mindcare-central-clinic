@@ -2,14 +2,15 @@
 @{
     ViewData["Title"] = "Visão geral";
     var s = Model.Summary;
-    var hour = DateTime.Now.Hour;
-    var greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+    var now = DateTime.Now;
+    var greeting = now.Hour < 12 ? "Bom dia" : now.Hour < 18 ? "Boa tarde" : "Boa noite";
     var firstName = User.GetDisplayName().Split(' ')[0];
+    var remainingToday = Model.Today.Count(a => a.EndsAt > now);
 }
 
 <section class="welcome mb-4">
     <div>
-        <span class="eyebrow"><i class="bi bi-sun"></i> @DateTime.Now.ToString("dddd, dd 'de' MMMM")</span>
+        <span class="eyebrow"><i class="bi bi-sun"></i> @now.ToString("dddd, dd 'de' MMMM")</span>
         <h1>@greeting, @firstName.</h1>
         <p class="text-muted-mc mb-3">
             @if (s.AppointmentsToday == 0)
@@ -18,10 +19,14 @@
             }
             else
             {
-                <text>Você tem <strong>@s.AppointmentsToday @(s.AppointmentsToday == 1 ? "consulta" : "consultas")</strong> hoje.</text>
+                <text>Hoje são <strong>@s.AppointmentsToday @(s.AppointmentsToday == 1 ? "consulta" : "consultas")</strong>@(remainingToday > 0 ? $", {remainingToday} ainda por acontecer" : ", todas já encerradas").</text>
+            }
+            @if (s.PendingConfirmations > 0)
+            {
+                <br /><i class="bi bi-bell me-1"></i><text>@s.PendingConfirmations @(s.PendingConfirmations == 1 ? "consulta aguarda" : "consultas aguardam") confirmação até amanhã.</text>
             }
         </p>
-        <a class="btn btn-primary" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar-plus me-1"></i> Ver agenda</a>
+        <a class="btn btn-primary" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar3 me-1"></i> Abrir agenda</a>
     </div>
     <img src="~/imgs/therapy-session.png" alt="" aria-hidden="true" />
 </section>
@@ -36,16 +41,16 @@
     </div>
     <div class="col-6 col-xl-3">
         <div class="mc-card kpi tone-slate">
-            <div class="kpi-icon"><i class="bi bi-people"></i></div>
-            <div class="kpi-value">@s.TotalClients</div>
-            <div class="kpi-label">Pacientes cadastrados</div>
+            <div class="kpi-icon"><i class="bi bi-person-x"></i></div>
+            <div class="kpi-value">@(s.NoShowRate is { } rate ? rate.ToString("P0") : "—")</div>
+            <div class="kpi-label">Taxa de faltas (30 dias)</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
         <div class="mc-card kpi tone-sage">
             <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
             <div class="kpi-value">@s.ReceivedThisMonth.ToString("C0")</div>
-            <div class="kpi-label">Recebido em @DateTime.Now.ToString("MMMM")</div>
+            <div class="kpi-label">Recebido em @now.ToString("MMMM")</div>
         </div>
     </div>
     <div class="col-6 col-xl-3">
@@ -58,16 +63,57 @@
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-7">
-        <div class="mc-card h-100">
+    <div class="col-lg-7 d-flex flex-column gap-4">
+        <div class="mc-card">
             <div class="mc-card-header">
-                <h2>Próximas consultas</h2>
+                <h2>Hoje</h2>
+                <span class="text-muted-mc small">@s.TotalClients pacientes ativos</span>
+            </div>
+            <div class="mc-card-body">
+                @if (Model.Today.Count == 0)
+                {
+                    <div class="empty-state py-3"><i class="bi bi-cup-hot"></i>Agenda livre hoje.</div>
+                }
+                @foreach (var a in Model.Today)
+                {
+                    var past = a.EndsAt <= now;
+                    var live = a.ScheduledAt <= now && !past;
+                    <div class="agenda-item @(past ? "opacity-75" : null)">
+                        <div class="agenda-date @(live ? "is-live" : null)">
+                            <strong>@a.ScheduledAt.ToString("HH")</strong>
+                            <span>@a.ScheduledAt.ToString("mm")</span>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <a class="fw-semibold text-truncate d-block text-reset" asp-controller="Client" asp-action="Details" asp-route-id="@a.ClientId">@a.Client?.Name @(live ? "· agora" : null)</a>
+                            <small class="text-muted-mc">
+                                <i class="bi bi-clock me-1"></i>@a.ScheduledAt.ToString("HH:mm")–@a.EndsAt.ToString("HH:mm")
+                                @if (a.Professional is not null)
+                                {
+                                    <span> · @a.Professional.Name</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <partial name="_AppointmentStatus" model="a.Status" />
+                            @if (!string.IsNullOrEmpty(a.MeetingUrl) && !past)
+                            {
+                                <a class="small" href="@a.MeetingUrl" target="_blank" rel="noopener"><i class="bi bi-camera-video me-1"></i>Entrar na sala</a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mc-card">
+            <div class="mc-card-header">
+                <h2>Próximos dias</h2>
                 <a class="btn btn-soft btn-sm" asp-controller="Appointment" asp-action="Index">Agenda completa</a>
             </div>
             <div class="mc-card-body">
                 @if (Model.Upcoming.Count == 0)
                 {
-                    <div class="empty-state"><i class="bi bi-calendar2-heart"></i>Nenhuma consulta agendada.</div>
+                    <div class="empty-state py-3"><i class="bi bi-calendar2-heart"></i>Nenhuma consulta agendada.</div>
                 }
                 @foreach (var a in Model.Upcoming)
                 {
@@ -80,6 +126,10 @@
                             <div class="fw-semibold text-truncate">@a.Client?.Name</div>
                             <small class="text-muted-mc">
                                 <i class="bi bi-clock me-1"></i>@a.ScheduledAt.ToString("ddd, HH:mm")
+                                @if (a.Professional is not null)
+                                {
+                                    <span> · @a.Professional.Name</span>
+                                }
                             </small>
                         </div>
                         <span class="badge-soft slate"><i class="bi @a.Modality.ModalityIcon()"></i>@a.Modality</span>
@@ -89,8 +139,30 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="mc-card h-100">
+    <div class="col-lg-5 d-flex flex-column gap-4">
+        @if (Model.Birthdays.Count > 0)
+        {
+            <div class="mc-card">
+                <div class="mc-card-header"><h2><i class="bi bi-balloon-heart me-2" style="color: var(--mc-blush)"></i>Aniversários da semana</h2></div>
+                <div class="mc-card-body">
+                    @foreach (var b in Model.Birthdays)
+                    {
+                        <a class="agenda-item text-reset text-decoration-none" asp-controller="Client" asp-action="Details" asp-route-id="@b.ClientId">
+                            <div class="agenda-date @(b.Date == DateTime.Today ? "is-live" : null)">
+                                <strong>@b.Date.ToString("dd")</strong>
+                                <span>@b.Date.ToString("MMM").TrimEnd('.')</span>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-semibold text-truncate">@b.Name</div>
+                                <small class="text-muted-mc">@(b.Date == DateTime.Today ? "Hoje! " : null)Completa @b.Age anos</small>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="mc-card flex-grow-1">
             <div class="mc-card-header">
                 <h2>Pagamentos em aberto</h2>
                 <a class="btn btn-soft btn-sm" asp-controller="Payment" asp-action="Index">Financeiro</a>

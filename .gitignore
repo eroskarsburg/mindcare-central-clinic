@@ -33,3 +33,6 @@ src/MindCare.Web/wwwroot/lib/
 # SO
 .DS_Store
 Thumbs.db
+
+# Dados locais (e-mails de desenvolvimento, uploads)
+App_Data/

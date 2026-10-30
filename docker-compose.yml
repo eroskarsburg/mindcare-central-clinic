@@ -41,10 +41,32 @@ services:
       Seed__AdminUsername: ${Seed__AdminUsername:-admin}
       Seed__AdminPassword: ${Seed__AdminPassword:?Defina Seed__AdminPassword no arquivo .env}
       Seed__DemoData: ${Seed__DemoData:-false}
+      Notifications__PublicBaseUrl: ${Notifications__PublicBaseUrl:-http://localhost:8080}
+      Notifications__ReminderHoursBefore: ${Notifications__ReminderHoursBefore:-24}
+      WhatsApp__Mode: ${WhatsApp__Mode:-Disabled}
+      WhatsApp__PhoneNumberId: ${WhatsApp__PhoneNumberId:-}
+      WhatsApp__AccessToken: ${WhatsApp__AccessToken:-}
+      WhatsApp__AppSecret: ${WhatsApp__AppSecret:-}
+      WhatsApp__VerifyToken: ${WhatsApp__VerifyToken:-}
+      Email__Enabled: ${Email__Enabled:-false}
+      Email__Host: ${Email__Host:-}
+      Email__Port: ${Email__Port:-587}
+      Email__Username: ${Email__Username:-}
+      Email__Password: ${Email__Password:-}
+      Email__FromAddress: ${Email__FromAddress:-nao-responda@mindcare.local}
+      Email__FromName: ${Email__FromName:-MindCare}
       Clinic__Name: ${Clinic__Name:-MindCare}
       Clinic__Tagline: ${Clinic__Tagline:-Cuidado que acolhe}
+      Clinic__LegalName: ${Clinic__LegalName:-}
+      Clinic__Cnpj: ${Clinic__Cnpj:-}
+      Clinic__Address: ${Clinic__Address:-}
+      Clinic__City: ${Clinic__City:-Porto Alegre}
     ports:
       - "${APP_PORT:-8080}:8080"
+    volumes:
+      # Chaves do Data Protection (sem elas o prontuário fica ilegível) e documentos dos pacientes.
+      - app-data:/app/App_Data
 
 volumes:
   mysql-data:
+  app-data:

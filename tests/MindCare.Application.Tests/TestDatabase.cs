@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MindCare.Application.Persistence;
+using MindCare.Application.Security;
 
 namespace MindCare.Application.Tests;
 
@@ -16,8 +17,12 @@ public sealed class TestDatabase : IDisposable
         db.Database.EnsureCreated();
     }
 
-    public MindCareDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<MindCareDbContext>().UseSqlite(_connection).Options);
+    /// <summary>Contexto com o mesmo interceptor de auditoria usado em produção.</summary>
+    public MindCareDbContext CreateContext(ICurrentActor? actor = null) =>
+        new(new DbContextOptionsBuilder<MindCareDbContext>()
+            .UseSqlite(_connection)
+            .AddInterceptors(new AuditInterceptor(actor ?? new SystemActor(), TimeProvider.System))
+            .Options);
 
     public void Dispose() => _connection.Dispose();
 }

@@ -28,7 +28,7 @@ internal sealed class ProfessionalService(MindCareDbContext db, IPasswordService
 
     /// <summary>
     /// Cadastra o profissional e cria seu usuário de acesso.
-    /// Login: CPF · Senha inicial: primeiro nome em minúsculas + CPF (deve ser trocada no primeiro acesso).
+    /// Login: CPF · Senha inicial: aleatória, exibida uma única vez e trocada obrigatoriamente no primeiro acesso.
     /// </summary>
     public async Task<ProfessionalCreated> CreateAsync(Professional input, CancellationToken ct = default)
     {
@@ -40,12 +40,13 @@ internal sealed class ProfessionalService(MindCareDbContext db, IPasswordService
             throw new BusinessException("Já existe um usuário com este CPF como login.");
         }
 
-        var initialPassword = InitialPasswordFor(professional);
+        var initialPassword = PasswordGenerator.Generate();
         professional.User = new User
         {
             Username = professional.Cpf,
             PasswordHash = passwords.Hash(initialPassword),
             AccessLevel = AccessLevel.Profissional,
+            MustChangePassword = true,
         };
 
         db.Professionals.Add(professional);
@@ -63,17 +64,16 @@ internal sealed class ProfessionalService(MindCareDbContext db, IPasswordService
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        var userId = await db.Professionals.Where(p => p.Id == id).Select(p => (int?)p.UserId).FirstOrDefaultAsync(ct)
+        var professional = await db.Professionals.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id, ct)
             ?? throw new BusinessException("Profissional não encontrado.");
 
-        // Remover o usuário remove o profissional em cascata.
-        await db.Users.Where(u => u.Id == userId).ExecuteDeleteAsync(ct);
-    }
+        db.Professionals.Remove(professional);
+        if (professional.User is not null)
+        {
+            db.Users.Remove(professional.User);
+        }
 
-    internal static string InitialPasswordFor(Professional professional)
-    {
-        var firstName = professional.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "mindcare";
-        return firstName.ToLowerInvariant() + professional.Cpf;
+        await db.SaveChangesAsync(ct);
     }
 
     private async Task ApplyAsync(Professional target, Professional input, CancellationToken ct)
@@ -88,5 +88,13 @@ internal sealed class ProfessionalService(MindCareDbContext db, IPasswordService
         target.Cpf = cpf;
         target.Gender = input.Gender;
         target.Speciality = input.Speciality.Trim();
+        target.RegistrationNumber = string.IsNullOrWhiteSpace(input.RegistrationNumber) ? null : input.RegistrationNumber.Trim();
+
+        if (input.CommissionPercent is < 0 or > 100)
+        {
+            throw new BusinessException("O repasse deve ficar entre 0% e 100%.");
+        }
+
+        target.CommissionPercent = input.CommissionPercent;
     }
 }

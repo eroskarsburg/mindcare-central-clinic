@@ -1,0 +1,170 @@
+@model SchedulePageViewModel
+@{
+    ViewData["Title"] = "Horários de atendimento";
+    var professional = Model.Schedule.Professional;
+    DayOfWeek[] days = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday];
+    var byDay = Model.Schedule.Availability.GroupBy(a => a.DayOfWeek).ToDictionary(g => g.Key, g => g.OrderBy(a => a.StartTime).ToList());
+    var isAdmin = User.IsAdmin();
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-clock-history"></i> Agenda</span>
+        <h1>Horários de atendimento</h1>
+        <p>Define quando @professional.Name atende. Agendamentos fora desses horários geram um aviso.</p>
+    </div>
+    @if (Model.CanChooseProfessional)
+    {
+        <form method="get" class="d-flex gap-2">
+            <select class="form-select" name="id" aria-label="Profissional" onchange="this.form.submit()">
+                @foreach (var p in Model.Professionals)
+                {
+                    <option value="@p.Id" selected="@(p.Id == professional.Id)">@p.Name</option>
+                }
+            </select>
+        </form>
+    }
+</header>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="mc-card">
+            <div class="mc-card-header"><h2><i class="bi bi-calendar-week me-2 text-muted-mc"></i>Semana padrão</h2></div>
+            <form class="mc-card-body" id="availability-form" data-professional="@professional.Id">
+                <p class="small text-muted-mc">Use dois turnos para registrar o intervalo de almoço. Deixe o dia desmarcado se não houver atendimento.</p>
+                @foreach (var day in days)
+                {
+                    var slots = byDay.GetValueOrDefault(day) ?? [];
+                    var first = slots.ElementAtOrDefault(0);
+                    var second = slots.ElementAtOrDefault(1);
+                    <div class="availability-row" data-day="@day">
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="day-@day" data-enabled checked="@(slots.Count > 0)" />
+                            <label class="form-check-label fw-semibold text-capitalize" for="day-@day">@DayNames.Of(day)</label>
+                        </div>
+                        <div class="availability-slots">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control" type="time" data-start="1" value="@(first?.StartTime.ToString("HH:mm") ?? "08:00")" aria-label="Início do 1º turno" />
+                                <span class="input-group-text">às</span>
+                                <input class="form-control" type="time" data-end="1" value="@(first?.EndTime.ToString("HH:mm") ?? "12:00")" aria-label="Fim do 1º turno" />
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input class="form-control" type="time" data-start="2" value="@(second?.StartTime.ToString("HH:mm"))" aria-label="Início do 2º turno" />
+                                <span class="input-group-text">às</span>
+                                <input class="form-control" type="time" data-end="2" value="@(second?.EndTime.ToString("HH:mm"))" aria-label="Fim do 2º turno" />
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i> Salvar horários</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-5 d-flex flex-column gap-4">
+        <div class="mc-card">
+            <div class="mc-card-header"><h2><i class="bi bi-slash-circle me-2 text-muted-mc"></i>Bloquear período</h2></div>
+            <form class="mc-card-body" data-api-form data-method="POST" data-reload action="/Schedule/Block" autocomplete="off">
+                <input type="hidden" name="professionalId" value="@professional.Id" />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="block-reason">Motivo</label>
+                        <input class="form-control" id="block-reason" name="reason" maxlength="120" placeholder="Ex.: Férias, congresso, feriado" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="block-start">Início</label>
+                        <input class="form-control" id="block-start" name="startsAt" type="datetime-local" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="block-end">Fim</label>
+                        <input class="form-control" id="block-end" name="endsAt" type="datetime-local" required />
+                    </div>
+                    @if (isAdmin)
+                    {
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="block-clinic" name="wholeClinic" />
+                                <label class="form-check-label" for="block-clinic">Bloquear a clínica inteira (feriado)</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary">Bloquear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mc-card">
+            <div class="mc-card-header"><h2><i class="bi bi-calendar-x me-2 text-muted-mc"></i>Próximos bloqueios</h2></div>
+            <div class="mc-card-body">
+                @if (Model.Schedule.Blocks.Count == 0)
+                {
+                    <div class="empty-state py-3"><i class="bi bi-sun"></i>Nenhum bloqueio cadastrado.</div>
+                }
+                @foreach (var b in Model.Schedule.Blocks)
+                {
+                    <div class="agenda-item">
+                        <div class="agenda-date">
+                            <strong>@b.StartsAt.ToString("dd")</strong>
+                            <span>@b.StartsAt.ToString("MMM").TrimEnd('.')</span>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate">@b.Reason</div>
+                            <small class="text-muted-mc">
+                                @b.StartsAt.ToString("dd/MM HH:mm") → @b.EndsAt.ToString("dd/MM HH:mm")
+                                @if (b.ProfessionalId is null)
+                                {
+                                    <span class="badge-soft warning ms-1">Clínica inteira</span>
+                                }
+                            </small>
+                        </div>
+                        @if (b.ProfessionalId is not null || isAdmin)
+                        {
+                            <button class="btn-icon danger" type="button" title="Remover bloqueio" aria-label="Remover bloqueio @b.Reason"
+                                    data-api-action="/Schedule/DeleteBlock/@b.Id" data-method="DELETE" data-confirm="Remover o bloqueio “@b.Reason”?" data-confirm-text="Remover">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const form = document.getElementById('availability-form');
+            const sync = () => form.querySelectorAll('.availability-row').forEach(row => {
+                const enabled = row.querySelector('[data-enabled]').checked;
+                row.querySelectorAll('input[type="time"]').forEach(i => { i.disabled = !enabled; });
+                row.classList.toggle('is-off', !enabled);
+            });
+            form.addEventListener('change', sync);
+            sync();
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const slots = [];
+                form.querySelectorAll('.availability-row').forEach(row => {
+                    if (!row.querySelector('[data-enabled]').checked) return;
+                    for (const n of [1, 2]) {
+                        const start = row.querySelector(`[data-start="${n}"]`).value;
+                        const end = row.querySelector(`[data-end="${n}"]`).value;
+                        if (start && end) slots.push({ dayOfWeek: row.dataset.day, start, end });
+                    }
+                });
+                const button = form.querySelector('[type="submit"]');
+                await MindCare.Forms.submit(form, button, async () => {
+                    const result = await MindCare.api('PUT', `/Schedule/Availability/${form.dataset.professional}`, { slots });
+                    MindCare.Toast.show(result.message);
+                    return result;
+                });
+            });
+        })();
+    </script>
+}

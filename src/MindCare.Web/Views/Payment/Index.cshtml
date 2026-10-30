@@ -1,121 +1,185 @@
 @model IReadOnlyList<Payment>
+@using MindCare.Application.Finance
 @{
     ViewData["Title"] = "Financeiro";
-    var received = Model.Sum(p => p.PaidPrice);
-    var outstanding = Model.Where(p => p.Status != PaymentStatus.Confirmado).Sum(p => p.Outstanding);
-    var total = Model.Sum(p => p.Price);
+    var now = DateTime.Now;
+    var billable = Model.Where(p => p.Appointment?.Status != AppointmentStatus.Cancelada && p.Appointment?.PackageId is null).ToList();
+    var received = billable.Sum(p => p.PaidPrice);
+    var overdue = billable.Where(p => p.Appointment!.ScheduledAt < now).Sum(p => p.Outstanding);
+    var upcoming = billable.Where(p => p.Appointment!.ScheduledAt >= now).Sum(p => p.Outstanding);
+    var methods = Enum.GetValues<PaymentMethod>().Where(m => m != PaymentMethod.Outro);
 }
 
-<section data-crud data-endpoint="/Payment" data-update-action="Register" data-modal="#paymentModal">
-    <header class="page-header">
-        <div>
-            <span class="eyebrow"><i class="bi bi-wallet2"></i> Financeiro</span>
-            <h1>Pagamentos</h1>
-            <p>Acompanhe o que já foi recebido e o que está em aberto.</p>
-        </div>
-    </header>
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-wallet2"></i> Financeiro</span>
+        <h1>Pagamentos</h1>
+        <p>Registre recebimentos em parcelas, com data e forma de pagamento, e emita recibos.</p>
+    </div>
+    <a class="btn btn-soft" asp-controller="Report" asp-action="Index"><i class="bi bi-bar-chart me-1"></i> Relatórios</a>
+</header>
 
-    <div class="row g-3 mb-4">
-        <div class="col-sm-4">
-            <div class="mc-card kpi tone-taupe">
-                <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
-                <div class="kpi-value">@total.ToString("C")</div>
-                <div class="kpi-label">Total faturado</div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="mc-card kpi tone-sage">
-                <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
-                <div class="kpi-value">@received.ToString("C")</div>
-                <div class="kpi-label">Recebido</div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="mc-card kpi tone-blush">
-                <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
-                <div class="kpi-value">@outstanding.ToString("C")</div>
-                <div class="kpi-label">Em aberto</div>
-            </div>
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="mc-card kpi tone-sage">
+            <div class="kpi-icon"><i class="bi bi-check2-circle"></i></div>
+            <div class="kpi-value">@received.ToString("C")</div>
+            <div class="kpi-label">Recebido (consultas avulsas)</div>
         </div>
     </div>
+    <div class="col-sm-4">
+        <div class="mc-card kpi tone-blush">
+            <div class="kpi-icon"><i class="bi bi-exclamation-circle"></i></div>
+            <div class="kpi-value">@overdue.ToString("C")</div>
+            <div class="kpi-label">Vencido (sessões já realizadas)</div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="mc-card kpi tone-taupe">
+            <div class="kpi-icon"><i class="bi bi-calendar-check"></i></div>
+            <div class="kpi-value">@upcoming.ToString("C")</div>
+            <div class="kpi-label">A receber (sessões futuras)</div>
+        </div>
+    </div>
+</div>
 
-    <div class="mc-card mc-card-body pt-4">
-        <table class="table table-hover" data-table>
-            <thead>
-                <tr>
-                    <th>Consulta</th>
-                    <th>Paciente</th>
-                    <th>Valor</th>
-                    <th>Pago</th>
-                    <th>Data do pagamento</th>
-                    <th>Status</th>
-                    <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
+<div class="mc-card mc-card-body pt-4">
+    <table class="table table-hover" data-table>
+        <thead>
+            <tr>
+                <th>Consulta</th>
+                <th>Paciente</th>
+                <th>Valor</th>
+                <th>Recebido</th>
+                <th>Status</th>
+                <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                var a = p.Appointment!;
+                var cancelled = a.Status == AppointmentStatus.Cancelada;
+                var item = new
                 {
-                    var scheduled = p.Appointment?.ScheduledAt;
-                    <tr>
-                        <td data-order="@scheduled?.ToString("yyyyMMddHHmm")">
-                            <span class="cell-title">@scheduled?.ToString("dd/MM/yyyy")</span>
-                            <span class="cell-sub">@scheduled?.ToString("HH:mm")</span>
-                        </td>
-                        <td class="cell-title">@p.Appointment?.Client?.Name</td>
-                        <td data-order="@p.Price">@p.Price.ToString("C")</td>
-                        <td data-order="@p.PaidPrice">@p.PaidPrice.ToString("C")</td>
-                        <td data-order="@p.PaidDate?.ToString("yyyyMMdd")">@(p.PaidDate?.ToString("dd/MM/yyyy") ?? "—")</td>
-                        <td><partial name="_PaymentStatus" model="p.Status" /></td>
-                        <td class="table-actions">
-                            <button class="btn btn-soft btn-sm" type="button"
-                                    data-crud-edit data-item="@Html.ToDataJson(new { p.Id, p.Price, PaidPrice = p.PaidPrice, p.PaidDate, ClientName = p.Appointment?.Client?.Name })">
-                                <i class="bi bi-cash-coin me-1"></i>Registrar
+                    p.Id,
+                    p.Price,
+                    p.PaidPrice,
+                    Outstanding = p.Outstanding,
+                    ClientName = a.Client?.Name,
+                    ScheduledAt = a.ScheduledAt.ToString("dd/MM/yyyy HH:mm"),
+                    Entries = p.Entries.OrderBy(e => e.PaidAt).Select(e => new
+                    {
+                        e.Id,
+                        e.Amount,
+                        PaidAt = e.PaidAt.ToString("dd/MM/yyyy"),
+                        Method = e.Method.DisplayName(),
+                        e.Note,
+                    }),
+                };
+                <tr class="@(cancelled ? "opacity-50" : null)">
+                    <td data-order="@a.ScheduledAt.ToString("yyyyMMddHHmm")">
+                        <span class="cell-title">@a.ScheduledAt.ToString("dd/MM/yyyy")</span>
+                        <span class="cell-sub">@a.ScheduledAt.ToString("HH:mm") · @(a.Professional?.Name ?? "—")</span>
+                    </td>
+                    <td>
+                        <a class="cell-title text-reset" asp-controller="Client" asp-action="Details" asp-route-id="@a.ClientId">@a.Client?.Name</a>
+                        @if (cancelled)
+                        {
+                            <span class="cell-sub">Consulta cancelada</span>
+                        }
+                    </td>
+                    <td data-order="@p.Price">
+                        @if (a.PackageId is not null)
+                        {
+                            <span class="badge-soft neutral" title="@a.Package?.Name"><i class="bi bi-box2-heart"></i>Pacote</span>
+                        }
+                        else
+                        {
+                            @p.Price.ToString("C")
+                        }
+                    </td>
+                    <td data-order="@p.PaidPrice">
+                        @p.PaidPrice.ToString("C")
+                        @if (p.Entries.Count > 0)
+                        {
+                            <span class="cell-sub">@string.Join(", ", p.Entries.Select(e => e.Method.DisplayName()).Distinct())</span>
+                        }
+                    </td>
+                    <td><partial name="_PaymentStatus" model="p.Status" /></td>
+                    <td class="table-actions">
+                        @if (a.PackageId is null && !cancelled)
+                        {
+                            <button class="btn btn-soft btn-sm" type="button" data-receive="@Html.ToDataJson(item)">
+                                <i class="bi bi-cash-coin me-1"></i>@(p.Outstanding > 0 ? "Receber" : "Detalhes")
                             </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+                        }
+                        @if (p.Entries.Count > 0)
+                        {
+                            <a class="btn-icon" asp-action="Receipt" asp-route-id="@p.Id" title="Recibo em PDF" aria-label="Recibo em PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
-<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalTitle" aria-hidden="true">
+<div class="modal fade" id="receiveModal" tabindex="-1" aria-labelledby="receiveModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" autocomplete="off">
+        <form class="modal-content" id="receive-form" data-api-form data-method="POST" data-reload autocomplete="off">
             <div class="modal-header">
-                <h5 class="modal-title" id="paymentModalTitle" data-title-create="Registrar pagamento" data-title-edit="Registrar pagamento">Registrar pagamento</h5>
+                <h5 class="modal-title" id="receiveModalTitle">Recebimentos</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <div class="d-flex justify-content-between align-items-center p-3 mb-3 rounded-4" style="background: var(--mc-primary-soft)">
                     <div>
-                        <small class="text-muted-mc d-block">Paciente</small>
-                        <strong data-payment-client>—</strong>
+                        <small class="text-muted-mc d-block" data-r-when></small>
+                        <strong data-r-client></strong>
                     </div>
                     <div class="text-end">
-                        <small class="text-muted-mc d-block">Valor da consulta</small>
-                        <strong data-payment-price>—</strong>
+                        <small class="text-muted-mc d-block">Em aberto</small>
+                        <strong data-r-outstanding></strong>
                     </div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label class="form-label" for="payment-paid">Valor pago</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input class="form-control" id="payment-paid" name="paidPrice" type="number" min="0" step="0.01" required />
+
+                <div data-r-entries class="mb-3"></div>
+
+                <div data-r-new>
+                    <div class="form-section"><i class="bi bi-plus-circle"></i> Novo recebimento</div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label" for="r-amount">Valor</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input class="form-control" id="r-amount" name="amount" type="number" min="0.01" step="0.01" required />
+                            </div>
                         </div>
-                        <button class="btn btn-link btn-sm px-0" type="button" data-payment-full>Quitar valor total</button>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label" for="payment-date">Data do pagamento</label>
-                        <input class="form-control" id="payment-date" name="paidDate" type="date" />
-                        <small class="text-muted-mc">Em branco: hoje.</small>
+                        <div class="col-sm-6">
+                            <label class="form-label" for="r-date">Data</label>
+                            <input class="form-control" id="r-date" name="paidAt" type="date" max="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-12">
+                            <span class="form-label d-block">Forma de pagamento</span>
+                            <div class="segmented flex-wrap" role="radiogroup" aria-label="Forma de pagamento">
+                                @foreach (var m in methods)
+                                {
+                                    <input class="btn-check" type="radio" name="method" id="r-m-@m" value="@m" checked="@(m == PaymentMethod.Pix)" />
+                                    <label class="btn" for="r-m-@m">@(m.DisplayName())</label>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="r-note">Observação <span class="text-muted-mc fw-normal">(opcional)</span></label>
+                            <input class="form-control" id="r-note" name="note" maxlength="200" placeholder="Ex.: 2ª parcela, NSU 123456" />
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" class="btn btn-primary" data-r-submit>Registrar</button>
             </div>
         </form>
     </div>
@@ -124,18 +188,64 @@
 @section Scripts {
     <script>
         (() => {
-            const form = document.querySelector('#paymentModal form');
+            const modalEl = document.getElementById('receiveModal');
+            const form = document.getElementById('receive-form');
             const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-            let price = 0;
-            form.addEventListener('crud:filled', ({ detail }) => {
-                price = detail.price;
-                form.querySelector('[data-payment-client]').textContent = detail.clientName ?? '—';
-                form.querySelector('[data-payment-price]').textContent = currency.format(detail.price);
-                form.querySelector('[name="paidPrice"]').max = detail.price;
-            });
-            form.querySelector('[data-payment-full]').addEventListener('click', () => {
-                form.querySelector('[name="paidPrice"]').value = price;
-            });
+            const text = (selector, value) => { form.querySelector(selector).textContent = value; };
+
+            document.querySelectorAll('[data-receive]').forEach(button => button.addEventListener('click', () => {
+                const item = JSON.parse(button.dataset.receive);
+                form.setAttribute('action', `/Payment/Receive/${item.id}`);
+                text('[data-r-client]', item.clientName ?? '—');
+                text('[data-r-when]', `Consulta de ${item.scheduledAt}`);
+                text('[data-r-outstanding]', currency.format(item.outstanding));
+                form.amount.value = item.outstanding > 0 ? item.outstanding : '';
+                form.amount.max = item.outstanding;
+
+                const open = item.outstanding > 0;
+                form.querySelector('[data-r-new]').classList.toggle('d-none', !open);
+                form.querySelector('[data-r-submit]').classList.toggle('d-none', !open);
+                form.amount.required = open;
+
+                // Lista de recebimentos (montada com textContent: sem HTML vindo dos dados).
+                const list = form.querySelector('[data-r-entries]');
+                list.replaceChildren();
+                if (item.entries.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'small text-muted-mc mb-0';
+                    empty.textContent = 'Nenhum recebimento registrado.';
+                    list.append(empty);
+                }
+                for (const entry of item.entries) {
+                    const row = document.createElement('div');
+                    row.className = 'entry-row';
+                    const info = document.createElement('div');
+                    const strong = document.createElement('strong');
+                    strong.textContent = currency.format(entry.amount);
+                    const meta = document.createElement('small');
+                    meta.className = 'd-block text-muted-mc';
+                    meta.textContent = `${entry.paidAt} · ${entry.method}${entry.note ? ' · ' + entry.note : ''}`;
+                    info.append(strong, meta);
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'btn-icon danger';
+                    remove.title = 'Remover recebimento';
+                    remove.innerHTML = '<i class="bi bi-trash3"></i>';
+                    remove.dataset.apiAction = `/Payment/DeleteEntry/${entry.id}`;
+                    remove.dataset.method = 'DELETE';
+                    remove.dataset.confirm = `Remover o recebimento de ${currency.format(entry.amount)}?`;
+                    remove.dataset.confirmText = 'Remover';
+                    row.append(info, remove);
+                    list.append(row);
+                }
+
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }));
+
+            // O diálogo de confirmação abre sobre este modal: fecha este antes.
+            form.addEventListener('click', (event) => {
+                if (event.target.closest('[data-api-action]')) bootstrap.Modal.getInstance(modalEl)?.hide();
+            }, true);
         })();
     </script>
 }

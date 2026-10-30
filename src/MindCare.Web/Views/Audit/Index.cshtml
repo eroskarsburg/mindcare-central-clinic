@@ -1,0 +1,98 @@
+@model IReadOnlyList<AuditLog>
+@{
+    ViewData["Title"] = "Auditoria";
+    var filter = (MindCare.Application.Services.AuditFilter)ViewData["Filter"]!;
+    string[] entities = ["Paciente", "Consulta", "Pagamento", "Profissional", "Usuário"];
+    string[] actions =
+    [
+        AuditActions.Created, AuditActions.Updated, AuditActions.Deleted, AuditActions.Viewed, AuditActions.Exported,
+        AuditActions.Anonymized, AuditActions.LoginSucceeded, AuditActions.LoginFailed, AuditActions.LockedOut,
+    ];
+
+    static string ActionTone(string action) => action switch
+    {
+        AuditActions.Deleted or AuditActions.Anonymized or AuditActions.LockedOut or AuditActions.LoginFailed => "danger",
+        AuditActions.Created or AuditActions.LoginSucceeded => "success",
+        AuditActions.Viewed or AuditActions.Exported => "warning",
+        _ => "neutral",
+    };
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-journal-text"></i> LGPD</span>
+        <h1>Auditoria</h1>
+        <p>Quem acessou ou alterou dados pessoais e de saúde. Só os nomes dos campos são registrados, nunca os valores.</p>
+    </div>
+</header>
+
+<form class="mc-card mc-card-body pt-4 mb-4" method="get">
+    <div class="row g-3 align-items-end">
+        <div class="col-sm-6 col-lg-2">
+            <label class="form-label" for="from">De</label>
+            <input class="form-control" type="date" id="from" name="from" value="@filter.From?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <label class="form-label" for="to">Até</label>
+            <input class="form-control" type="date" id="to" name="to" value="@filter.To?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label class="form-label" for="entity">Registro</label>
+            <select class="form-select" id="entity" name="entity">
+                <option value="">Todos</option>
+                @foreach (var e in entities)
+                {
+                    <option value="@e" selected="@(e == filter.Entity)">@e</option>
+                }
+            </select>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label class="form-label" for="action">Ação</label>
+            <select class="form-select" id="action" name="action">
+                <option value="">Todas</option>
+                @foreach (var a in actions)
+                {
+                    <option value="@a" selected="@(a == filter.Action)">@a</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 d-grid">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-funnel me-1"></i> Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<div class="mc-card mc-card-body pt-4">
+    <table class="table table-hover" data-table>
+        <thead>
+            <tr>
+                <th>Quando</th>
+                <th>Usuário</th>
+                <th>Ação</th>
+                <th>Registro</th>
+                <th>Detalhes</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model)
+            {
+                <tr>
+                    <td data-order="@log.Id">
+                        <span class="cell-title">@log.Timestamp.ToString("dd/MM/yyyy")</span>
+                        <span class="cell-sub">@log.Timestamp.ToString("HH:mm:ss")</span>
+                    </td>
+                    <td>@(log.Username ?? "sistema")</td>
+                    <td><span class="badge-soft @ActionTone(log.Action)">@log.Action</span></td>
+                    <td>@log.Entity @(log.EntityId is null ? null : $"#{log.EntityId}")</td>
+                    <td class="small text-muted-mc">@log.Details</td>
+                    <td class="small font-monospace">@log.IpAddress</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Count == 500)
+    {
+        <p class="small text-muted-mc mt-3 mb-0"><i class="bi bi-info-circle me-1"></i>Exibindo os 500 registros mais recentes. Refine o período para ver mais.</p>
+    }
+</div>

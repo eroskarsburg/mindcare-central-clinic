@@ -1,0 +1,330 @@
+@model ReportPageViewModel
+@using System.Globalization
+@using MindCare.Application.Finance
+@{
+    ViewData["Title"] = "Relatórios";
+    var r = Model.Report;
+    var pt = CultureInfo.GetCultureInfo("pt-BR");
+    var toInclusive = r.To.AddDays(-1);
+    var query = new Dictionary<string, string?>
+    {
+        ["from"] = r.From.ToString("yyyy-MM-dd"),
+        ["to"] = toInclusive.ToString("yyyy-MM-dd"),
+        ["professionalId"] = Model.ProfessionalId?.ToString(),
+    };
+    var chartData = new
+    {
+        months = r.Months.Select(m => m.Month.ToString("MMM/yy", pt)),
+        billed = r.Months.Select(m => m.Billed),
+        received = r.Months.Select(m => m.Received),
+        methods = r.Methods.Select(m => m.Method.DisplayName()),
+        methodTotals = r.Methods.Select(m => m.Amount),
+    };
+    var today = DateTime.Today;
+    var monthStart = new DateTime(today.Year, today.Month, 1);
+    (string Label, DateTime From, DateTime To)[] presets =
+    [
+        ("Este mês", monthStart, monthStart.AddMonths(1).AddDays(-1)),
+        ("Mês passado", monthStart.AddMonths(-1), monthStart.AddDays(-1)),
+        ("Últimos 3 meses", monthStart.AddMonths(-2), monthStart.AddMonths(1).AddDays(-1)),
+        ("Este ano", new DateTime(today.Year, 1, 1), new DateTime(today.Year, 12, 31)),
+    ];
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-bar-chart-line"></i> Gestão</span>
+        <h1>Relatórios</h1>
+        <p>@r.From.ToString("dd/MM/yyyy") a @toInclusive.ToString("dd/MM/yyyy")</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Export" asp-all-route-data="query"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar Excel</a>
+</header>
+
+@* Filtros em uma linha, acima dos gráficos *@
+<form class="report-filters mb-4" method="get">
+    <div class="segmented flex-wrap" role="group" aria-label="Períodos rápidos">
+        @foreach (var p in presets)
+        {
+            var active = p.From == r.From && p.To == toInclusive;
+            <a class="btn @(active ? "active-preset" : null)" asp-route-from="@p.From.ToString("yyyy-MM-dd")" asp-route-to="@p.To.ToString("yyyy-MM-dd")" asp-route-professionalId="@Model.ProfessionalId">@p.Label</a>
+        }
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <input class="form-control form-control-sm w-auto" type="date" name="from" value="@r.From.ToString("yyyy-MM-dd")" aria-label="De" />
+        <span class="text-muted-mc small">até</span>
+        <input class="form-control form-control-sm w-auto" type="date" name="to" value="@toInclusive.ToString("yyyy-MM-dd")" aria-label="Até" />
+        @if (Model.CanChooseProfessional)
+        {
+            <select class="form-select form-select-sm w-auto" name="professionalId" aria-label="Profissional">
+                <option value="">Todos os profissionais</option>
+                @foreach (var p in Model.Professionals)
+                {
+                    <option value="@p.Id" selected="@(p.Id == Model.ProfessionalId)">@p.Name</option>
+                }
+            </select>
+        }
+        <button class="btn btn-soft btn-sm" type="submit">Aplicar</button>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl">
+        <div class="mc-card kpi tone-taupe">
+            <div class="kpi-label">Faturado</div>
+            <div class="kpi-value">@r.Billed.ToString("C0")</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl">
+        <div class="mc-card kpi tone-sage">
+            <div class="kpi-label">Recebido</div>
+            <div class="kpi-value">@r.Received.ToString("C0")</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl">
+        <div class="mc-card kpi tone-blush">
+            <div class="kpi-label">Vencido em aberto</div>
+            <div class="kpi-value">@r.Outstanding.ToString("C0")</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl">
+        <div class="mc-card kpi tone-slate">
+            <div class="kpi-label">Taxa de faltas</div>
+            <div class="kpi-value">@(r.NoShowRate?.ToString("P0", pt) ?? "—")</div>
+        </div>
+    </div>
+    <div class="col-12 col-xl">
+        <div class="mc-card kpi tone-taupe">
+            <div class="kpi-label">Ocupação da agenda</div>
+            <div class="kpi-value">@(r.Occupancy?.ToString("P0", pt) ?? "—")</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <figure class="mc-card mc-card-body pt-4 h-100 m-0">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <figcaption>
+                    <h2 class="h5 mb-0">Faturado × recebido</h2>
+                    <small class="text-muted-mc">Últimos 12 meses</small>
+                </figcaption>
+                <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#months-table" aria-expanded="false">Ver como tabela</button>
+            </div>
+            <div class="chart-box"><canvas id="chart-months" role="img" aria-label="Gráfico de barras: faturado e recebido por mês nos últimos 12 meses"></canvas></div>
+            <div class="collapse mt-3" id="months-table">
+                <table class="table table-sm">
+                    <thead><tr><th>Mês</th><th class="text-end">Faturado</th><th class="text-end">Recebido</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in r.Months)
+                        {
+                            <tr><td>@m.Month.ToString("MMMM/yyyy", pt)</td><td class="text-end">@m.Billed.ToString("C")</td><td class="text-end">@m.Received.ToString("C")</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </figure>
+    </div>
+    <div class="col-xl-4">
+        <figure class="mc-card mc-card-body pt-4 h-100 m-0">
+            <figcaption class="mb-2">
+                <h2 class="h5 mb-0">Recebido por forma de pagamento</h2>
+                <small class="text-muted-mc">No período</small>
+            </figcaption>
+            @if (r.Methods.Count == 0)
+            {
+                <div class="empty-state"><i class="bi bi-cash"></i>Nenhum recebimento no período.</div>
+            }
+            else
+            {
+                <div class="chart-box chart-box-sm"><canvas id="chart-methods" role="img" aria-label="Gráfico de barras horizontais: valor recebido por forma de pagamento"></canvas></div>
+                <ul class="visually-hidden">
+                    @foreach (var m in r.Methods)
+                    {
+                        <li>@(m.Method.DisplayName()): @m.Amount.ToString("C") (@m.Count recebimentos)</li>
+                    }
+                </ul>
+            }
+        </figure>
+    </div>
+</div>
+
+<div class="mc-card mc-card-body pt-4 mb-4">
+    <h2 class="h5 mb-3">Desempenho e repasse por profissional</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Profissional</th>
+                <th class="text-end">Sessões</th>
+                <th class="text-end">Faltas</th>
+                <th class="text-end">Ocupação</th>
+                <th class="text-end">Faturado</th>
+                <th class="text-end">Recebido</th>
+                <th class="text-end">Repasse</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in r.Professionals)
+            {
+                <tr>
+                    <td class="cell-title">@p.Name</td>
+                    <td class="text-end">@p.SessionsDone</td>
+                    <td class="text-end">@p.NoShows</td>
+                    <td class="text-end">@(p.Occupancy?.ToString("P0", pt) ?? "—")</td>
+                    <td class="text-end">@p.Billed.ToString("C")</td>
+                    <td class="text-end">@p.Received.ToString("C")</td>
+                    <td class="text-end">
+                        <strong>@p.Commission.ToString("C")</strong>
+                        <span class="cell-sub">@((p.CommissionPercent / 100m).ToString("P0", pt))</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        @if (r.Professionals.Count > 1)
+        {
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td>Total</td>
+                    <td class="text-end">@r.Professionals.Sum(p => p.SessionsDone)</td>
+                    <td class="text-end">@r.Professionals.Sum(p => p.NoShows)</td>
+                    <td class="text-end">@(r.Occupancy?.ToString("P0", pt) ?? "—")</td>
+                    <td class="text-end">@r.Professionals.Sum(p => p.Billed).ToString("C")</td>
+                    <td class="text-end">@r.Professionals.Sum(p => p.Received).ToString("C")</td>
+                    <td class="text-end">@r.Professionals.Sum(p => p.Commission).ToString("C")</td>
+                </tr>
+            </tfoot>
+        }
+    </table>
+    <p class="small text-muted-mc mb-0"><i class="bi bi-info-circle me-1"></i>Repasse calculado sobre o valor recebido de consultas avulsas. Pacotes entram no faturamento da clínica.</p>
+</div>
+
+<div class="mc-card mc-card-body pt-4">
+    <h2 class="h5 mb-3">Inadimplência</h2>
+    <table class="table table-hover" data-table>
+        <thead>
+            <tr>
+                <th>Sessão</th>
+                <th>Paciente</th>
+                <th>Profissional</th>
+                <th>Atraso</th>
+                <th>Em aberto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in r.Overdue)
+            {
+                <tr>
+                    <td data-order="@o.ScheduledAt.ToString("yyyyMMddHHmm")">@o.ScheduledAt.ToString("dd/MM/yyyy")</td>
+                    <td><a class="cell-title text-reset" asp-controller="Client" asp-action="Details" asp-route-id="@o.ClientId">@o.ClientName</a></td>
+                    <td>@(o.ProfessionalName ?? "—")</td>
+                    <td data-order="@o.DaysOverdue"><span class="badge-soft @(o.DaysOverdue > 30 ? "danger" : "warning")">@(o.DaysOverdue switch { 0 => "hoje", 1 => "1 dia", var d => $"{d} dias" })</span></td>
+                    <td data-order="@o.Outstanding">@o.Outstanding.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script>
+        (() => {
+            const data = @Json.Serialize(chartData);
+            const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+            const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            const charts = [];
+
+            // Paleta validada (scripts/validate_palette.js): claro e escuro têm passos próprios.
+            const palette = () => document.documentElement.getAttribute('data-bs-theme') === 'dark'
+                ? { billed: '#C27D4A', received: '#4790C8' }
+                : { billed: '#B5703E', received: '#2B7BBA' };
+
+            function base() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: css('--mc-text'), usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, boxHeight: 10 } },
+                        tooltip: {
+                            backgroundColor: css('--mc-surface'),
+                            titleColor: css('--mc-text'),
+                            bodyColor: css('--mc-text'),
+                            borderColor: css('--mc-border'),
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${currency.format(ctx.parsed.y ?? ctx.parsed.x)}` },
+                        },
+                    },
+                };
+            }
+
+            function axis(isValue) {
+                return {
+                    grid: { color: isValue ? css('--mc-border') : 'transparent', drawTicks: false },
+                    border: { display: false },
+                    ticks: { color: css('--mc-text-muted'), padding: 6, ...(isValue ? { callback: (v) => currency.format(v) } : {}) },
+                };
+            }
+
+            // Rótulo direto no fim de cada barra (gráfico de uma série).
+            const valueLabels = {
+                id: 'valueLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    ctx.save();
+                    ctx.fillStyle = css('--mc-text');
+                    ctx.font = '600 12px "Plus Jakarta Sans", system-ui';
+                    ctx.textBaseline = 'middle';
+                    chart.getDatasetMeta(0).data.forEach((bar, i) => {
+                        ctx.fillText(currency.format(chart.data.datasets[0].data[i]), bar.x + 6, bar.y);
+                    });
+                    ctx.restore();
+                },
+            };
+
+            function render() {
+                charts.splice(0).forEach(c => c.destroy());
+                const colors = palette();
+
+                const monthsEl = document.getElementById('chart-months');
+                charts.push(new Chart(monthsEl, {
+                    type: 'bar',
+                    data: {
+                        labels: data.months,
+                        datasets: [
+                            { label: 'Faturado', data: data.billed, backgroundColor: colors.billed },
+                            { label: 'Recebido', data: data.received, backgroundColor: colors.received },
+                        ].map(ds => ({ ...ds, borderRadius: 4, borderSkipped: 'start', borderColor: css('--mc-surface'), borderWidth: 1, categoryPercentage: 0.7, barPercentage: 0.9 })),
+                    },
+                    options: { ...base(), scales: { x: axis(false), y: { ...axis(true), beginAtZero: true } } },
+                }));
+
+                const methodsEl = document.getElementById('chart-methods');
+                if (methodsEl) {
+                    const max = Math.max(...data.methodTotals, 1);
+                    const options = base();
+                    options.indexAxis = 'y';
+                    options.interaction = { mode: 'nearest', axis: 'y', intersect: false };
+                    options.plugins.legend = { display: false };
+                    options.plugins.tooltip.callbacks.label = (ctx) => ` ${currency.format(ctx.parsed.x)}`;
+                    options.layout = { padding: { right: 80 } };
+                    options.scales = { x: { display: false, beginAtZero: true, max: max * 1.05 }, y: { ...axis(false), ticks: { color: css('--mc-text') } } };
+                    charts.push(new Chart(methodsEl, {
+                        type: 'bar',
+                        data: {
+                            labels: data.methods,
+                            datasets: [{ label: 'Recebido', data: data.methodTotals, backgroundColor: colors.received, borderRadius: 4, borderSkipped: 'start', barThickness: 18 }],
+                        },
+                        options,
+                        plugins: [valueLabels],
+                    }));
+                }
+            }
+
+            render();
+            // Redesenha com a paleta do tema quando o usuário alterna claro/escuro.
+            new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+        })();
+    </script>
+}

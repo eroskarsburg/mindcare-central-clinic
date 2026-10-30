@@ -10,6 +10,16 @@ public sealed class MindCareDbContext(DbContextOptions<MindCareDbContext> option
     public DbSet<User> Users => Set<User>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ProfessionalAvailability> Availability => Set<ProfessionalAvailability>();
+    public DbSet<ScheduleBlock> ScheduleBlocks => Set<ScheduleBlock>();
+    public DbSet<OutboundMessage> OutboundMessages => Set<OutboundMessage>();
+    public DbSet<StaffNotification> StaffNotifications => Set<StaffNotification>();
+    public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
+    public DbSet<ClientDocument> ClientDocuments => Set<ClientDocument>();
+    public DbSet<ServiceType> ServiceTypes => Set<ServiceType>();
+    public DbSet<PaymentEntry> PaymentEntries => Set<PaymentEntry>();
+    public DbSet<SessionPackage> Packages => Set<SessionPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindCareDbContext).Assembly);

@@ -64,5 +64,9 @@
     <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/app.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @if (TempData["Error"] is string error)
+    {
+        <script>document.addEventListener('DOMContentLoaded', () => MindCare.Toast.show(@Json.Serialize(error), 'danger'));</script>
+    }
 </body>
 </html>

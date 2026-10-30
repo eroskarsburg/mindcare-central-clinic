@@ -18,8 +18,10 @@
             <ul class="nav flex-column">
                 <li><a class="nav-link @Html.ActiveWhen("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-grid-1x2"></i> Visão geral</a></li>
                 <li><a class="nav-link @Html.ActiveWhen("Appointment")" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar-heart"></i> Agenda</a></li>
+                <li><a class="nav-link @Html.ActiveWhen("Schedule")" asp-controller="Schedule" asp-action="Index"><i class="bi bi-clock-history"></i> Horários</a></li>
                 <li><a class="nav-link @Html.ActiveWhen("Client")" asp-controller="Client" asp-action="Index"><i class="bi bi-people"></i> Pacientes</a></li>
                 <li><a class="nav-link @Html.ActiveWhen("Payment")" asp-controller="Payment" asp-action="Index"><i class="bi bi-wallet2"></i> Financeiro</a></li>
+                <li><a class="nav-link @Html.ActiveWhen("Report")" asp-controller="Report" asp-action="Index"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
             </ul>
 
             @if (User.IsAdmin())
@@ -27,7 +29,10 @@
                 <div class="nav-section">Administração</div>
                 <ul class="nav flex-column">
                     <li><a class="nav-link @Html.ActiveWhen("Professional")" asp-controller="Professional" asp-action="Index"><i class="bi bi-person-badge"></i> Profissionais</a></li>
+                    <li><a class="nav-link @Html.ActiveWhen("Service")" asp-controller="Service" asp-action="Index"><i class="bi bi-tags"></i> Serviços</a></li>
                     <li><a class="nav-link @Html.ActiveWhen("User")" asp-controller="User" asp-action="Index"><i class="bi bi-shield-lock"></i> Usuários</a></li>
+                    <li><a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Messages" ? "active" : null)" asp-controller="Notification" asp-action="Messages"><i class="bi bi-send"></i> Mensagens</a></li>
+                    <li><a class="nav-link @Html.ActiveWhen("Audit")" asp-controller="Audit" asp-action="Index"><i class="bi bi-journal-text"></i> Auditoria</a></li>
                 </ul>
             }
         </nav>
@@ -52,6 +57,7 @@
                         </li>
                     </ul>
                 </div>
+                @await Component.InvokeAsync("NotificationBell")
                 <button class="btn btn-link theme-toggle fs-5" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
                     <i class="bi bi-moon-stars" data-theme-icon></i>
                 </button>

@@ -26,9 +26,30 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_appointment");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("cancellation_reason");
+
                     b.Property<int>("ClientId")
                         .HasColumnType("int")
                         .HasColumnName("id_client");
+
+                    b.Property<string>("ConfirmationTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("confirmation_token_hash");
+
+                    b.Property<int>("DurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(50)
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<string>("MeetingUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("meeting_url");
 
                     b.Property<string>("Modality")
                         .IsRequired()
@@ -41,17 +62,120 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(500)")
                         .HasColumnName("observation");
 
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
+                    b.Property<DateTime?>("PatientRespondedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("patient_responded_at");
+
+                    b.Property<string>("PatientResponseVia")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("patient_response_via");
+
+                    b.Property<int?>("ProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional");
+
+                    b.Property<DateTime?>("ReminderQueuedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("reminder_queued_at");
+
                     b.Property<DateTime>("ScheduledAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("scheduled_date");
+
+                    b.Property<Guid?>("SeriesId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("series_id");
+
+                    b.Property<int?>("ServiceTypeId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_service_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Agendada")
+                        .HasColumnName("status");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
 
+                    b.HasIndex("ConfirmationTokenHash");
+
+                    b.HasIndex("PackageId");
+
                     b.HasIndex("ScheduledAt");
 
+                    b.HasIndex("SeriesId");
+
+                    b.HasIndex("ServiceTypeId");
+
+                    b.HasIndex("ProfessionalId", "ScheduledAt");
+
                     b.ToTable("appointments", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.AuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_audit");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("details");
+
+                    b.Property<string>("Entity")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("entity");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("varchar(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("timestamp");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("username");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("Entity", "EntityId");
+
+                    b.ToTable("audit_logs", (string)null);
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
@@ -61,9 +185,26 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_client");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)")
+                        .HasColumnName("address");
+
                     b.Property<int?>("Age")
                         .HasColumnType("int")
                         .HasColumnName("age");
+
+                    b.Property<DateTime?>("AnonymizedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("anonymized_at");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime?>("ConsentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("consent_at");
 
                     b.Property<string>("Cpf")
                         .IsRequired()
@@ -71,11 +212,31 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(11)")
                         .HasColumnName("cpf");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("emergency_contact_name");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("emergency_contact_phone");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
                         .HasColumnName("gender");
+
+                    b.Property<string>("HealthInsurance")
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("health_insurance");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -83,12 +244,245 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<bool>("NotifyByEmail")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_email");
+
+                    b.Property<bool>("NotifyByWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_whatsapp");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("phone");
+
+                    b.Property<int?>("ResponsibleProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_responsible_professional");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Ativo")
+                        .HasColumnName("status");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Cpf")
                         .IsUnique();
 
+                    b.HasIndex("Phone");
+
+                    b.HasIndex("ResponsibleProfessionalId");
+
                     b.ToTable("clients", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClientDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_document");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("category");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)")
+                        .HasColumnName("file_name");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("storage_path");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<int?>("UploadedByProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional_uploaded");
+
+                    b.Property<int>("UploadedByUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user_uploaded");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("client_documents", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClinicalNote", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_note");
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_appointment");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EncryptedContent")
+                        .IsRequired()
+                        .HasMaxLength(60000)
+                        .HasColumnType("longtext")
+                        .HasColumnName("encrypted_content");
+
+                    b.Property<int>("ProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.ToTable("clinical_notes", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.OutboundMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_message");
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_appointment");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int")
+                        .HasColumnName("attempts");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("channel");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<string>("ConfirmationToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("confirmation_token");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("external_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("NextAttemptAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("recipient");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("ExternalId");
+
+                    b.HasIndex("Status", "NextAttemptAt");
+
+                    b.ToTable("outbound_messages", (string)null);
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.Payment", b =>
@@ -132,12 +526,67 @@ namespace MindCare.Application.Persistence.Migrations
                     b.ToTable("payments", (string)null);
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.PaymentEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_entry");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("note");
+
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("date")
+                        .HasColumnName("paid_at");
+
+                    b.Property<int?>("PaymentId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_payments");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("PaidAt");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("payment_entries", (string)null);
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id_professional");
+
+                    b.Property<decimal>("CommissionPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("commission_percent");
 
                     b.Property<string>("Cpf")
                         .IsRequired()
@@ -156,6 +605,11 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("registration_number");
 
                     b.Property<string>("Speciality")
                         .IsRequired()
@@ -178,6 +632,196 @@ namespace MindCare.Application.Persistence.Migrations
                     b.ToTable("professionals", (string)null);
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.ProfessionalAvailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_availability");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time(6)")
+                        .HasColumnName("end_time");
+
+                    b.Property<int>("ProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time(6)")
+                        .HasColumnName("start_time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessionalId", "DayOfWeek");
+
+                    b.ToTable("professional_availability", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ScheduleBlock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_block");
+
+                    b.Property<DateTime>("EndsAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ends_at");
+
+                    b.Property<int?>("ProfessionalId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_professional");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTime>("StartsAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("starts_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.HasIndex("StartsAt", "EndsAt");
+
+                    b.ToTable("schedule_blocks", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ServiceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_service_type");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("active");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int")
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("price");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("service_types", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id_package");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_client");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("date")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("price");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("date")
+                        .HasColumnName("purchased_at");
+
+                    b.Property<int>("TotalSessions")
+                        .HasColumnType("int")
+                        .HasColumnName("total_sessions");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("session_packages", (string)null);
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_notification");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("icon");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("link");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("message");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("read_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("title");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("id_user");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ReadAt");
+
+                    b.ToTable("staff_notifications", (string)null);
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.User", b =>
                 {
                     b.Property<int>("Id")
@@ -189,9 +833,21 @@ namespace MindCare.Application.Persistence.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id_access_level");
 
+                    b.Property<int>("FailedLoginCount")
+                        .HasColumnType("int")
+                        .HasColumnName("failed_login_count");
+
                     b.Property<DateTime?>("LastActivity")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_activity");
+
+                    b.Property<DateTime?>("LockoutUntil")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("lockout_until");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("must_change_password");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -221,6 +877,92 @@ namespace MindCare.Application.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MindCare.Application.Domain.SessionPackage", "Package")
+                        .WithMany("Appointments")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.Professional", "Professional")
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.ServiceType", "ServiceType")
+                        .WithMany()
+                        .HasForeignKey("ServiceTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Professional");
+
+                    b.Navigation("ServiceType");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Professional", "ResponsibleProfessional")
+                        .WithMany()
+                        .HasForeignKey("ResponsibleProfessionalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ResponsibleProfessional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClientDocument", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ClinicalNote", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MindCare.Application.Domain.Professional", "Professional")
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Professional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.OutboundMessage", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
                     b.Navigation("Client");
                 });
 
@@ -235,6 +977,23 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("Appointment");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.PaymentEntry", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.SessionPackage", "Package")
+                        .WithMany("Entries")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MindCare.Application.Domain.Payment", "Payment")
+                        .WithMany("Entries")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Payment");
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
                 {
                     b.HasOne("MindCare.Application.Domain.User", "User")
@@ -246,6 +1005,45 @@ namespace MindCare.Application.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MindCare.Application.Domain.ProfessionalAvailability", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Professional", null)
+                        .WithMany("Availability")
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.ScheduleBlock", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Professional", "Professional")
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Professional");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.StaffNotification", b =>
+                {
+                    b.HasOne("MindCare.Application.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MindCare.Application.Domain.Appointment", b =>
                 {
                     b.Navigation("Payment");
@@ -254,6 +1052,23 @@ namespace MindCare.Application.Persistence.Migrations
             modelBuilder.Entity("MindCare.Application.Domain.Client", b =>
                 {
                     b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.Payment", b =>
+                {
+                    b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.Professional", b =>
+                {
+                    b.Navigation("Availability");
+                });
+
+            modelBuilder.Entity("MindCare.Application.Domain.SessionPackage", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("MindCare.Application.Domain.User", b =>

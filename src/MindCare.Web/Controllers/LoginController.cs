@@ -1,8 +1,9 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.RateLimiting;
 using MindCare.Application.Services;
 using MindCare.Web.Infrastructure;
 using MindCare.Web.Models;
@@ -12,12 +13,19 @@ namespace MindCare.Web.Controllers;
 [AllowAnonymous]
 public sealed class LoginController(IAuthService auth) : AppController
 {
+    public const string RateLimitPolicy = "login";
+
     [HttpGet]
-    public IActionResult Index(string? returnUrl = null)
+    public IActionResult Index(string? returnUrl = null, bool throttled = false)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
+        }
+
+        if (throttled)
+        {
+            ModelState.AddModelError(string.Empty, "Muitas tentativas em pouco tempo. Aguarde um minuto e tente novamente.");
         }
 
         return View(new LoginInput { ReturnUrl = returnUrl });
@@ -25,6 +33,7 @@ public sealed class LoginController(IAuthService auth) : AppController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(RateLimitPolicy)]
     public async Task<IActionResult> Index(LoginInput input, CancellationToken ct)
     {
         // Formulário HTML tradicional: o estado inválido volta para a própria view.
@@ -33,23 +42,22 @@ public sealed class LoginController(IAuthService auth) : AppController
             return View(input);
         }
 
-        var user = await auth.AuthenticateAsync(input.Username, input.Password, ct);
-        if (user is null)
+        var result = await auth.AuthenticateAsync(input.Username, input.Password, ct);
+        if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            var message = result.Failure == LoginFailure.LockedOut
+                ? $"Conta bloqueada temporariamente por excesso de tentativas. Tente novamente às {result.LockedUntil:HH:mm}."
+                : "Usuário ou senha inválidos.";
+            ModelState.AddModelError(string.Empty, message);
             return View(input);
         }
 
-        var identity = new ClaimsIdentity(
-            [
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.GivenName, user.DisplayName),
-                new Claim(ClaimTypes.Role, user.AccessLevel.ToString()),
-            ],
-            CookieAuthenticationDefaults.AuthenticationScheme);
+        await AuthCookie.SignInAsync(HttpContext, result.User!);
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+        if (result.User!.MustChangePassword)
+        {
+            return RedirectToAction("Index", "Profile");
+        }
 
         return Url.IsLocalUrl(input.ReturnUrl) ? LocalRedirect(input.ReturnUrl) : RedirectToAction("Index", "Home");
     }
@@ -63,5 +71,5 @@ public sealed class LoginController(IAuthService auth) : AppController
     }
 
     // O AppController devolve JSON para ModelState inválido; aqui queremos re-renderizar a view.
-    public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
+    public override void OnActionExecuting(ActionExecutingContext context) { }
 }

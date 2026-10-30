@@ -262,24 +262,36 @@ function initCrud(section) {
         form.dispatchEvent(new CustomEvent('crud:mode', { detail: { editing } }));
     };
 
+    const openCreate = (prefill = null) => {
+        editingId = null;
+        Forms.reset(form);
+        if (prefill) Forms.fill(form, prefill);
+        setMode(false);
+        form.dispatchEvent(new CustomEvent('crud:filled', { detail: prefill ?? {} }));
+        modal.show();
+    };
+
+    const openEdit = (item) => {
+        editingId = item.id;
+        Forms.reset(form);
+        Forms.fill(form, item);
+        setMode(true);
+        form.dispatchEvent(new CustomEvent('crud:filled', { detail: item }));
+        modal.show();
+    };
+
+    // Permite que outros componentes (ex.: calendário) abram o formulário.
+    section.crud = { openCreate, openEdit, endpoint };
+
     section.addEventListener('click', async (event) => {
         const create = event.target.closest('[data-crud-create]');
         const edit = event.target.closest('[data-crud-edit]');
         const remove = event.target.closest('[data-crud-delete]');
 
         if (create) {
-            editingId = null;
-            Forms.reset(form);
-            setMode(false);
-            modal.show();
+            openCreate();
         } else if (edit) {
-            const item = JSON.parse(edit.dataset.item);
-            editingId = item.id;
-            Forms.reset(form);
-            Forms.fill(form, item);
-            setMode(true);
-            form.dispatchEvent(new CustomEvent('crud:filled', { detail: item }));
-            modal.show();
+            openEdit(JSON.parse(edit.dataset.item));
         } else if (remove) {
             const ok = await confirmDialog(`Tem certeza que deseja excluir ${remove.dataset.name}? Esta ação não pode ser desfeita.`);
             if (!ok) return;
@@ -303,7 +315,8 @@ function initCrud(section) {
 
         if (result) {
             modal.hide();
-            Toast.flash(result.message, { sticky: Boolean(result.data) });
+            const sticky = Boolean(result.data?.initialPassword || result.data?.warnings?.length);
+            Toast.flash(result.message, { sticky, type: result.data?.warnings?.length ? 'info' : 'success' });
             window.location.reload();
         }
     });
@@ -324,6 +337,32 @@ function initApiForm(form) {
         } else {
             Toast.show(result.message);
             if (form.hasAttribute('data-reset')) form.reset();
+        }
+    });
+}
+
+/* Botões de ação avulsos:
+   <button data-api-action="/Client/Anonymize/5" data-method="POST" data-confirm="Tem certeza?" data-confirm-text="Anonimizar"> */
+function initApiActions() {
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-api-action]');
+        if (!button) return;
+        event.preventDefault();
+
+        if (button.dataset.confirm) {
+            const ok = await confirmDialog(button.dataset.confirm, {
+                confirmText: button.dataset.confirmText ?? 'Confirmar',
+                tone: button.dataset.tone ?? 'danger',
+            });
+            if (!ok) return;
+        }
+
+        try {
+            const result = await api(button.dataset.method ?? 'POST', button.dataset.apiAction);
+            Toast.flash(result.message);
+            window.location.reload();
+        } catch (error) {
+            Toast.show(error.message, 'danger');
         }
     });
 }
@@ -360,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('table[data-table]').forEach(initTable);
     document.querySelectorAll('[data-crud]').forEach(initCrud);
     document.querySelectorAll('form[data-api-form]').forEach(initApiForm);
+    initApiActions();
     document.querySelectorAll('[data-mask="cpf"]').forEach(input => input.addEventListener('input', () => Masks.cpf(input)));
 
     document.querySelectorAll('[data-password-toggle]').forEach(btn => {
@@ -375,4 +415,4 @@ document.addEventListener('DOMContentLoaded', () => {
     Toast.consumeFlash();
 });
 
-window.MindCare = { api, Toast, Forms, confirmDialog };
+window.MindCare = { api, Toast, Forms, confirmDialog, ApiError };

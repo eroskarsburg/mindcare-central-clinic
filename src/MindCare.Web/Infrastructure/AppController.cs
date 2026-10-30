@@ -15,11 +15,18 @@ public abstract class AppController : Controller
     {
         if (!HttpMethods.IsGet(context.HttpContext.Request.Method) && !context.ModelState.IsValid)
         {
+            // Erros do próprio parâmetro (corpo ausente/ilegível) e de conversão do JSON vêm em inglês: traduzimos.
+            var parameters = context.ActionDescriptor.Parameters.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var errors = context.ModelState
-                .Where(e => e.Value?.Errors.Count > 0)
+                .Where(e => e.Value?.Errors.Count > 0 && !parameters.Contains(e.Key))
                 .ToDictionary(
                     e => ToCamelCase(e.Key),
-                    e => e.Value!.Errors.Select(x => string.IsNullOrEmpty(x.ErrorMessage) ? "Valor inválido." : x.ErrorMessage).ToArray());
+                    e => e.Value!.Errors.Select(Translate).ToArray());
+
+            if (errors.Count == 0)
+            {
+                errors["$"] = ["Não foi possível ler os dados enviados."];
+            }
 
             var message = errors.Values.SelectMany(x => x).FirstOrDefault() ?? "Dados inválidos.";
             context.Result = BadRequest(new { message, errors });
@@ -28,6 +35,14 @@ public abstract class AppController : Controller
 
         base.OnActionExecuting(context);
     }
+
+    private static string Translate(Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error) =>
+        string.IsNullOrEmpty(error.ErrorMessage) || error.Exception is not null
+            || error.ErrorMessage.Contains("could not be converted", StringComparison.Ordinal)
+            || error.ErrorMessage.Contains("LineNumber:", StringComparison.Ordinal)
+            || error.ErrorMessage.StartsWith("The ", StringComparison.Ordinal)
+            ? "Valor inválido."
+            : error.ErrorMessage;
 
     private static string ToCamelCase(string key)
     {

@@ -1,0 +1,46 @@
+@model IReadOnlyList<StaffNotification>
+@{
+    ViewData["Title"] = "Avisos";
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-bell"></i> Avisos</span>
+        <h1>Avisos da equipe</h1>
+        <p>Confirmações, cancelamentos e mensagens recebidas dos pacientes.</p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsAdmin())
+        {
+            <a class="btn btn-soft" asp-action="Messages"><i class="bi bi-send me-1"></i> Mensagens enviadas</a>
+        }
+        @if (Model.Any(n => n.ReadAt is null))
+        {
+            <button class="btn btn-primary" type="button" data-api-action="/Notification/MarkAllRead" data-method="POST"><i class="bi bi-check2-all me-1"></i> Marcar todos como lidos</button>
+        }
+    </div>
+</header>
+
+<div class="mc-card mc-card-body pt-4">
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state"><i class="bi bi-bell-slash"></i>Nenhum aviso por enquanto.</div>
+    }
+    @foreach (var n in Model)
+    {
+        <div class="agenda-item @(n.ReadAt is null ? null : "opacity-75")">
+            <div class="agenda-date @(n.ReadAt is null ? "is-live" : null)"><i class="bi @n.Icon fs-5"></i></div>
+            <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold">@n.Title</div>
+                <div class="small">@n.Message</div>
+            </div>
+            <div class="text-end small text-muted-mc text-nowrap">
+                @n.CreatedAt.ToString("dd/MM HH:mm")
+                @if (n.Link is not null)
+                {
+                    <a class="d-block" href="@n.Link">Abrir</a>
+                }
+            </div>
+        </div>
+    }
+</div>

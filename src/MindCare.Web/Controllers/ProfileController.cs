@@ -27,6 +27,13 @@ public sealed class ProfileController(
     public async Task<IActionResult> Password([FromBody] ChangePasswordInput input, CancellationToken ct)
     {
         await auth.ChangePasswordAsync(CurrentUserId, input.CurrentPassword, input.NewPassword, ct);
+
+        // Renova o cookie para remover a marcação de senha temporária.
+        if (await auth.GetSessionUserAsync(CurrentUserId, ct) is { } session)
+        {
+            await AuthCookie.SignInAsync(HttpContext, session);
+        }
+
         return Success("Senha alterada com sucesso.");
     }
 

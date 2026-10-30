@@ -21,3 +21,45 @@ public enum PaymentStatus
     Confirmado,
     Parcial,
 }
+
+/// <summary>Situação do acompanhamento do paciente.</summary>
+public enum ClientStatus
+{
+    Ativo,
+    EmPausa,
+    Alta,
+}
+
+public enum DocumentCategory
+{
+    /// <summary>Visível a toda a equipe (termos, comprovantes, encaminhamentos administrativos).</summary>
+    Administrativo,
+
+    /// <summary>Visível apenas ao autor e ao profissional de referência (laudos, avaliações).</summary>
+    Clinico,
+}
+
+/// <summary>Ciclo de vida de uma consulta.</summary>
+public enum AppointmentStatus
+{
+    Agendada,
+    Confirmada,
+    Realizada,
+    Faltou,
+    Cancelada,
+}
+
+/// <summary>Repetição de uma consulta ao ser criada.</summary>
+public enum RecurrenceFrequency
+{
+    Nenhuma,
+    Semanal,
+    Quinzenal,
+}
+
+/// <summary>Abrangência de uma alteração em consultas de uma série.</summary>
+public enum SeriesScope
+{
+    ApenasEsta,
+    EstaEProximas,
+}

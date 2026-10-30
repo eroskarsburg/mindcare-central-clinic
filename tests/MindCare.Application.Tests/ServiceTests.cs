@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MindCare.Application.Common;
 using MindCare.Application.Domain;
+using MindCare.Application.Persistence;
 using MindCare.Application.Security;
 using MindCare.Application.Services;
 
@@ -17,11 +18,11 @@ public sealed class ServiceTests : IDisposable
     public async Task Cliente_com_cpf_duplicado_e_rejeitado()
     {
         using var db = _database.CreateContext();
-        var service = new ClientService(db);
-        await service.CreateAsync(new Client { Name = "Ana", Cpf = "529.982.247-25", Gender = "Feminino" }, Ct);
+        var service = Clients(db);
+        await service.CreateAsync(new Client { Name = "Ana", Cpf = "529.982.247-25", Gender = "Feminino" }, consentGiven: false, Ct);
 
         var error = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CreateAsync(new Client { Name = "Outra", Cpf = "52998224725", Gender = "Feminino" }, Ct));
+            service.CreateAsync(new Client { Name = "Outra", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct));
 
         Assert.Contains("CPF", error.Message, StringComparison.Ordinal);
         Assert.Equal("52998224725", (await db.Clients.SingleAsync(Ct)).Cpf);
@@ -31,34 +32,36 @@ public sealed class ServiceTests : IDisposable
     public async Task Cliente_com_agendamento_nao_pode_ser_excluido()
     {
         using var db = _database.CreateContext();
-        var clientId = await new ClientService(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, Ct);
+        var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
         await new AppointmentService(db, _clock).CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Presencial, new DateTime(2026, 5, 6, 14, 0, 0), null, 150, 0), Ct);
 
-        await Assert.ThrowsAsync<BusinessException>(() => new ClientService(db).DeleteAsync(clientId, Ct));
+        await Assert.ThrowsAsync<BusinessException>(() => Clients(db).DeleteAsync(clientId, Ct));
     }
 
     [Fact]
     public async Task Agendamento_cria_pagamento_com_status_calculado()
     {
         using var db = _database.CreateContext();
-        var clientId = await new ClientService(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, Ct);
+        var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
         var service = new AppointmentService(db, _clock);
 
-        var id = await service.CreateAsync(
+        var result = await service.CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Teleconsulta, new DateTime(2026, 5, 6, 14, 0, 0), "  primeira sessão ", 180, 60), Ct);
 
-        var appointment = await db.Appointments.Include(a => a.Payment).AsNoTracking().SingleAsync(a => a.Id == id, Ct);
+        Assert.Equal(1, result.Affected);
+        var appointment = await db.Appointments.Include(a => a.Payment).AsNoTracking().SingleAsync(Ct);
         Assert.Equal("primeira sessão", appointment.Observation);
         Assert.Equal(PaymentStatus.Parcial, appointment.Payment!.Status);
         Assert.Equal(new DateTime(2026, 5, 4), appointment.Payment.PaidDate);
+        Assert.StartsWith("https://meet.jit.si/mindcare-", appointment.MeetingUrl, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task Agendamento_com_valor_pago_maior_que_o_valor_e_rejeitado()
     {
         using var db = _database.CreateContext();
-        var clientId = await new ClientService(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, Ct);
+        var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
 
         await Assert.ThrowsAsync<BusinessException>(() => new AppointmentService(db, _clock).CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Presencial, new DateTime(2026, 5, 6, 14, 0, 0), null, 100, 150), Ct));
@@ -68,28 +71,30 @@ public sealed class ServiceTests : IDisposable
     public async Task Excluir_agendamento_remove_pagamento_em_cascata()
     {
         using var db = _database.CreateContext();
-        var clientId = await new ClientService(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, Ct);
+        var clientId = await Clients(db).CreateAsync(new Client { Name = "Ana", Cpf = "52998224725", Gender = "Feminino" }, consentGiven: false, Ct);
         var service = new AppointmentService(db, _clock);
-        var id = await service.CreateAsync(
+        await service.CreateAsync(
             new AppointmentInput(clientId, AppointmentModality.Presencial, new DateTime(2026, 5, 6, 14, 0, 0), null, 100, 0), Ct);
 
-        await service.DeleteAsync(id, Ct);
+        await service.DeleteAsync((await db.Appointments.SingleAsync(Ct)).Id, Ct);
 
         Assert.False(await db.Payments.AnyAsync(Ct));
     }
 
     [Fact]
-    public async Task Profissional_recebe_usuario_com_senha_inicial_em_hash()
+    public async Task Profissional_recebe_usuario_com_senha_temporaria_aleatoria()
     {
         using var db = _database.CreateContext();
         var created = await new ProfessionalService(db, _passwords).CreateAsync(
             new Professional { Name = "Letícia Kasper", Cpf = "153.509.460-56", Gender = "Feminino", Speciality = "Psicoterapia" }, Ct);
 
         Assert.Equal("15350946056", created.Username);
-        Assert.Equal("letícia15350946056", created.InitialPassword);
+        Assert.Equal(12, created.InitialPassword.Length);
+        Assert.DoesNotContain("15350946056", created.InitialPassword, StringComparison.Ordinal);
 
         var user = await db.Users.AsNoTracking().SingleAsync(Ct);
         Assert.Equal(AccessLevel.Profissional, user.AccessLevel);
+        Assert.True(user.MustChangePassword);
         Assert.True(_passwords.Verify(user, created.InitialPassword, out _));
     }
 
@@ -134,6 +139,9 @@ public sealed class ServiceTests : IDisposable
         Assert.Equal("ana.souza", user.Username);
         Assert.True(_passwords.Verify(user, "senha-original", out _));
     }
+
+    private ClientService Clients(MindCareDbContext db) =>
+        new(db, new AuditService(db, new SystemActor(), _clock), _clock);
 
     public void Dispose() => _database.Dispose();
 }

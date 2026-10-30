@@ -1,6 +1,9 @@
-@model IReadOnlyList<Client>
+@model ClientsPageViewModel
 @{
     ViewData["Title"] = "Pacientes";
+    var isAdmin = User.IsAdmin();
+    var today = DateTime.Today;
+    var active = Model.Clients.Count(c => c.Status == ClientStatus.Ativo && !c.IsAnonymized);
 }
 
 <section data-crud data-endpoint="/Client" data-modal="#clientModal">
@@ -8,7 +11,7 @@
         <div>
             <span class="eyebrow"><i class="bi bi-people"></i> Cadastro</span>
             <h1>Pacientes</h1>
-            <p>@Model.Count @(Model.Count == 1 ? "paciente cadastrado" : "pacientes cadastrados")</p>
+            <p>@active em acompanhamento · @Model.Clients.Count no total</p>
         </div>
         <button class="btn btn-primary" type="button" data-crud-create><i class="bi bi-plus-lg me-1"></i> Novo paciente</button>
     </header>
@@ -19,33 +22,107 @@
                 <tr>
                     <th>Paciente</th>
                     <th>CPF</th>
-                    <th>Gênero</th>
+                    <th>Contato</th>
+                    <th>Referência</th>
                     <th>Idade</th>
+                    <th>Situação</th>
                     <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var c in Model)
+                @foreach (var c in Model.Clients)
                 {
+                    var age = c.AgeOn(today);
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="avatar" style="width:2rem;height:2rem;font-size:.75rem">@c.Name[..1].ToUpperInvariant()</span>
-                                <span class="cell-title">@c.Name</span>
+                                <span>
+                                    <a class="cell-title text-reset" asp-action="Details" asp-route-id="@c.Id">@c.Name</a>
+                                    @if (!string.IsNullOrEmpty(c.HealthInsurance))
+                                    {
+                                        <span class="cell-sub">@c.HealthInsurance</span>
+                                    }
+                                </span>
                             </div>
                         </td>
                         <td class="font-monospace small">@Cpf.Format(c.Cpf)</td>
-                        <td>@c.Gender</td>
-                        <td data-order="@(c.Age ?? -1)">@(c.Age?.ToString() ?? "—")</td>
+                        <td class="small">
+                            @if (!string.IsNullOrEmpty(c.Phone))
+                            {
+                                <span class="d-block text-nowrap"><i class="bi bi-whatsapp me-1 @(c.NotifyByWhatsApp ? "text-success" : "text-muted-mc")" title="@(c.NotifyByWhatsApp ? "Recebe avisos pelo WhatsApp" : "Não recebe avisos pelo WhatsApp")"></i>@Phone.Format(c.Phone)</span>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <span class="d-block text-truncate" style="max-width: 200px"><i class="bi bi-envelope me-1 @(c.NotifyByEmail ? "text-success" : "text-muted-mc")"></i>@c.Email</span>
+                            }
+                            @if (string.IsNullOrEmpty(c.Phone) && string.IsNullOrEmpty(c.Email))
+                            {
+                                <span class="text-muted-mc">—</span>
+                            }
+                        </td>
+                        <td class="small">@(c.ResponsibleProfessional?.Name ?? "—")</td>
+                        <td data-order="@(age ?? -1)">@(age?.ToString() ?? "—")</td>
+                        <td>
+                            @if (!c.IsAnonymized)
+                            {
+                                <span class="badge-soft @(c.Status switch { ClientStatus.Ativo => "success", ClientStatus.EmPausa => "warning", _ => "muted" }) mb-1">@(c.Status == ClientStatus.EmPausa ? "Em pausa" : c.Status.ToString())</span>
+                            }
+                            @if (c.IsAnonymized)
+                            {
+                                <span class="badge-soft slate" title="Anonimizado em @c.AnonymizedAt?.ToString("dd/MM/yyyy")"><i class="bi bi-incognito"></i>Anonimizado</span>
+                            }
+                            else if (c.ConsentAt is not null)
+                            {
+                                <span class="badge-soft success" title="Termo registrado em @c.ConsentAt?.ToString("dd/MM/yyyy")"><i class="bi bi-file-earmark-check"></i>Termo</span>
+                            }
+                            else
+                            {
+                                <span class="badge-soft warning"><i class="bi bi-file-earmark-x"></i>Sem termo</span>
+                            }
+                        </td>
                         <td class="table-actions">
-                            <button class="btn-icon" type="button" title="Editar" aria-label="Editar @c.Name"
-                                    data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age })">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @c.Name"
-                                    data-crud-delete data-id="@c.Id" data-name="@c.Name">
-                                <i class="bi bi-trash3"></i>
-                            </button>
+                            @if (!c.IsAnonymized)
+                            {
+                                <button class="btn-icon" type="button" title="Editar" aria-label="Editar @c.Name"
+                                        data-crud-edit data-item="@Html.ToDataJson(new { c.Id, c.Name, c.Cpf, c.Gender, c.Age, ConsentGiven = c.ConsentAt != null, Phone = Phone.Format(c.Phone), c.Email, c.NotifyByWhatsApp, c.NotifyByEmail, c.BirthDate, c.Status, c.ResponsibleProfessionalId, c.EmergencyContactName, EmergencyContactPhone = Phone.Format(c.EmergencyContactPhone), c.Address, c.HealthInsurance, c.Notes })">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            }
+                            @if (isAdmin)
+                            {
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn-icon" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Mais ações" aria-label="Mais ações para @c.Name">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><a class="dropdown-item" asp-action="Export" asp-route-id="@c.Id"><i class="bi bi-download me-2"></i>Exportar dados (LGPD)</a></li>
+                                        @if (!c.IsAnonymized)
+                                        {
+                                            <li>
+                                                <button class="dropdown-item text-danger" type="button"
+                                                        data-api-action="/Client/Anonymize/@c.Id" data-method="POST" data-confirm-text="Anonimizar"
+                                                        data-confirm="Anonimizar @c.Name? Nome, CPF e observações serão removidos de forma irreversível. O histórico de consultas e pagamentos é mantido sem identificação.">
+                                                    <i class="bi bi-incognito me-2"></i>Anonimizar
+                                                </button>
+                                            </li>
+                                        }
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <button class="dropdown-item text-danger" type="button" data-crud-delete data-id="@c.Id" data-name="@c.Name">
+                                                <i class="bi bi-trash3 me-2"></i>Excluir
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @c.Name"
+                                        data-crud-delete data-id="@c.Id" data-name="@c.Name">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            }
                         </td>
                     </tr>
                 }
@@ -55,35 +132,117 @@
 </section>
 
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <form class="modal-content" autocomplete="off">
             <div class="modal-header">
                 <h5 class="modal-title" id="clientModalTitle" data-title-create="Novo paciente" data-title-edit="Editar paciente">Novo paciente</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label" for="client-name">Nome completo</label>
-                    <input class="form-control" id="client-name" name="name" maxlength="100" required />
-                </div>
+                <div class="form-section"><i class="bi bi-person-vcard"></i> Identificação</div>
                 <div class="row g-3">
-                    <div class="col-sm-7">
+                    <div class="col-md-8">
+                        <label class="form-label" for="client-name">Nome completo</label>
+                        <input class="form-control" id="client-name" name="name" maxlength="100" required />
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label" for="client-cpf">CPF</label>
                         <input class="form-control" id="client-cpf" name="cpf" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" required />
                     </div>
-                    <div class="col-sm-5">
-                        <label class="form-label" for="client-age">Idade</label>
-                        <input class="form-control" id="client-age" name="age" type="number" min="0" max="130" />
+                    <div class="col-sm-4">
+                        <label class="form-label" for="client-birth">Nascimento</label>
+                        <input class="form-control" id="client-birth" name="birthDate" type="date" max="@today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="form-label" for="client-gender">Gênero</label>
+                        <select class="form-select" id="client-gender" name="gender" required>
+                            @foreach (var g in Genders.All)
+                            {
+                                <option value="@g">@g</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="form-label" for="client-insurance">Convênio</label>
+                        <input class="form-control" id="client-insurance" name="healthInsurance" maxlength="80" placeholder="Particular" list="insurances" />
+                        <datalist id="insurances">
+                            <option value="Particular"></option>
+                            <option value="Unimed"></option>
+                            <option value="Bradesco Saúde"></option>
+                            <option value="SulAmérica"></option>
+                            <option value="Amil"></option>
+                        </datalist>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="client-address">Endereço</label>
+                        <input class="form-control" id="client-address" name="address" maxlength="250" />
                     </div>
                 </div>
-                <div class="mt-3">
-                    <label class="form-label" for="client-gender">Gênero</label>
-                    <select class="form-select" id="client-gender" name="gender" required>
-                        @foreach (var g in Genders.All)
-                        {
-                            <option value="@g">@g</option>
-                        }
-                    </select>
+
+                <div class="form-section mt-4"><i class="bi bi-heart-pulse"></i> Acompanhamento</div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-responsible">Profissional de referência</label>
+                        <select class="form-select" id="client-responsible" name="responsibleProfessionalId">
+                            <option value="">Sem profissional de referência</option>
+                            @foreach (var p in Model.Professionals)
+                            {
+                                <option value="@p.Id">@p.Name</option>
+                            }
+                        </select>
+                        <small class="text-muted-mc">Tem acesso ao prontuário e aos documentos clínicos.</small>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="form-label d-block">Situação</span>
+                        <div class="segmented" role="radiogroup" aria-label="Situação">
+                            <input class="btn-check" type="radio" name="status" id="st-active" value="Ativo" checked data-default />
+                            <label class="btn" for="st-active">Ativo</label>
+                            <input class="btn-check" type="radio" name="status" id="st-pause" value="EmPausa" />
+                            <label class="btn" for="st-pause">Em pausa</label>
+                            <input class="btn-check" type="radio" name="status" id="st-alta" value="Alta" />
+                            <label class="btn" for="st-alta">Alta</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-emergency-name">Contato de emergência</label>
+                        <input class="form-control" id="client-emergency-name" name="emergencyContactName" maxlength="100" placeholder="Nome e parentesco" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-emergency-phone">Telefone de emergência</label>
+                        <input class="form-control" id="client-emergency-phone" name="emergencyContactPhone" type="tel" inputmode="tel" maxlength="20" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="client-notes">Observações administrativas</label>
+                        <textarea class="form-control" id="client-notes" name="notes" rows="2" maxlength="1000" placeholder="Preferências de horário, forma de pagamento... (não registre informações clínicas aqui)"></textarea>
+                    </div>
+                </div>
+                <div class="form-section mt-4"><i class="bi bi-chat-dots"></i> Contato e avisos</div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-phone">Celular (WhatsApp)</label>
+                        <input class="form-control" id="client-phone" name="phone" type="tel" inputmode="tel" placeholder="(51) 99999-8888" maxlength="20" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="client-email">E-mail</label>
+                        <input class="form-control" id="client-email" name="email" type="email" maxlength="120" placeholder="nome@exemplo.com" />
+                    </div>
+                    <div class="col-12 d-flex flex-wrap gap-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="client-notify-wa" name="notifyByWhatsApp" checked />
+                            <label class="form-check-label" for="client-notify-wa"><i class="bi bi-whatsapp me-1"></i>Lembretes e confirmações pelo WhatsApp</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="client-notify-email" name="notifyByEmail" checked />
+                            <label class="form-check-label" for="client-notify-email"><i class="bi bi-envelope me-1"></i>Por e-mail</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-check mt-3 p-3 rounded-3" style="background: var(--mc-surface-muted); padding-left: 2.25rem !important">
+                    <input class="form-check-input" type="checkbox" id="client-consent" name="consentGiven" />
+                    <label class="form-check-label" for="client-consent">
+                        Termo de consentimento para tratamento de dados assinado
+                        <span class="d-block small text-muted-mc">Exigido pela LGPD para dados de saúde (art. 11).</span>
+                    </label>
                 </div>
             </div>
             <div class="modal-footer">

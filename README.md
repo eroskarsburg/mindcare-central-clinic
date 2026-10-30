@@ -35,16 +35,26 @@
 
 | Área | O que faz |
 | --- | --- |
-| **Visão geral** | Indicadores do dia e do mês (consultas, pacientes, valores recebidos e a receber), próximas consultas e pagamentos em aberto. |
-| **Agenda** | Agendamento presencial ou por teleconsulta, com o pagamento registrado junto da consulta. |
-| **Pacientes** | Cadastro com validação de CPF (dígitos verificadores) e bloqueio de exclusão de quem tem consultas. |
-| **Financeiro** | Totais faturado, recebido e em aberto; registro de pagamentos parciais ou integrais. O status é calculado automaticamente. |
+| **Visão geral** | Agenda do dia, taxa de faltas, consultas aguardando confirmação, valores recebidos e a receber. Profissionais veem apenas os próprios atendimentos. |
+| **Agenda** | Calendário semanal/diário/mensal (FullCalendar) com arrastar para remarcar, sessões recorrentes (semanal/quinzenal), detecção de conflito por profissional e paciente, status (agendada, confirmada, realizada, falta, cancelada) e sala de teleconsulta gerada automaticamente. |
+| **Horários** | Disponibilidade semanal de cada profissional e bloqueios de agenda (férias, feriados da clínica), respeitados ao criar séries. |
+| **Pacientes** | Cadastro completo (CPF validado, nascimento, convênio, contato de emergência, endereço, situação e profissional de referência), preferências de aviso e bloqueio de exclusão de quem tem consultas. |
+| **Ficha do paciente** | Indicadores (sessões, faltas, saldo em aberto, próxima sessão), histórico de consultas e pagamentos, e atalho para conversar no WhatsApp. |
+| **Prontuário** | Evoluções clínicas **criptografadas em repouso** (ASP.NET Data Protection), vinculadas à sessão. Só o autor e o profissional de referência leem; administradores não têm acesso ao conteúdo; toda leitura é auditada. |
+| **Documentos** | Anexos em PDF, imagem ou Word com verificação do conteúdo real do arquivo. Documentos **clínicos** ficam restritos ao profissional de referência; **administrativos** ficam visíveis à equipe. |
+| **Notificações** | Confirmação de agendamento, aviso de remarcação/cancelamento e lembrete automático por **WhatsApp** (Cloud API oficial da Meta, com botões Confirmar/Cancelar) e **e-mail**. Fila com reenvio automático, link público de confirmação e avisos no sino do painel quando o paciente responde. [Guia de configuração](docs/whatsapp.md). |
+| **Financeiro** | Recebimentos em parcelas com data e forma de pagamento (Pix, cartão, dinheiro, transferência, convênio), status calculado automaticamente e **recibo em PDF** com valor por extenso. |
+| **Pacotes** | Pacotes de sessões pré-pagos por paciente, consumidos automaticamente ao agendar com "Usar pacote", com controle de sessões restantes, validade e pagamento. |
+| **Tipos de serviço** *(admin)* | Sessão individual, casal, avaliação... com duração e valor padrão que preenchem o agendamento. |
+| **Relatórios** | Faturado × recebido (12 meses), recebimentos por forma de pagamento, desempenho, ocupação e **repasse por profissional**, inadimplência, exportação para **Excel** e **recibo mensal** do paciente para o IR. |
 | **Profissionais** *(admin)* | Cadastro da equipe com criação automática do usuário de acesso. |
 | **Usuários** *(admin)* | Perfis de acesso (Administrador/Profissional), proteção contra remover o último administrador. |
 | **Perfil** | Troca de senha (com confirmação da senha atual) e edição dos dados profissionais. |
+| **Auditoria** *(admin)* | Registro de quem criou, alterou, excluiu, exportou ou anonimizou dados, e de todos os logins. |
+| **LGPD** | Termo de consentimento por paciente, exportação dos dados do titular (JSON) e anonimização que preserva o histórico. |
 | **Interface** | Tema claro/escuro, layout responsivo com menu lateral recolhível, tabelas com busca, ordenação e paginação. |
 
-**Segurança:** autenticação por cookie com políticas de autorização por perfil, senhas com hash PBKDF2 (formato do ASP.NET Core Identity; senhas legadas em texto puro são convertidas no primeiro login), proteção CSRF em todas as requisições de escrita, consultas parametrizadas via EF Core e nenhum segredo versionado.
+**Segurança:** autenticação por cookie com políticas de autorização por perfil, senha temporária aleatória com troca obrigatória no primeiro acesso, bloqueio de conta após tentativas erradas e limite de requisições no login, senhas com hash PBKDF2 (formato do ASP.NET Core Identity; senhas legadas em texto puro são convertidas no primeiro login), proteção CSRF em todas as requisições de escrita, consultas parametrizadas via EF Core e nenhum segredo versionado.
 
 ## Stack
 
@@ -54,6 +64,7 @@
 | Dados | Entity Framework Core 10 · provider oficial `MySql.EntityFrameworkCore` · MySQL 8.4 |
 | Front-end | Razor · Bootstrap 5.3 · Bootstrap Icons · DataTables 3 · JavaScript sem jQuery |
 | Testes | xUnit v3 · Microsoft.Testing.Platform · SQLite em memória |
+| Documentos | QuestPDF (recibos) · ClosedXML (Excel) · Chart.js (gráficos) · MailKit (e-mail) |
 | Infra | Docker (multi-stage) · Docker Compose · GitHub Actions · Dependabot |
 
 ## Começando
@@ -100,8 +111,17 @@ Toda a configuração sensível vem do ambiente. O `appsettings.json` não cont�
 | `ConnectionStrings__MindCare` | ✅ | String de conexão MySQL. No Docker Compose é montada a partir das variáveis `MYSQL_*`. |
 | `Seed__AdminUsername` / `Seed__AdminPassword` | ✅ na 1ª execução | Administrador criado quando ainda não existe nenhum. |
 | `Seed__DemoData` | | `true` popula uma base vazia com dados fictícios. Padrão: ligado só em `Development`. |
+| `Security__MaxFailedLoginAttempts` / `Security__LockoutMinutes` | | Bloqueio de conta após tentativas de login erradas. Padrão: 5 tentativas, 15 minutos. |
+| `Teleconsult__BaseUrl` | | Servidor de videochamada das teleconsultas. Padrão: `https://meet.jit.si`. |
+| `Notifications__PublicBaseUrl` | Produção | Endereço público usado nos links enviados ao paciente (ex.: `https://agenda.suaclinica.com.br`). |
+| `Notifications__ReminderHoursBefore` | | Antecedência do lembrete automático. Padrão: `24`. |
+| `WhatsApp__Mode` | | `Disabled`, `Simulated` ou `Live`. Veja o [guia do WhatsApp](docs/whatsapp.md) para `PhoneNumberId`, `AccessToken`, `AppSecret` e `VerifyToken`. |
+| `Email__Enabled` / `Email__Host` / `Email__Port` / `Email__Username` / `Email__Password` / `Email__FromAddress` | | Envio de e-mails por SMTP. `Email__PickupDirectory` grava `.eml` em disco (desenvolvimento). |
+| `DataProtection__KeysPath` | Produção | Pasta das chaves que cifram o prontuário e o cookie de login. **Precisa ser persistente** (o volume `app-data` no Docker). Padrão: `App_Data/keys`. |
+| `Storage__Path` / `Storage__MaxUploadMegabytes` | | Pasta dos documentos dos pacientes e tamanho máximo por arquivo. Padrão: `App_Data/storage`, 10 MB. |
 | `Database__ApplyMigrationsOnStartup` | | Aplica migrations ao iniciar. Padrão: `true`. |
 | `Clinic__Name` / `Clinic__Tagline` | | Nome e slogan exibidos na interface. |
+| `Clinic__LegalName` / `Clinic__Cnpj` / `Clinic__Address` / `Clinic__City` | | Dados impressos nos recibos em PDF. |
 | `ASPNETCORE_ENVIRONMENT` | | `Development`, `Staging` ou `Production`. |
 | `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD` | Docker | Credenciais do container MySQL. |
 | `APP_PORT`, `MYSQL_PORT` | | Portas publicadas pelo Compose (padrão `8080` e `3306`). |
@@ -163,6 +183,7 @@ flowchart LR
     EF --> DB[(MySQL 8.4)]
 ```
 
+- **Backups:** além do banco (volume `mysql-data`), faça backup do volume `app-data`. Ele contém as chaves de criptografia do prontuário: sem elas, as evoluções não podem ser lidas.
 - **Páginas** são renderizadas no servidor. As **ações de escrita** são endpoints JSON consumidos por um único módulo JavaScript genérico de CRUD (`wwwroot/js/app.js`).
 - Erros de regra de negócio (`BusinessException`) viram respostas `400 { message }`, exibidas como toast.
 - Builds rodam com `TreatWarningsAsErrors` e os analisadores recomendados do .NET.
@@ -190,7 +211,7 @@ O [Dependabot](.github/dependabot.yml) abre PRs semanais (segunda-feira) para:
 
 - **NuGet**, com grupos para EF Core, testes e demais pacotes;
 - **SDK do .NET** (`global.json`);
-- **npm** (Bootstrap, Bootstrap Icons, DataTables);
+- **npm** (Bootstrap, Bootstrap Icons, DataTables, FullCalendar, Chart.js);
 - **Docker** (imagens do `Dockerfile` e do `docker-compose.yml`);
 - **GitHub Actions**.
 
@@ -203,3 +224,5 @@ Contribuições são bem-vindas! Veja o [guia de contribuição](CONTRIBUTING.md
 ## Licença
 
 Distribuído sob a licença [MIT](LICENSE).
+
+Os recibos usam o [QuestPDF](https://www.questpdf.com/license/) na licença **Community**, gratuita para organizações com receita bruta anual inferior a US$ 1 milhão. Acima disso, é necessária uma licença comercial.

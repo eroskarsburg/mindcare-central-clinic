@@ -11,6 +11,17 @@ public sealed class Payment
     public DateTime? PaidDate { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pendente;
 
+    /// <summary>Recebimentos (parcelas). <see cref="PaidPrice"/> é sempre a soma deles.</summary>
+    public ICollection<PaymentEntry> Entries { get; } = [];
+
+    /// <summary>Recalcula o valor pago e a data do último recebimento a partir das parcelas.</summary>
+    public void SyncFromEntries(DateTime today)
+    {
+        PaidPrice = Entries.Sum(e => e.Amount);
+        PaidDate = Entries.Count == 0 ? null : Entries.Max(e => e.PaidAt).Date;
+        Reconcile(today);
+    }
+
     /// <summary>Valor que ainda falta receber.</summary>
     public decimal Outstanding => Math.Max(Price - PaidPrice, 0);
 

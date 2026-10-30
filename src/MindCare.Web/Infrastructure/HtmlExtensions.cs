@@ -32,6 +32,24 @@ public static class HtmlExtensions
         _ => "bi-hourglass-split",
     };
 
+    public static string StatusClass(this AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.Confirmada => "slate",
+        AppointmentStatus.Realizada => "success",
+        AppointmentStatus.Faltou => "danger",
+        AppointmentStatus.Cancelada => "muted",
+        _ => "neutral",
+    };
+
+    public static string StatusIcon(this AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.Confirmada => "bi-check2-circle",
+        AppointmentStatus.Realizada => "bi-check-all",
+        AppointmentStatus.Faltou => "bi-person-x",
+        AppointmentStatus.Cancelada => "bi-x-circle",
+        _ => "bi-clock",
+    };
+
     public static string ModalityIcon(this AppointmentModality modality) =>
         modality == AppointmentModality.Teleconsulta ? "bi-camera-video" : "bi-door-open";
 
