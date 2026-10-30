@@ -1,0 +1,78 @@
+@model LoginInput
+@inject IOptions<ClinicOptions> Clinic
+@{
+    ViewData["Title"] = "Entrar";
+    ViewData["Bare"] = true;
+}
+
+<div class="auth">
+    <section class="auth-art" aria-hidden="true">
+        <div class="brand p-0">
+            <span class="brand-mark"><i class="bi bi-flower1"></i></span>
+            <span>
+                <span class="brand-name d-block">@Clinic.Value.Name</span>
+                <span class="brand-tagline">@Clinic.Value.Tagline</span>
+            </span>
+        </div>
+        <img src="~/imgs/therapy-session.png" alt="" />
+        <blockquote>
+            “Cuidar da mente começa por organizar o cuidado.”
+            <footer class="mt-2 fs-6 fw-normal opacity-75" style="font-family: var(--bs-font-sans-serif)">Agenda, pacientes e financeiro em um só lugar.</footer>
+        </blockquote>
+    </section>
+
+    <section class="auth-form">
+        <div class="inner">
+            <div class="d-lg-none brand p-0 mb-4" style="color: var(--mc-text)">
+                <span class="brand-mark"><i class="bi bi-flower1"></i></span>
+                <span class="brand-name">@Clinic.Value.Name</span>
+            </div>
+
+            <span class="eyebrow"><i class="bi bi-stars"></i> Bem-vindo(a) de volta</span>
+            <h1 class="mb-1">Entrar no painel</h1>
+            <p class="text-muted-mc mb-4">Use as credenciais fornecidas pela administração da clínica.</p>
+
+            <form asp-action="Index" method="post" novalidate>
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <div asp-validation-summary="ModelOnly" class="m-0 p-0 list-unstyled"></div>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input asp-for="Username" class="form-control" autocomplete="username" autofocus />
+                    </div>
+                    <span asp-validation-for="Username" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <button class="btn btn-soft" type="button" data-password-toggle="#Password" aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    Entrar <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+            </form>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <small class="text-muted-mc">© @DateTime.Now.Year @Clinic.Value.Name</small>
+                <button class="btn btn-link btn-sm text-muted-mc" type="button" data-theme-toggle aria-label="Alternar tema">
+                    <i class="bi bi-moon-stars" data-theme-icon></i>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>

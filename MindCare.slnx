@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MindCare.Application/MindCare.Application.csproj" />
+    <Project Path="src/MindCare.Web/MindCare.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MindCare.Application.Tests/MindCare.Application.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,96 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "Meu perfil";
+    var prof = Model.Professional;
+}
+
+<header class="page-header">
+    <div>
+        <span class="eyebrow"><i class="bi bi-person"></i> Conta</span>
+        <h1>Meu perfil</h1>
+    </div>
+</header>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="mc-card mc-card-body pt-4 text-center h-100">
+            <span class="avatar avatar-lg mx-auto mb-3">@User.GetInitials()</span>
+            <h2 class="h4 mb-1">@User.GetDisplayName()</h2>
+            <p class="text-muted-mc mb-3">@Model.User.Username</p>
+            <span class="badge-soft @(Model.User.AccessLevel == AccessLevel.Administrador ? "warning" : "slate")">
+                <i class="bi @(Model.User.AccessLevel == AccessLevel.Administrador ? "bi-star-fill" : "bi-person")"></i>@Model.User.AccessLevel
+            </span>
+            @if (prof is not null)
+            {
+                <hr class="my-4" />
+                <dl class="text-start small mb-0">
+                    <dt class="text-muted-mc fw-normal">Especialidade</dt>
+                    <dd class="fw-semibold">@prof.Speciality</dd>
+                    <dt class="text-muted-mc fw-normal">CPF</dt>
+                    <dd class="fw-semibold mb-0">@Cpf.Format(prof.Cpf)</dd>
+                </dl>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-8 d-flex flex-column gap-4">
+        <div class="mc-card">
+            <div class="mc-card-header"><h2><i class="bi bi-key me-2 text-muted-mc"></i>Alterar senha</h2></div>
+            <form class="mc-card-body" data-api-form data-method="PUT" data-reset action="/Profile/Password" autocomplete="off">
+                <input type="text" name="username-hint" value="@Model.User.Username" autocomplete="username" hidden disabled />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="current-password">Senha atual</label>
+                        <input class="form-control" id="current-password" name="currentPassword" type="password" autocomplete="current-password" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="new-password">Nova senha</label>
+                        <input class="form-control" id="new-password" name="newPassword" type="password" minlength="8" autocomplete="new-password" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="confirm-password">Confirmar nova senha</label>
+                        <input class="form-control" id="confirm-password" name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required />
+                    </div>
+                </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary">Atualizar senha</button>
+                </div>
+            </form>
+        </div>
+
+        @if (prof is not null)
+        {
+            <div class="mc-card">
+                <div class="mc-card-header"><h2><i class="bi bi-person-vcard me-2 text-muted-mc"></i>Dados profissionais</h2></div>
+                <form class="mc-card-body" data-api-form data-method="PUT" action="/Profile/Professional" autocomplete="off">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="prof-name">Nome completo</label>
+                            <input class="form-control" id="prof-name" name="name" value="@prof.Name" maxlength="100" required />
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label" for="prof-cpf">CPF</label>
+                            <input class="form-control" id="prof-cpf" name="cpf" value="@Cpf.Format(prof.Cpf)" data-mask="cpf" inputmode="numeric" required />
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label" for="prof-gender">Gênero</label>
+                            <select class="form-select" id="prof-gender" name="gender" required>
+                                @foreach (var g in Genders.All)
+                                {
+                                    <option value="@g" selected="@(g == prof.Gender)">@g</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="prof-speciality">Especialidade</label>
+                            <input class="form-control" id="prof-speciality" name="speciality" value="@prof.Speciality" maxlength="60" required />
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">Salvar dados</button>
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+</div>

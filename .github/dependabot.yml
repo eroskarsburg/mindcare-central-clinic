@@ -1,0 +1,98 @@
+# Atualizações automáticas de dependências.
+# Docs: https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+
+updates:
+  # Pacotes NuGet (versões centralizadas em Directory.Packages.props)
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    labels: [dependencies, nuget]
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      ef-core:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore"
+          - "MySql.EntityFrameworkCore"
+      testing:
+        patterns:
+          - "xunit*"
+      others:
+        patterns:
+          - "*"
+        update-types: [minor, patch]
+
+  # SDK do .NET fixado no global.json
+  - package-ecosystem: dotnet-sdk
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, dotnet]
+    commit-message:
+      prefix: build
+    ignore:
+      # Saltos de versão principal do SDK são feitos manualmente, junto com o TargetFramework.
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
+
+  # Bibliotecas front-end (Bootstrap, Bootstrap Icons, DataTables)
+  - package-ecosystem: npm
+    directory: "/src/MindCare.Web"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, frontend]
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      datatables:
+        patterns:
+          - "datatables.net*"
+      frontend:
+        patterns:
+          - "*"
+        update-types: [minor, patch]
+
+  # Imagens base do Dockerfile (node, dotnet/sdk, dotnet/aspnet)
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, docker]
+    commit-message:
+      prefix: build
+
+  # Imagens do docker-compose.yml (mysql)
+  - package-ecosystem: docker-compose
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, docker]
+    commit-message:
+      prefix: build
+
+  # Actions usadas nos workflows
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns:
+          - "*"

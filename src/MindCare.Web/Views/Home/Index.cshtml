@@ -1,0 +1,125 @@
+@model MindCare.Application.Services.DashboardData
+@{
+    ViewData["Title"] = "Visão geral";
+    var s = Model.Summary;
+    var hour = DateTime.Now.Hour;
+    var greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+    var firstName = User.GetDisplayName().Split(' ')[0];
+}
+
+<section class="welcome mb-4">
+    <div>
+        <span class="eyebrow"><i class="bi bi-sun"></i> @DateTime.Now.ToString("dddd, dd 'de' MMMM")</span>
+        <h1>@greeting, @firstName.</h1>
+        <p class="text-muted-mc mb-3">
+            @if (s.AppointmentsToday == 0)
+            {
+                <text>Nenhuma consulta para hoje — um bom momento para organizar a semana.</text>
+            }
+            else
+            {
+                <text>Você tem <strong>@s.AppointmentsToday @(s.AppointmentsToday == 1 ? "consulta" : "consultas")</strong> hoje.</text>
+            }
+        </p>
+        <a class="btn btn-primary" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar-plus me-1"></i> Ver agenda</a>
+    </div>
+    <img src="~/imgs/therapy-session.png" alt="" aria-hidden="true" />
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="mc-card kpi tone-taupe">
+            <div class="kpi-icon"><i class="bi bi-calendar-week"></i></div>
+            <div class="kpi-value">@s.AppointmentsNext7Days</div>
+            <div class="kpi-label">Consultas nos próximos 7 dias</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="mc-card kpi tone-slate">
+            <div class="kpi-icon"><i class="bi bi-people"></i></div>
+            <div class="kpi-value">@s.TotalClients</div>
+            <div class="kpi-label">Pacientes cadastrados</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="mc-card kpi tone-sage">
+            <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="kpi-value">@s.ReceivedThisMonth.ToString("C0")</div>
+            <div class="kpi-label">Recebido em @DateTime.Now.ToString("MMMM")</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="mc-card kpi tone-blush">
+            <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="kpi-value">@s.OutstandingAmount.ToString("C0")</div>
+            <div class="kpi-label">A receber</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="mc-card h-100">
+            <div class="mc-card-header">
+                <h2>Próximas consultas</h2>
+                <a class="btn btn-soft btn-sm" asp-controller="Appointment" asp-action="Index">Agenda completa</a>
+            </div>
+            <div class="mc-card-body">
+                @if (Model.Upcoming.Count == 0)
+                {
+                    <div class="empty-state"><i class="bi bi-calendar2-heart"></i>Nenhuma consulta agendada.</div>
+                }
+                @foreach (var a in Model.Upcoming)
+                {
+                    <div class="agenda-item">
+                        <div class="agenda-date">
+                            <strong>@a.ScheduledAt.ToString("dd")</strong>
+                            <span>@a.ScheduledAt.ToString("MMM").TrimEnd('.')</span>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate">@a.Client?.Name</div>
+                            <small class="text-muted-mc">
+                                <i class="bi bi-clock me-1"></i>@a.ScheduledAt.ToString("ddd, HH:mm")
+                            </small>
+                        </div>
+                        <span class="badge-soft slate"><i class="bi @a.Modality.ModalityIcon()"></i>@a.Modality</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="mc-card h-100">
+            <div class="mc-card-header">
+                <h2>Pagamentos em aberto</h2>
+                <a class="btn btn-soft btn-sm" asp-controller="Payment" asp-action="Index">Financeiro</a>
+            </div>
+            <div class="mc-card-body">
+                @if (Model.OpenPayments.Count == 0)
+                {
+                    <div class="empty-state"><i class="bi bi-emoji-smile"></i>Tudo em dia por aqui!</div>
+                }
+                @foreach (var p in Model.OpenPayments)
+                {
+                    var progress = p.Price == 0 ? 0 : (int)(p.PaidPrice / p.Price * 100);
+                    <div class="agenda-item d-block">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                            <div class="min-w-0">
+                                <div class="fw-semibold text-truncate">@p.Appointment?.Client?.Name</div>
+                                <small class="text-muted-mc">Consulta de @p.Appointment?.ScheduledAt.ToString("dd/MM")</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-semibold">@p.Outstanding.ToString("C")</div>
+                                <partial name="_PaymentStatus" model="p.Status" />
+                            </div>
+                        </div>
+                        <div class="progress progress-thin" role="progressbar" aria-label="Percentual pago" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" style="width: @progress%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

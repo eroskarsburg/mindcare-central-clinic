@@ -1,0 +1,107 @@
+@model IReadOnlyList<User>
+@{
+    ViewData["Title"] = "Usuários";
+    var currentId = User.GetUserId();
+}
+
+<section data-crud data-endpoint="/User" data-modal="#userModal">
+    <header class="page-header">
+        <div>
+            <span class="eyebrow"><i class="bi bi-shield-lock"></i> Acesso</span>
+            <h1>Usuários</h1>
+            <p>Gerencie quem acessa o painel e com qual nível de permissão.</p>
+        </div>
+        <button class="btn btn-primary" type="button" data-crud-create><i class="bi bi-plus-lg me-1"></i> Novo usuário</button>
+    </header>
+
+    <div class="mc-card mc-card-body pt-4">
+        <table class="table table-hover" data-table>
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nível de acesso</th>
+                    <th>Profissional vinculado</th>
+                    <th>Último acesso</th>
+                    <th class="no-sort table-actions"><span class="visually-hidden">Ações</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="cell-title">@u.Username</span>
+                            @if (u.Id == currentId)
+                            {
+                                <span class="badge-soft neutral ms-1">você</span>
+                            }
+                        </td>
+                        <td>
+                            @if (u.AccessLevel == AccessLevel.Administrador)
+                            {
+                                <span class="badge-soft warning"><i class="bi bi-star-fill"></i>Administrador</span>
+                            }
+                            else
+                            {
+                                <span class="badge-soft slate"><i class="bi bi-person"></i>Profissional</span>
+                            }
+                        </td>
+                        <td>@(u.Professional?.Name ?? "—")</td>
+                        <td data-order="@u.LastActivity?.ToString("yyyyMMddHHmm")">@(u.LastActivity?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca acessou")</td>
+                        <td class="table-actions">
+                            <button class="btn-icon" type="button" title="Editar" aria-label="Editar @u.Username"
+                                    data-crud-edit data-item="@Html.ToDataJson(new { u.Id, u.Username, u.AccessLevel })">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            @if (u.Id != currentId)
+                            {
+                                <button class="btn-icon danger" type="button" title="Excluir" aria-label="Excluir @u.Username"
+                                        data-crud-delete data-id="@u.Id" data-name="o usuário @u.Username">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" autocomplete="off">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalTitle" data-title-create="Novo usuário" data-title-edit="Editar usuário">Novo usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label" for="user-username">Usuário</label>
+                    <input class="form-control" id="user-username" name="username" minlength="3" maxlength="50" required autocomplete="off" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="user-password">
+                        Senha
+                        <span class="text-muted-mc fw-normal" data-edit-only>(em branco mantém a atual)</span>
+                    </label>
+                    <div class="input-group">
+                        <input class="form-control" id="user-password" name="password" type="password" minlength="8" maxlength="100" autocomplete="new-password" data-required-on-create />
+                        <button class="btn btn-soft" type="button" data-password-toggle="#user-password" aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <span class="form-label d-block">Nível de acesso</span>
+                <div class="segmented" role="radiogroup" aria-label="Nível de acesso">
+                    <input class="btn-check" type="radio" name="accessLevel" id="level-prof" value="Profissional" checked data-default />
+                    <label class="btn" for="level-prof"><i class="bi bi-person me-1"></i> Profissional</label>
+                    <input class="btn-check" type="radio" name="accessLevel" id="level-admin" value="Administrador" />
+                    <label class="btn" for="level-admin"><i class="bi bi-star me-1"></i> Administrador</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
