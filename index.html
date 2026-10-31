@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MindCare — A clínica cuida de gente. A gente cuida do resto.</title>
+<meta name="description" content="Agenda, WhatsApp, prontuário criptografado, Pix e financeiro em um só painel para clínicas de saúde mental. Menos faltas, menos planilhas, mais presença.">
+<meta name="theme-color" content="#f7f3ee">
+<meta property="og:title" content="MindCare — gestão para clínicas de saúde mental">
+<meta property="og:description" content="Menos faltas, menos planilhas, mais presença. Agenda, WhatsApp, prontuário seguro, Pix e financeiro.">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --linen:#f7f3ee; --sand:#efe6db; --sand2:#e3d6c6; --taupe:#a9927d; --mocha:#7d6049; --espresso:#3d2e24;
+  --slate:#2f3e46; --slate-deep:#232f35; --blush:#f2a7a0; --sage:#7f9c7a; --honey:#d4a24c; --clay:#c0645a;
+  --bg:var(--linen); --surface:#fff; --muted-surface:#faf7f3; --border:#e8ddd0; --text:#2e2723; --text-2:#6f6258;
+  --primary:var(--mocha); --primary-ink:#fff; --soft:#f1e8de; --hero-a:#f2a7a033; --hero-b:#7f9c7a2e;
+  --shadow:0 1px 2px rgba(61,46,36,.05),0 18px 40px -20px rgba(61,46,36,.28);
+  --r:1.5rem; --r-sm:.9rem;
+}
+:root[data-theme="dark"]{
+  --bg:#1b2226; --surface:#232c31; --muted-surface:#283238; --border:#34414a; --text:#ede5dc; --text-2:#b3a99f;
+  --primary:#c8ab8f; --primary-ink:#1b2226; --soft:rgba(200,171,143,.14); --hero-a:#f2a7a01f; --hero-b:#7f9c7a22;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 20px 44px -20px rgba(0,0,0,.7);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2226; --surface:#232c31; --muted-surface:#283238; --border:#34414a; --text:#ede5dc; --text-2:#b3a99f;
+    --primary:#c8ab8f; --primary-ink:#1b2226; --soft:rgba(200,171,143,.14); --hero-a:#f2a7a01f; --hero-b:#7f9c7a22;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 20px 44px -20px rgba(0,0,0,.7);
+  }
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:1.0625rem;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.1;letter-spacing:-.02em}
+h1{font-size:clamp(2.3rem,4.6vw,3.9rem)}
+h2{font-size:clamp(2rem,4.4vw,3.2rem)}
+h3{font-size:1.35rem;letter-spacing:-.01em}
+em{font-style:italic;color:var(--clay)}
+a{color:inherit}
+.wrap{width:min(1160px,100% - 2rem);margin-inline:auto}
+section{padding:clamp(4rem,9vw,7rem) 0}
+.eyebrow{display:inline-flex;gap:.5rem;align-items:center;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem}
+.eyebrow::before{content:"";width:1.6rem;height:2px;background:var(--blush);border-radius:2px}
+.lead{color:var(--text-2);font-size:1.15rem;max-width:44rem;margin-top:1rem}
+.btn{display:inline-flex;align-items:center;gap:.55rem;padding:.9rem 1.5rem;border-radius:999px;font-weight:600;text-decoration:none;border:1.5px solid transparent;cursor:pointer;font:inherit;font-weight:600;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:var(--primary);color:var(--primary-ink);box-shadow:0 10px 24px -10px var(--primary)}
+.btn-ghost{border-color:var(--border);background:var(--surface);color:var(--text)}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--blush);outline-offset:3px}
+
+/* nav */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid transparent;transition:border-color .2s}
+header.stuck{border-color:var(--border)}
+nav{display:flex;align-items:center;justify-content:space-between;height:4.2rem;gap:1rem}
+.logo{display:flex;align-items:center;gap:.6rem;font-family:"Fraunces",serif;font-weight:600;font-size:1.35rem;text-decoration:none}
+.logo svg{width:2rem;height:2rem}
+.links{display:flex;gap:1.6rem;align-items:center;font-size:.95rem;font-weight:500}
+.links a{text-decoration:none;color:var(--text-2)}
+.links a:hover{color:var(--text)}
+.links a.btn{color:var(--primary-ink);white-space:nowrap;padding:.6rem 1.2rem;font-size:.92rem}
+.theme{background:none;border:1px solid var(--border);color:var(--text);width:2.4rem;height:2.4rem;border-radius:50%;cursor:pointer;font-size:1rem}
+@media(max-width:860px){.links a:not(.btn){display:none}}
+
+/* hero */
+.hero{position:relative;padding-top:clamp(3rem,7vw,6rem);overflow:hidden}
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;filter:blur(70px);z-index:-1;animation:float 14s ease-in-out infinite}
+.hero::before{width:34rem;height:34rem;background:var(--hero-a);top:-8rem;left:-10rem}
+.hero::after{width:30rem;height:30rem;background:var(--hero-b);right:-8rem;top:6rem;animation-delay:-7s}
+@keyframes float{50%{transform:translate(30px,24px) scale(1.06)}}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:2.5rem;align-items:center}
+@media(max-width:940px){.hero-grid{grid-template-columns:1fr}}
+.hero p.lead{font-size:1.25rem}
+.cta-row{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem}
+.trust{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;margin-top:2rem;font-size:.9rem;color:var(--text-2)}
+.trust span::before{content:"✓ ";color:var(--sage);font-weight:700}
+.squiggle{background:linear-gradient(transparent 62%,color-mix(in srgb,var(--blush) 55%,transparent) 62% 92%,transparent 92%)}
+
+/* mock dashboard */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.kpi{background:var(--muted-surface);border-radius:var(--r-sm);padding:.8rem}
+.kpi small{display:block;color:var(--text-2);font-size:.72rem}
+.kpi b{font-family:"Fraunces",serif;font-size:1.5rem}
+.kpi b.up{color:var(--sage)}
+.pill{font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:999px;background:var(--soft);color:var(--primary)}
+.pill.ok{background:#7f9c7a26;color:#4f7048}
+:root[data-theme="dark"] .pill.ok{color:#a8c7a2}
+.hero-vis{display:grid;grid-template-columns:1.25fr 1fr;grid-template-rows:auto auto;gap:1rem;align-items:stretch}
+.hv{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:1.2rem}
+.hv-day{grid-row:1 / span 2;grid-column:1}
+.hv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;margin-bottom:1rem}
+.hv-head small{color:var(--text-2);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.hv-head h4{font-family:"Fraunces",serif;font-size:1.2rem;line-height:1.2}
+.tl{list-style:none;padding:0;display:grid;gap:.9rem;position:relative}
+.tl::before{content:"";position:absolute;left:3.55rem;top:.6rem;bottom:.6rem;width:2px;background:var(--border)}
+.tl li{display:grid;grid-template-columns:3rem 1fr auto;gap:1.2rem;align-items:center;font-size:.9rem;position:relative}
+.tl li::before{content:"";position:absolute;left:3.2rem;width:.8rem;height:.8rem;border-radius:50%;background:var(--taupe);border:2px solid var(--surface)}
+.tl li.ok::before{background:var(--sage)}.tl li.wait::before{background:var(--honey)}.tl li.live::before{background:var(--blush)}
+.tl time{font-weight:700;color:var(--text-2)}
+.tl li>div{padding-left:.4rem}
+.tl b{display:block;line-height:1.25}.tl small{color:var(--text-2);font-size:.78rem}
+.hv-wa,.hv-pix{display:flex;gap:.9rem;align-items:center;font-size:.9rem}
+.hv-wa b,.hv-pix b{display:block;line-height:1.25}.hv-wa small,.hv-pix small{color:var(--text-2);font-size:.78rem}
+.hv-ico{flex:none;width:2.8rem;height:2.8rem;border-radius:1rem;display:grid;place-items:center;font-size:1.3rem}
+.hv-ico.ic-wa{background:#7f9c7a33}.hv-ico.ic-pix{background:#d4a24c33}
+@media(max-width:600px){.hero-vis{grid-template-columns:1fr}.hv-day{grid-row:auto}.tl li{grid-template-columns:2.8rem 1fr;}.tl li .pill{display:none}.tl::before{left:3.3rem}.tl li::before{left:2.95rem}}
+
+/* pain marquee */
+.pains{background:var(--slate);color:#e9e2d9;padding:1.1rem 0;overflow:hidden;white-space:nowrap}
+.pains div{display:inline-flex;gap:3rem;animation:marq 38s linear infinite;padding-left:3rem}
+.pains span{font-family:"Fraunces",serif;font-style:italic;font-size:1.15rem}
+.pains span::after{content:"✦";color:var(--blush);margin-left:3rem;font-style:normal}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:1rem;margin-top:3rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.7rem;box-shadow:var(--shadow);transition:transform .25s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-4px)}
+.card p{color:var(--text-2);margin-top:.6rem;font-size:.98rem}
+.ico{width:2.9rem;height:2.9rem;border-radius:1rem;display:grid;place-items:center;font-size:1.4rem;background:var(--soft);margin-bottom:1rem}
+.c-a{grid-column:span 4}.c-b{grid-column:span 2}.c-c{grid-column:span 2}.c-d{grid-column:span 2}.c-e{grid-column:span 2}.c-f{grid-column:span 3}.c-g{grid-column:span 3}
+.card.dark{background:var(--slate);color:#efe8df;border-color:transparent}
+.card.dark p{color:#c9d1d4}.card.dark .ico{background:rgba(242,167,160,.18)}
+.tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.tags span{font-size:.78rem;padding:.25rem .65rem;border-radius:999px;background:var(--soft);color:var(--primary);font-weight:600}
+.card.dark .tags span{background:rgba(255,255,255,.1);color:#efe8df}
+@media(max-width:900px){.bento{grid-template-columns:1fr 1fr}.bento .card{grid-column:span 2!important}.c-b,.c-c,.c-d,.c-e{grid-column:span 1!important}}
+@media(max-width:600px){.bento{grid-template-columns:1fr}.bento .card{grid-column:span 1!important}}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin-top:1.2rem}
+.week div{height:5.5rem;background:var(--muted-surface);border-radius:.6rem;position:relative}
+.week i{position:absolute;left:.25rem;right:.25rem;border-radius:.4rem;font-size:0}
+.week i:nth-child(1){top:.3rem;height:1.3rem;background:var(--blush)}
+.week i:nth-child(2){top:2rem;height:1.6rem;background:var(--sage)}
+.week i:nth-child(3){top:4rem;height:1.2rem;background:var(--honey)}
+
+/* whatsapp */
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}}
+.wa{background:var(--slate-deep);color:#efe8df;border-radius:calc(var(--r)*1.6);padding:clamp(2rem,5vw,4rem);position:relative;overflow:hidden}
+.wa::before{content:"";position:absolute;width:30rem;height:30rem;right:-8rem;top:-10rem;background:radial-gradient(closest-side,rgba(242,167,160,.22),transparent)}
+.wa>*{position:relative}
+.wa .eyebrow{color:var(--blush)}
+.wa .lead{color:#c9d1d4}
+.wa h2 em{color:var(--blush)}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2.5rem;counter-reset:s}
+@media(max-width:860px){.flow{grid-template-columns:1fr}}
+.stepc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:1.4rem;display:flex;flex-direction:column;gap:.8rem}
+.stepc .when{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blush)}
+.stepc h3{font-size:1.2rem}
+.stepc p{color:#c9d1d4;font-size:.95rem}
+.bub{background:#fff;color:#2e2723;border-radius:.2rem 1rem 1rem 1rem;padding:.7rem .9rem;font-size:.86rem;box-shadow:0 1px 1px rgba(0,0,0,.15);margin-top:auto}
+.bub small{display:block;text-align:right;opacity:.5;font-size:.68rem}
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.2rem}
+@media(max-width:860px){.sim{grid-template-columns:1fr}}
+.side{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:1.4rem;min-height:21rem;display:flex;flex-direction:column;gap:.6rem}
+.side h4{font-family:"Fraunces",serif;font-size:1.05rem;display:flex;justify-content:space-between;align-items:center}
+.side h4 span{font-family:"Plus Jakarta Sans",sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fabb0}
+.wmsg{max-width:86%;padding:.6rem .8rem;border-radius:.2rem 1rem 1rem 1rem;background:#fff;color:#2e2723;font-size:.88rem;animation:pop .35s both}
+.wmsg.me{align-self:flex-end;background:#d9f0d3;border-radius:1rem .2rem 1rem 1rem}
+.wmsg small{display:block;text-align:right;opacity:.5;font-size:.68rem}
+.wopts{display:flex;gap:.4rem;margin-top:.5rem}
+.wopts button{flex:1;border:0;background:#f1ebe4;border-radius:.6rem;padding:.55rem;font:inherit;font-weight:700;font-size:.85rem;color:#2f6f9f;cursor:pointer}
+.wopts button:hover{background:#e6ded4}
+.wopts button:disabled{opacity:.5;cursor:default}
+.slotw{display:grid;grid-template-columns:3rem 1fr auto;gap:.7rem;align-items:center;padding:.7rem .9rem;border-radius:var(--r-sm);background:rgba(255,255,255,.07);border-left:4px solid var(--honey);font-size:.9rem;transition:border-color .4s}
+.slotw.ok{border-color:var(--sage)}.slotw.no{border-color:var(--clay)}
+.slotw time{font-weight:700;color:#b9c4c8}
+.badge{font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;background:rgba(212,162,76,.2);color:#e6c27f}
+.slotw.ok .badge{background:rgba(127,156,122,.25);color:#b5d3af}
+.slotw.no .badge{background:rgba(192,100,90,.25);color:#f0a79f}
+.bell{background:rgba(242,167,160,.12);border-radius:.8rem;padding:.7rem .9rem;font-size:.88rem;display:flex;gap:.6rem;animation:pop .4s both}
+.bellhint{color:#9fabb0;font-size:.85rem;margin:auto;text-align:center}
+.simbtns{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem;align-items:center}
+.simbtns .btn{background:var(--blush);color:#2f3e46;border:0}
+.simbtns .btn.alt{background:transparent;color:#efe8df;border:1.5px solid rgba(255,255,255,.25)}
+.simbtns small{color:#9fabb0}
+
+
+/* calc */
+.calc{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r)*1.4);box-shadow:var(--shadow);display:grid;grid-template-columns:1.1fr .9fr;overflow:hidden}
+@media(max-width:860px){.calc{grid-template-columns:1fr}}
+.calc form{padding:clamp(1.5rem,4vw,2.6rem);display:grid;gap:1.3rem}
+label{display:flex;justify-content:space-between;font-weight:600;font-size:.95rem;margin-bottom:.4rem}
+label output{color:var(--primary);font-family:"Fraunces",serif;font-size:1.15rem}
+input[type=range]{width:100%;accent-color:var(--clay);height:1.6rem}
+.result{background:var(--slate);color:#efe8df;padding:clamp(1.5rem,4vw,2.6rem);display:flex;flex-direction:column;justify-content:center;gap:.5rem}
+.result .big{font-family:"Fraunces",serif;font-size:clamp(2.6rem,6vw,4rem);line-height:1;color:var(--blush)}
+.result small{color:#b9c4c8;font-size:.82rem;margin-top:1rem}
+
+/* compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:3rem}
+@media(max-width:760px){.compare{grid-template-columns:1fr}}
+.compare ul{list-style:none;padding:0;display:grid;gap:.8rem;margin-top:1.2rem}
+.compare li{display:flex;gap:.7rem;font-size:.98rem}
+.before li::before{content:"✕";color:var(--clay);font-weight:800}
+.after li::before{content:"✓";color:var(--sage);font-weight:800}
+.after{border:2px solid var(--sage)}
+.before h3{color:var(--text-2)}
+
+/* security */
+.sec{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:3rem}
+@media(max-width:900px){.sec{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.sec{grid-template-columns:1fr}}
+.sec .card h3{font-size:1.1rem}
+.lock{font-size:2rem}
+
+
+/* final cta */
+.final{background:var(--slate-deep);color:#efe8df;border-radius:calc(var(--r)*1.6);padding:clamp(2.5rem,7vw,5rem);text-align:center;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -10% -60% -10%;height:70%;background:radial-gradient(closest-side,rgba(242,167,160,.35),transparent);}
+.final>*{position:relative}
+.final .lead{margin-inline:auto;color:#c9d1d4}
+.final form{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;margin-top:2rem}
+.final input{padding:.9rem 1.2rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font:inherit;min-width:min(16rem,100%)}
+.final input::placeholder{color:#a9b4b8}
+.final .btn-primary{background:var(--blush);color:#2f3e46}
+.note{font-size:.82rem;color:#9fabb0;margin-top:1rem}
+footer{padding:2.5rem 0;color:var(--text-2);font-size:.9rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between}
+
+
+/* tour */
+.tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2.5rem}
+.tab{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:.7rem 1.2rem;border-radius:999px;font:inherit;font-weight:600;font-size:.95rem;cursor:pointer;transition:.2s}
+.tab[aria-selected=true]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.panel{display:none;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center;margin-top:2rem;animation:pop .4s both}
+.panel.on{display:grid}
+@media(max-width:860px){.panel.on{grid-template-columns:1fr}}
+.feat{list-style:none;padding:0;display:grid;gap:1rem;margin-top:1.4rem}
+.feat li{display:grid;grid-template-columns:1.8rem 1fr;gap:.7rem}
+.feat li::before{content:"✦";color:var(--blush);font-size:1.1rem}
+.feat b{display:block}.feat span{color:var(--text-2);font-size:.96rem}
+.ui{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:1.2rem;font-size:.9rem}
+.ui h4{font-family:"Fraunces",serif;font-size:1.1rem;margin-bottom:.8rem}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.6rem .8rem;background:var(--muted-surface);border-radius:.7rem;margin-top:.45rem}
+.row small{color:var(--text-2)}
+.cal{display:grid;grid-template-columns:2.4rem repeat(5,1fr);gap:.3rem;font-size:.7rem;color:var(--text-2)}
+.cal .h{text-align:center;font-weight:700}
+.cal .t{padding-top:.3rem}
+.cal .c{min-height:2.6rem;border-radius:.5rem;background:var(--muted-surface);padding:.25rem .35rem;color:var(--text);font-weight:600;line-height:1.2}
+.cal .a{background:#f2a7a066}.cal .b{background:#7f9c7a55}.cal .d{background:#d4a24c55}.cal .x{background:repeating-linear-gradient(45deg,var(--sand),var(--sand) 4px,var(--sand2) 4px,var(--sand2) 8px);color:var(--text-2)}
+.bar{height:.6rem;border-radius:99px;background:var(--sand);overflow:hidden;margin-top:.4rem}
+.bar i{display:block;height:100%;background:var(--sage);border-radius:99px}
+.lockrow{filter:blur(4px);user-select:none}
+.chart{display:flex;align-items:flex-end;gap:.4rem;height:7rem;margin-top:.6rem}
+.chart i{flex:1;background:var(--taupe);border-radius:.4rem .4rem 0 0}
+.chart i:nth-child(even){background:var(--sage)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s,transform .7s}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header id="top">
+  <nav class="wrap">
+    <a class="logo" href="#top" aria-label="MindCare">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2a7a0"/><stop offset="1" stop-color="#a9927d"/></linearGradient></defs><path d="M12 4h40a8 8 0 0 1 8 8v40a8 8 0 0 1-8 8H18A14 14 0 0 1 4 46V12a8 8 0 0 1 8-8z" fill="url(#g)"/><path d="M32 47c-8-5.5-14-11-14-18a8 8 0 0 1 14-5.3A8 8 0 0 1 46 29c0 7-6 12.5-14 18z" fill="#2f3e46"/></svg>
+      MindCare
+    </a>
+    <div class="links">
+      <a href="#recursos">Recursos</a>
+      <a href="#tour">Por dentro</a>
+      <a href="#whatsapp">WhatsApp</a>
+      <a href="#calculadora">Calculadora</a>
+      <a href="#seguranca">Segurança</a>
+      <button class="theme" id="theme" aria-label="Alternar tema claro/escuro">◐</button>
+      <a class="btn btn-primary" href="#contato">Quero ver ao vivo</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Gestão para clínicas de saúde mental</span>
+      <h1>A clínica cuida de <em>gente</em>.<br>A gente cuida do <span class="squiggle">resto</span>.</h1>
+      <p class="lead">Agenda que se confirma sozinha, prontuário que só quem deve lê, Pix que dá baixa sozinho e recibo em um clique. Menos planilha, menos faltas, mais presença no consultório.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#contato">Agendar uma demonstração →</a>
+        <a class="btn btn-ghost" href="#calculadora">Quanto as faltas me custam?</a>
+      </div>
+      <div class="trust">
+        <span>LGPD desde o primeiro dia</span>
+        <span>Prontuário criptografado</span>
+        <span>Pronto em minutos, sem instalar nada no consultório</span>
+      </div>
+    </div>
+    <div class="hero-vis" aria-hidden="true">
+      <div class="hv hv-day">
+        <div class="hv-head"><div><small>Hoje</small><h4>Quinta, 31 de outubro</h4></div><span class="pill ok">4 sessões</span></div>
+        <ol class="tl">
+          <li class="ok"><time>09:00</time><div><b>Marina S.</b><small>Sessão individual</small></div><span class="pill ok">Confirmada</span></li>
+          <li class="live"><time>10:30</time><div><b>Casal Reis</b><small>Terapia de casal</small></div><span class="pill">Em andamento</span></li>
+          <li class="wait"><time>14:00</time><div><b>Pedro L.</b><small>Avaliação inicial</small></div><span class="pill">Aguardando</span></li>
+          <li class="ok"><time>16:00</time><div><b>Ana C.</b><small>Teleconsulta</small></div><span class="pill ok">Confirmada</span></li>
+        </ol>
+      </div>
+      <div class="hv hv-wa">
+        <div class="hv-ico ic-wa">💬</div>
+        <div><b>Pedro confirmou</b><small>pelo WhatsApp, agora há pouco</small></div>
+      </div>
+      <div class="hv hv-pix">
+        <div class="hv-ico ic-pix">⚡</div>
+        <div><b>Pix recebido · R$ 150</b><small>baixa automática, recibo pronto</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="pains" aria-hidden="true"><div>
+  <span>“Esqueci de confirmar a sessão de amanhã”</span><span>“Qual planilha tem o valor do pacote?”</span><span>“O paciente faltou… de novo”</span><span>“Preciso do recibo pro imposto de renda”</span><span>“Quanto devo repassar ao profissional?”</span>
+  <span>“Esqueci de confirmar a sessão de amanhã”</span><span>“Qual planilha tem o valor do pacote?”</span><span>“O paciente faltou… de novo”</span><span>“Preciso do recibo pro imposto de renda”</span><span>“Quanto devo repassar ao profissional?”</span>
+</div></div>
+
+<!-- RECURSOS -->
+<section id="recursos">
+  <div class="wrap">
+    <span class="eyebrow rv">Tudo no mesmo lugar</span>
+    <h2 class="rv">Um painel. <em>Zero</em> malabarismo.</h2>
+    <p class="lead rv">Do primeiro contato ao recibo do imposto de renda, cada etapa da jornada do paciente já está conectada.</p>
+
+    <div class="bento">
+      <article class="card c-a rv">
+        <div class="ico">📅</div>
+        <h3>Agenda que entende de terapia</h3>
+        <p>Calendário semanal, diário e mensal. Arraste para remarcar, crie séries semanais ou quinzenais e deixe o sistema avisar quando houver conflito de horário do profissional <em>ou</em> do paciente. Teleconsulta com sala gerada automaticamente.</p>
+        <div class="week"><div><i></i><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i><i></i></div><div><i></i></div><div><i></i><i></i></div></div>
+        <div class="tags"><span>Recorrência</span><span>Detecção de conflito</span><span>Disponibilidade</span><span>Bloqueios e férias</span></div>
+      </article>
+      <article class="card c-b dark rv">
+        <div class="ico">💬</div>
+        <h3>WhatsApp oficial</h3>
+        <p>Lembretes e confirmação com botões, direto no número da clínica. O paciente responde com um toque.</p>
+      </article>
+      <article class="card c-c rv">
+        <div class="ico">🔐</div>
+        <h3>Prontuário blindado</h3>
+        <p>Evoluções criptografadas. Só o autor e o profissional de referência leem. Nem o administrador abre.</p>
+      </article>
+      <article class="card c-d rv">
+        <div class="ico">⚡</div>
+        <h3>Pix com baixa automática</h3>
+        <p>QR Code e copia-e-cola na hora. O pagamento cai e a sessão já aparece como paga.</p>
+      </article>
+      <article class="card c-e rv">
+        <div class="ico">🧾</div>
+        <h3>Recibos que se escrevem sozinhos</h3>
+        <p>PDF com valor por extenso e recibo mensal para o paciente declarar no IR.</p>
+      </article>
+      <article class="card c-f rv">
+        <div class="ico">📦</div>
+        <h3>Pacotes e parcelas</h3>
+        <p>Venda pacotes de sessões, parcele recebimentos e deixe o sistema consumir o saldo a cada agendamento. Validade e sessões restantes sempre à vista.</p>
+      </article>
+      <article class="card c-g rv">
+        <div class="ico">📊</div>
+        <h3>Relatórios com repasse</h3>
+        <p>Faturado × recebido, ocupação, inadimplência e repasse por profissional. Exporta para Excel quando o contador pedir.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+<!-- TOUR -->
+<section id="tour">
+  <div class="wrap">
+    <span class="eyebrow rv">Por dentro do painel</span>
+    <h2 class="rv">Cada detalhe do dia a dia, <em>resolvido</em>.</h2>
+    <p class="lead rv">Escolha uma área e veja o que muda na rotina da sua clínica.</p>
+    <div class="tabs rv" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-p="p1">📅 Agenda</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="p2">🕐 Horários</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="p3">🧑‍🤝‍🧑 Pacientes</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="p4">📓 Prontuário</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="p5">💳 Financeiro</button>
+      <button class="tab" role="tab" aria-selected="false" data-p="p6">📈 Gestão</button>
+    </div>
+
+    <div class="panel on" id="p1">
+      <div>
+        <h3>A agenda que trabalha por você</h3>
+        <ul class="feat">
+          <li><div><b>Arraste e remarque</b><span>Mudou de horário? Arraste a sessão para o novo lugar. O paciente é avisado.</span></div></li>
+          <li><div><b>Séries em um clique</b><span>Crie sessões semanais ou quinzenais de uma vez, respeitando férias e bloqueios.</span></div></li>
+          <li><div><b>Conflito? Você sabe antes</b><span>O sistema avisa se o profissional <em>ou</em> o paciente já têm algo naquele horário.</span></div></li>
+          <li><div><b>Cada sessão com seu status</b><span>Agendada, confirmada, realizada, falta ou cancelada, com cores que se leem em um segundo.</span></div></li>
+          <li><div><b>Teleconsulta sem trabalho</b><span>A sala de vídeo é criada junto com a sessão e o link vai para o paciente.</span></div></li>
+          <li><div><b>Valor já preenchido</b><span>Escolha o tipo de serviço (individual, casal, avaliação…) e duração e valor aparecem prontos.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Semana · Dra. Helena</h4>
+        <div class="cal">
+          <span></span><span class="h">SEG</span><span class="h">TER</span><span class="h">QUA</span><span class="h">QUI</span><span class="h">SEX</span>
+          <span class="t">09h</span><div class="c b">Marina</div><div class="c"></div><div class="c a">Casal Reis</div><div class="c b">João</div><div class="c x">Férias</div>
+          <span class="t">10h</span><div class="c"></div><div class="c d">Avaliação</div><div class="c b">Marina</div><div class="c"></div><div class="c x">Férias</div>
+          <span class="t">14h</span><div class="c a">Tele-consulta</div><div class="c b">Lia</div><div class="c"></div><div class="c d">Pedro</div><div class="c x">Férias</div>
+          <span class="t">16h</span><div class="c b">Caio</div><div class="c"></div><div class="c b">Ana</div><div class="c a">Casal Reis</div><div class="c x">Férias</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="p2">
+      <div>
+        <h3>Horários de cada profissional, respeitados</h3>
+        <ul class="feat">
+          <li><div><b>Disponibilidade semanal</b><span>Cada terapeuta define os dias e faixas em que atende. Ninguém marca fora disso por engano.</span></div></li>
+          <li><div><b>Bloqueios de agenda</b><span>Férias, congressos, feriados da clínica: bloqueie o período e a agenda se organiza.</span></div></li>
+          <li><div><b>Cada um vê o seu</b><span>O profissional enxerga só os próprios atendimentos; a gestão enxerga o panorama todo.</span></div></li>
+          <li><div><b>Visão geral do dia</b><span>Ao abrir o painel: sessões de hoje, faltas do mês, consultas aguardando confirmação e valores.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Disponibilidade · Dra. Helena</h4>
+        <div class="row"><span>Segunda</span><small>08:00–12:00 · 14:00–18:00</small></div>
+        <div class="row"><span>Terça</span><small>14:00–20:00</small></div>
+        <div class="row"><span>Quarta</span><small>08:00–12:00</small></div>
+        <div class="row"><span>🏖️ Bloqueio</span><small>12 a 26 de janeiro · Férias</small></div>
+      </div>
+    </div>
+    <div class="panel" id="p3">
+      <div>
+        <h3>Cada paciente, uma ficha viva</h3>
+        <ul class="feat">
+          <li><div><b>Cadastro completo e conferido</b><span>CPF validado, nascimento, convênio, contato de emergência, endereço e profissional de referência.</span></div></li>
+          <li><div><b>Indicadores à primeira vista</b><span>Sessões feitas, faltas, saldo em aberto e a próxima sessão, sem abrir planilha.</span></div></li>
+          <li><div><b>Histórico de tudo</b><span>Consultas e pagamentos em uma linha do tempo só.</span></div></li>
+          <li><div><b>Conversa em um toque</b><span>Atalho para falar com o paciente no WhatsApp direto da ficha.</span></div></li>
+          <li><div><b>Preferências respeitadas</b><span>Cada paciente escolhe como quer receber os avisos.</span></div></li>
+          <li><div><b>Proteção contra acidentes</b><span>Quem tem consultas registradas não pode ser excluído por engano.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Marina Souza</h4>
+        <div class="kpis"><div class="kpi"><small>Sessões</small><b>18</b></div><div class="kpi"><small>Faltas</small><b>1</b></div><div class="kpi"><small>Em aberto</small><b>R$ 0</b></div></div>
+        <div class="row"><span>Próxima sessão</span><small>qua, 14:00 · confirmada</small></div>
+        <div class="row"><span>Convênio</span><small>Particular</small></div>
+        <div class="row"><span>💬 Conversar no WhatsApp</span><small>→</small></div>
+      </div>
+    </div>
+    <div class="panel" id="p4">
+      <div>
+        <h3>Prontuário e documentos sob chave</h3>
+        <ul class="feat">
+          <li><div><b>Evolução ligada à sessão</b><span>Registre cada atendimento no contexto certo, sem caderno solto.</span></div></li>
+          <li><div><b>Só quem deve, lê</b><span>O autor e o profissional de referência têm acesso. Nem a administração abre o conteúdo.</span></div></li>
+          <li><div><b>Toda leitura fica registrada</b><span>Rastro completo de quem acessou e quando.</span></div></li>
+          <li><div><b>Documentos em dois níveis</b><span>Clínicos ficam restritos ao profissional; administrativos, visíveis à equipe. PDF, imagem ou Word.</span></div></li>
+          <li><div><b>Consentimento LGPD no cadastro</b><span>Termo por paciente, exportação dos dados do titular e anonimização que preserva o histórico.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Evolução · sessão de 14/10</h4>
+        <div class="row"><span>Dra. Helena</span><small>autora</small></div>
+        <div class="row lockrow"><span>Paciente relatou melhora no sono e retomada…</span></div>
+        <div class="row lockrow"><span>Combinado: diário de ansiedade até a próxima…</span></div>
+        <div class="row"><span>🔒 Conteúdo protegido</span><small>leitura auditada</small></div>
+      </div>
+    </div>
+    <div class="panel" id="p5">
+      <div>
+        <h3>Dinheiro sem dor de cabeça</h3>
+        <ul class="feat">
+          <li><div><b>Pix na hora</b><span>QR Code e copia-e-cola gerados na sessão. O pagamento cai e a baixa é automática.</span></div></li>
+          <li><div><b>Parcelas e formas de pagamento</b><span>Pix, cartão, dinheiro, transferência ou convênio. O status (pago, parcial, em aberto) se calcula sozinho.</span></div></li>
+          <li><div><b>Pacotes de sessões</b><span>Venda o pacote, e a cada agendamento o saldo é consumido. Validade e restantes sempre visíveis.</span></div></li>
+          <li><div><b>Recibo em PDF</b><span>Com valor por extenso, pronto para enviar. E o recibo mensal para o paciente declarar no IR.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Pacote · 10 sessões</h4>
+        <div class="row"><span>Usadas</span><small>7 de 10</small></div>
+        <div class="bar"><i style="width:70%"></i></div>
+        <div class="row"><span>⚡ Pix · parcela 2/3</span><small style="color:var(--sage);font-weight:700">Pago</small></div>
+        <div class="row"><span>🧾 Recibo</span><small>PDF gerado</small></div>
+      </div>
+    </div>
+    <div class="panel" id="p6">
+      <div>
+        <h3>Enxergue a clínica inteira</h3>
+        <ul class="feat">
+          <li><div><b>Faturado × recebido</b><span>Doze meses lado a lado, para entender o fluxo de caixa.</span></div></li>
+          <li><div><b>Ocupação e desempenho</b><span>Saiba quais horários lotam e quais ficam vazios.</span></div></li>
+          <li><div><b>Repasse por profissional</b><span>Cada terapeuta com seu extrato. Fim da conta na calculadora.</span></div></li>
+          <li><div><b>Inadimplência sob controle</b><span>Veja quem está em aberto e aja antes de virar problema.</span></div></li>
+          <li><div><b>Excel para o contador</b><span>Exporte quando precisar, em um clique.</span></div></li>
+          <li><div><b>Equipe e permissões</b><span>Perfis de administrador e profissional, acesso criado automaticamente no cadastro e histórico de tudo o que acontece.</span></div></li>
+        </ul>
+      </div>
+      <div class="ui" aria-hidden="true">
+        <h4>Faturado × recebido</h4>
+        <div class="chart"><i style="height:45%"></i><i style="height:40%"></i><i style="height:58%"></i><i style="height:52%"></i><i style="height:70%"></i><i style="height:66%"></i><i style="height:80%"></i><i style="height:74%"></i><i style="height:92%"></i><i style="height:88%"></i></div>
+        <div class="row"><span>Repasse · Dra. Helena</span><small>pronto para conferir</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHATSAPP -->
+<section id="whatsapp">
+  <div class="wrap">
+    <div class="wa rv">
+      <span class="eyebrow">Menos faltas</span>
+      <h2>Do agendamento à confirmação, <em>sem você digitar nada</em>.</h2>
+      <p class="lead">O paciente recebe tudo no WhatsApp, sem baixar app nem criar senha. E você enxerga o resultado na agenda, em tempo real.</p>
+
+      <div class="flow">
+        <div class="stepc"><span class="when">Ao agendar</span><h3>Confirmação de agendamento</h3><p>Assim que a sessão é marcada, o paciente recebe data, horário e profissional.</p>
+          <div class="bub">Olá, Marina! Sua sessão com a Dra. Helena está marcada para <b>qua, 14h</b>. 💛<small>09:12</small></div></div>
+        <div class="stepc"><span class="when">Na véspera</span><h3>Lembrete com botões</h3><p>Na antecedência que você escolher, um lembrete pede confirmação com um toque.</p>
+          <div class="bub">Lembrete: sua sessão é <b>amanhã, 14h</b>. Você vem?<small>14:00</small></div></div>
+        <div class="stepc"><span class="when">Se algo mudar</span><h3>Remarcou? Avisa sozinho</h3><p>Se a sessão for remarcada ou cancelada, o paciente é avisado na hora.</p>
+          <div class="bub">Sua sessão foi remarcada para <b>qui, 10h</b>. Qualquer dúvida, é só responder.<small>16:20</small></div></div>
+      </div>
+
+      <div class="sim" aria-live="polite">
+        <div class="side">
+          <h4>O que o paciente vê <span>WhatsApp</span></h4>
+          <div id="chat" style="display:flex;flex-direction:column;gap:.55rem"></div>
+        </div>
+        <div class="side">
+          <h4>O que você vê <span>Painel</span></h4>
+          <div class="slotw" id="slotw"><time>14:00</time><span>Marina · Sessão individual</span><span class="badge" id="badge">Aguardando</span></div>
+          <div id="bells"><p class="bellhint">Os avisos de resposta aparecem aqui, no sino do painel.</p></div>
+        </div>
+      </div>
+      <div class="simbtns">
+        <button class="btn" id="simok">▶ Simular: paciente confirma</button>
+        <button class="btn alt" id="simno">Simular: paciente cancela</button>
+        <small>Demonstração ilustrativa, nada é enviado.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULADORA -->
+<section id="calculadora">
+  <div class="wrap">
+    <span class="eyebrow rv">Faça as contas</span>
+    <h2 class="rv">Cada falta é uma <em>cadeira vazia</em> que você paga.</h2>
+    <p class="lead rv">Mova os controles com a realidade da sua clínica. É uma estimativa simples, feita no seu navegador, sem enviar nada a ninguém.</p>
+    <div class="calc rv" style="margin-top:2.5rem">
+      <form id="calc" onsubmit="return false">
+        <div><label for="sess">Sessões por semana <output id="o1">40</output></label><input id="sess" type="range" min="5" max="200" step="5" value="40"></div>
+        <div><label for="val">Valor médio da sessão <output id="o2">R$ 150</output></label><input id="val" type="range" min="60" max="500" step="10" value="150"></div>
+        <div><label for="rate">Taxa de faltas atual <output id="o3">15%</output></label><input id="rate" type="range" min="2" max="40" step="1" value="15"></div>
+        <div><label for="cut">Faltas que lembretes evitariam <output id="o4">40%</output></label><input id="cut" type="range" min="10" max="80" step="5" value="40"></div>
+      </form>
+      <div class="result">
+        <span>Hoje você perde por mês</span>
+        <div class="big" id="loss">R$ 0</div>
+        <span style="margin-top:1rem">Recuperáveis com lembretes automáticos</span>
+        <div class="big" id="gain" style="font-size:2.2rem;color:#a8c7a2">R$ 0</div>
+        <small>Estimativa (4,33 semanas/mês). O percentual de faltas evitadas é uma premissa sua, ajuste conforme sua experiência.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANTES/DEPOIS -->
+<section style="background:var(--muted-surface)">
+  <div class="wrap">
+    <span class="eyebrow rv">Segunda-feira de manhã</span>
+    <h2 class="rv">Antes e depois do <em>MindCare</em>.</h2>
+    <div class="compare">
+      <div class="card before rv">
+        <h3>O improviso</h3>
+        <ul>
+          <li>Agenda no papel, no Google e na cabeça</li>
+          <li>Lembretes manuais, um por um, à noite</li>
+          <li>Prontuário em pasta compartilhada sem controle</li>
+          <li>Planilha para quem pagou e quem deve</li>
+          <li>Repasse calculado na calculadora do celular</li>
+          <li>Recibo digitado a cada pedido</li>
+        </ul>
+      </div>
+      <div class="card after rv">
+        <h3>O MindCare</h3>
+        <ul>
+          <li>Uma agenda só, com conflitos avisados antes</li>
+          <li>Lembretes automáticos por WhatsApp e e-mail</li>
+          <li>Prontuário criptografado, com leitura auditada</li>
+          <li>Financeiro com status calculado sozinho</li>
+          <li>Repasse por profissional em um relatório</li>
+          <li>Recibo PDF em um clique</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEGURANÇA -->
+<section id="seguranca">
+  <div class="wrap">
+    <span class="eyebrow rv">Confiança é parte do tratamento</span>
+    <h2 class="rv">Dados de saúde mental merecem <em>cofre</em>, não gaveta.</h2>
+    <p class="lead rv">Pensado para a LGPD desde a primeira linha de código, não colado depois.</p>
+    <div class="sec">
+      <div class="card rv"><div class="lock">🗝️</div><h3>Criptografia em repouso</h3><p>Evoluções clínicas guardadas protegidas, ilegíveis para quem não deve ver.</p></div>
+      <div class="card rv"><div class="lock">👁️</div><h3>Acesso por perfil</h3><p>Documentos clínicos só para o profissional de referência. Administrativos, para a equipe.</p></div>
+      <div class="card rv"><div class="lock">📜</div><h3>Auditoria completa</h3><p>Quem criou, alterou, exportou ou leu. E todos os logins.</p></div>
+      <div class="card rv"><div class="lock">⚖️</div><h3>Direitos do titular</h3><p>Termo de consentimento, exportação dos dados e anonimização que preserva o histórico.</p></div>
+    </div>
+    <p class="lead rv" style="margin-top:2rem">Mais: bloqueio de conta após tentativas erradas, senha temporária com troca obrigatória no primeiro acesso e conferência dos arquivos enviados antes de aceitá-los.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contato">
+  <div class="wrap">
+    <div class="final rv">
+      <span class="eyebrow" style="color:var(--blush)">Pronta para respirar?</span>
+      <h2>Devolva as <em style="color:var(--blush)">tardes</em> à sua clínica.</h2>
+      <p class="lead">Conte seu nome e o da clínica. Vamos te mostrar o painel funcionando, com a sua realidade na tela.</p>
+      <form id="lead">
+        <input name="nome" placeholder="Seu nome" required aria-label="Seu nome">
+        <input name="clinica" placeholder="Nome da clínica" aria-label="Nome da clínica">
+        <button class="btn btn-primary" type="submit">Quero minha demonstração →</button>
+      </form>
+      <p class="note">Abre uma conversa no WhatsApp com a mensagem já escrita. Nenhum dado é guardado nesta página.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 MindCare · Feito com cuidado para quem cuida.</span>
+    <span>Saúde mental com mais presença e menos burocracia.</span>
+  </div>
+</footer>
+
+<script>
+// >>> Troque pelo número comercial (DDI+DDD+número, só dígitos) <<<
+const WHATSAPP_NUMBER = "5500000000000";
+
+const $ = s => document.querySelector(s);
+const root = document.documentElement;
+
+// tema
+try { const t = localStorage.getItem("mc-theme"); if (t) root.dataset.theme = t; } catch {}
+$("#theme").onclick = () => {
+  const dark = getComputedStyle(root).getPropertyValue("--bg").trim() === "#1b2226";
+  const next = dark ? "light" : "dark";
+  root.dataset.theme = next;
+  try { localStorage.setItem("mc-theme", next); } catch {}
+};
+
+// header
+const hdr = document.querySelector("header");
+addEventListener("scroll", () => hdr.classList.toggle("stuck", scrollY > 8), { passive: true });
+
+// reveal
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll(".rv").forEach((el, i) => { el.style.transitionDelay = (i % 4) * 70 + "ms"; io.observe(el); });
+
+// whatsapp simulação
+const chat = $("#chat"), bells = $("#bells"), slotw = $("#slotw"), badge = $("#badge");
+let timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+function msg(html, me) {
+  const d = document.createElement("div");
+  d.className = "wmsg" + (me ? " me" : "");
+  d.innerHTML = html;
+  chat.appendChild(d);
+}
+function reset() {
+  timers.forEach(clearTimeout); timers = [];
+  chat.innerHTML = ""; slotw.className = "slotw"; badge.textContent = "Aguardando";
+  bells.innerHTML = '<p class="bellhint">Os avisos de resposta aparecem aqui, no sino do painel.</p>';
+  msg("Lembrete: sua sessão com a Dra. Helena é <b>amanhã, 14h</b>. Você vem?<div class='wopts'><button disabled>✅ Confirmar</button><button disabled>↩️ Cancelar</button></div><small>14:00</small>");
+}
+function simulate(ok) {
+  reset();
+  later(() => msg(ok ? "✅ Confirmar" : "↩️ Cancelar", true), 600);
+  later(() => msg(ok ? "Perfeito, Marina! Sessão confirmada. Até amanhã 💛" : "Tudo bem! Avisamos a clínica para combinar um novo horário 💛"), 1300);
+  later(() => {
+    slotw.className = "slotw " + (ok ? "ok" : "no");
+    badge.textContent = ok ? "Confirmada" : "Cancelada";
+    bells.innerHTML = `<div class="bell"><span>🔔</span><span><b>Marina</b> ${ok ? "confirmou" : "cancelou"} a sessão de amanhã às 14h${ok ? "." : ". O horário já pode ser oferecido a outro paciente."}</span></div>`;
+  }, 1900);
+}
+$("#simok").onclick = () => simulate(true);
+$("#simno").onclick = () => simulate(false);
+reset();
+
+// tour
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === t.dataset.p));
+}));
+
+// calculadora
+const brl = n => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+function calc() {
+  const s = +$("#sess").value, v = +$("#val").value, r = +$("#rate").value, c = +$("#cut").value;
+  $("#o1").textContent = s; $("#o2").textContent = brl(v); $("#o3").textContent = r + "%"; $("#o4").textContent = c + "%";
+  const loss = s * 4.33 * (r / 100) * v;
+  $("#loss").textContent = brl(loss);
+  $("#gain").textContent = brl(loss * c / 100) + "/mês";
+}
+document.querySelectorAll("#calc input").forEach(i => i.addEventListener("input", calc));
+calc();
+
+// lead -> WhatsApp
+$("#lead").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const msg = `Olá! Sou ${f.get("nome")}${f.get("clinica") ? " da " + f.get("clinica") : ""} e quero ver uma demonstração do MindCare.`;
+  open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+});
+</script>
+</body>
+</html>
