@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- 1. Bibliotecas front-end (npm) ----------
-FROM node:22-alpine AS client
+FROM node:25-alpine AS client
 WORKDIR /client
 COPY src/MindCare.Web/package.json src/MindCare.Web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
